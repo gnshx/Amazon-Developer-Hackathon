@@ -1,0 +1,26 @@
+{
+  "name": "@warrant/siege",
+  "version": "1.0.0",
+  "description": "Warrant Siege: Adversarial safety test harness and automated scorecard generator for voice agent gateways",
+  "bin": {
+    "warrant-siege": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test:siege": "tsx src/cli.ts --target http://localhost:8000/mcp --admin http://localhost:8000/admin",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.0",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.7",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.19",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.7"
+  },
+  "license": "MIT"
+}
