@@ -249,10 +249,7 @@ Spins up Warrant Gateway on `http://localhost:8000` and the Simulated Alexa+ Cli
 npm run dev
 ```
 
-Or using Docker Compose:
-```bash
-docker compose up --build
-```
+*(Note: `docker-compose.yml` and `Dockerfile` are provided in the repository, but are marked as untested on this host due to the absence of a local Docker daemon. The primary verified path is `npm install && npm run test && npm run dev` from a clean clone).*
 
 Open `http://localhost:3000` in your browser to experience the simulated Alexa+ voice assistant, phone approval card, real-time MCP tool inspector, receipt verification modal, undo window countdown, and live audit ledger.
 
@@ -260,20 +257,19 @@ Open `http://localhost:3000` in your browser to experience the simulated Alexa+ 
 
 ## 8. Post-Hackathon Roadmap: What You Can Add Later (Future Work)
 
-> **Notice:** The roadmap items below represent future post-hackathon extensions turning Warrant from a prototype gateway into global trust infrastructure.
+> **Notice:** Signed Action Receipts ($I_9$) and Grace-Hold Undo Windows ($I_{10}$) have been shipped in this release. The roadmap items below represent future post-hackathon extensions turning Warrant from a prototype gateway into global trust infrastructure.
 
 ### Phase 2: Make It Real (First Weeks Post-Hackathon)
 - **Live Provider Integrations:** Real payment sandboxes (Stripe test mode intents) and commercial booking APIs (Amadeus, Sabre, OpenTable).
-- **Passkey (WebAuthn) Approvals:** Cryptographic biometric proofs directly from the user's secure hardware enclave (Touch ID, Face ID, YubiKey) replacing simple button presses.
+- **Passkey (WebAuthn) Approvals:** Cryptographic biometric proofs directly from the user's secure hardware (Touch ID, Face ID, YubiKey) replacing simple button presses.
 - **Multi-User Accounts & OAuth Grants:** Household role hierarchies with OAuth 2.1 grant negotiation and granular revocation interfaces.
 - **Cloud Infrastructure:** Managed PostgreSQL with read replicas and a hosted public sandbox that anyone can try.
 
 ### Phase 3: Stronger Trust Guarantees
-- **Signed Action Receipts:** Every action produces a detached Ed25519 cryptographically signed receipt that any third party can verify without trusting the gateway.
-- **Transparency Log:** Anchor the audit chain into an append-only Merkle tree (RFC 6962 / Sigstore) publishing signed tree heads, guaranteeing historical records cannot be silently rewritten.
+- **Public Transparency Log:** Anchor the audit chain and action receipts into an append-only Merkle tree (RFC 6962 / Sigstore) publishing signed tree heads, guaranteeing historical records cannot be silently rewritten by any party.
 - **Capability Tokens (Macaroons / Biscuit Architecture):** Attenuated authority tokens that can only shrink when passed along. Establishes the mathematical foundation for multi-agent delegation: a sub-agent can never hold more power than its parent.
 - **Policy as Code (Cedar / OPA):** Express household policies in formal languages (AWS Cedar or Rego) with a shadow simulator testing policy changes against historical audit events.
-- **Undo Windows:** Configurable grace periods for high-risk reversible commitments before final settlement (analogous to "undo send").
+- **Multi-Cloud Trust Anchors:** Distribute Merkle audit checkpoints across independent cloud providers for Byzantine fault tolerance.
 
 ### Phase 4: Smarter Protection
 - **Behavioral Anomaly Detection:** Real-time flagging of unusual spend velocity, execution timing, or abnormal booking destinations with automatic escalation to phone confirmation.

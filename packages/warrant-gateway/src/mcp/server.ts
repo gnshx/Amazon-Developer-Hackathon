@@ -17,6 +17,7 @@ import { FaultType, IMockProvider } from "../providers/types.js";
 
 export interface GatewayServerOptions {
   repo?: WarrantRepository;
+  approvalService?: ApprovalService;
   port?: number;
   hotelProvider?: MockHotelProvider;
   trainProvider?: MockTrainProvider;
@@ -29,7 +30,7 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
   app.use(express.json());
 
   const repo = options.repo ?? new WarrantRepository();
-  const approvalService = new ApprovalService(repo);
+  const approvalService = options.approvalService ?? new ApprovalService(repo);
   const idempotencyService = new IdempotencyService(repo);
   const receiptService = options.receiptService ?? new ReceiptService(repo);
 

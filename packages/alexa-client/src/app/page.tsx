@@ -510,9 +510,12 @@ export default function AlexaClientDashboard() {
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <div style={{ width: "10px", height: "10px", borderRadius: "50%", background: "#10b981", boxShadow: "0 0 10px #10b981" }} />
               <h1 style={{ fontSize: "16px", fontWeight: "600", letterSpacing: "-0.01em" }}>Simulated Alexa+ Client</h1>
+              <span style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", background: "rgba(56, 189, 248, 0.15)", color: "#38bdf8", padding: "2px 6px", borderRadius: "4px", border: "1px solid rgba(56, 189, 248, 0.3)", fontWeight: "600" }}>
+                Simulated Voice Prototype
+              </span>
             </div>
-            <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "2px" }}>
-              Voice assistant with Amazon Bedrock Converse & Warrant MCP
+            <p style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
+              Simulated Alexa+ voice assistant powered by Amazon Bedrock Converse &amp; Warrant MCP Gateway
             </p>
           </div>
 

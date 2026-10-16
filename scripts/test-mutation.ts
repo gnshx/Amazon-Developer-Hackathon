@@ -26,9 +26,19 @@ async function runScenarioWithHarness(
     };
   }
 
+  let approvalService: ApprovalService | undefined;
+  if (options.disableApprovalVerification) {
+    approvalService = new ApprovalService(repo);
+    // Mutate verifyApprovalToken to bypass all hash and token verification checks
+    (approvalService as any).verifyApprovalToken = (_token: string, _params: any) => {
+      return { valid: true };
+    };
+  }
+
   const { app } = createGatewayApp({
     repo,
-    trainProvider
+    trainProvider,
+    approvalService
   });
 
   const server = await new Promise<http.Server>((resolve) => {
@@ -55,6 +65,8 @@ async function main() {
   console.log("========================================================");
   console.log("Verifying that adversarial harness detects invariant breaches...\n");
 
+  let mutationsDetected = 0;
+
   // TEST 1: Baseline (Unmutated)
   console.log("1. Running Baseline (Pristine Gateway):");
   const baseline = await runScenarioWithHarness();
@@ -75,30 +87,40 @@ async function main() {
   await m1.cleanup();
 
   if (!s1Result.passed) {
+    mutationsDetected++;
     console.log("   🎯 Mutation Detected! S1 turned RED as expected:");
     console.log(`      ↳ Failure: ${s1Result.error || s1Result.assertion}`);
   } else {
-    console.error("   ⚠️ Warning: S1 did not turn red when idempotency was disabled!");
+    console.error("   ❌ Error: S1 did not turn red when idempotency was disabled!");
   }
 
-  // TEST 3: Mutation S4 (Approval Parameter Tampering)
-  console.log("\n3. Testing Invariant I3 (Approval Parameter Tampering with S4):");
-  const m2 = await runScenarioWithHarness();
+  // TEST 3: Mutation S4 (Disable Approval Token/Hash Verification)
+  console.log("\n3. Mutating Invariant I3 (Disabling Approval Token/Hash Verification):");
+  const m2 = await runScenarioWithHarness({ disableApprovalVerification: true });
   const s4Result = await m2.runner.runS4();
   await m2.cleanup();
 
-  if (s4Result.passed) {
-    console.log("   ✅ Tampering Caught! S4 correctly verified that parameter mismatch was rejected.\n");
+  if (!s4Result.passed) {
+    mutationsDetected++;
+    console.log("   🎯 Mutation Detected! S4 turned RED as expected:");
+    console.log(`      ↳ Failure caught: Tampered parameters executed without rejection (bypass allowed execution).`);
   } else {
-    console.error("   ❌ S4 failed unexpectedly.");
+    console.error("   ❌ Error: S4 did not turn red when approval check was disabled!");
   }
 
-  console.log("========================================================");
-  console.log("🎉 MUTATION TEST SUITE COMPLETE: Harness proves it catches invariant breaches.");
-  console.log("========================================================\n");
+  console.log("\n========================================================");
+  if (mutationsDetected === 2) {
+    console.log("🎉 ALL MUTATIONS DETECTED (2/2 RED): Invariants I1 & I3 proven fail-safe.");
+    console.log("========================================================\n");
+    process.exit(0);
+  } else {
+    console.error(`⚠️ FAILED: Only ${mutationsDetected}/2 mutations were detected.`);
+    console.log("========================================================\n");
+    process.exit(1);
+  }
 }
 
 main().catch((err) => {
-  console.error("Mutation test failure:", err);
+  console.error("Fatal error during mutation test:", err);
   process.exit(1);
 });

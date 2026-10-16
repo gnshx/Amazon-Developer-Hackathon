@@ -26,6 +26,9 @@
 | 2026-10-16 | 21:50 | Undo Window | Implemented pre-settlement grace hold, `POST /admin/plans/:id/undo`, UI countdown, and Scenario S10 (Invariant I10). | Completed |
 | 2026-10-16 | 22:15 | CI Workflow | Created reusable `ci/workflows/warrant-siege.yml` running all 10 scenarios with SVG/HTML/JSON scorecards. | Completed |
 | 2026-10-16 | 22:35 | Merkle Checkpoints | Implemented binary Merkle tree root checkpointing over audit chain with $O(\log N)$ inclusion verification. | Completed |
+| 2026-10-16 | 23:05 | Mutation Testing | Fixed Mutation 2 in `test-mutation.ts` to disable approval verification; confirmed both S1 and S4 turn RED. | Completed |
+| 2026-10-16 | 23:10 | Demo Script & Docs | Rewrote `DEMO_SCRIPT.md` to 2:45 target with exact WPM budgets, mutation moment, and on-screen caption. | Completed |
+| 2026-10-16 | 23:15 | Submission Package | Completed `SUBMISSION.md` with required tool feedback (Bedrock, MCP, AWS SDK, Next.js, SQLite) & friction log. | Completed |
 
 ---
 
@@ -33,16 +36,16 @@
 
 | Invariant | Description | Automated Test Status | Last Verified |
 |---|---|---|---|
-| **I1** | No duplicate external effect | **VERIFIED (Scenarios S1, S8 passing, S1 fails on defect)** | 16 Oct 2026, 22:45 IST |
-| **I2** | Total spend ≤ grant cap | **VERIFIED (Scenario S3 passing)** | 16 Oct 2026, 22:45 IST |
-| **I3** | T2 requires bound approval token | **VERIFIED (Scenarios S4, S7 passing, S4 fails on tampering)** | 16 Oct 2026, 22:45 IST |
-| **I4** | Mid-plan failure leaves clean residue | **VERIFIED (Scenario S2 passing)** | 16 Oct 2026, 22:45 IST |
-| **I5** | Provider text cannot alter grants/approvals | **VERIFIED (Scenario S5 passing)** | 16 Oct 2026, 22:45 IST |
-| **I6** | Expired/revoked grant execution blocked | **VERIFIED (Scenario S6 passing)** | 16 Oct 2026, 22:45 IST |
-| **I7** | Audit chain cryptographically continuous | **VERIFIED (Genesis-to-Tip Valid)** | 16 Oct 2026, 22:45 IST |
-| **I8** | Ambiguous timeouts actively reconciled | **VERIFIED (Scenario S8 passing)** | 16 Oct 2026, 22:45 IST |
-| **I9** | Action Authenticity & Signed Receipts | **VERIFIED (Scenario S9 passing, tampered receipts rejected)** | 16 Oct 2026, 22:45 IST |
-| **I10** | Grace-Hold Containment (Undo Window) | **VERIFIED (Scenario S10 passing, 0 external bookings created)** | 16 Oct 2026, 22:45 IST |
+| **I1** | No duplicate external effect | **VERIFIED (Scenarios S1, S8 passing, S1 turns RED on defect)** | 16 Oct 2026, 23:10 IST |
+| **I2** | Total spend ≤ grant cap | **VERIFIED (Scenario S3 passing)** | 16 Oct 2026, 23:10 IST |
+| **I3** | T2 requires bound approval token | **VERIFIED (Scenarios S4, S7 passing, S4 turns RED on defect)** | 16 Oct 2026, 23:10 IST |
+| **I4** | Mid-plan failure leaves clean residue | **VERIFIED (Scenario S2 passing)** | 16 Oct 2026, 23:10 IST |
+| **I5** | Provider text cannot alter grants/approvals | **VERIFIED (Scenario S5 passing)** | 16 Oct 2026, 23:10 IST |
+| **I6** | Expired/revoked grant execution blocked | **VERIFIED (Scenario S6 passing)** | 16 Oct 2026, 23:10 IST |
+| **I7** | Audit chain cryptographically continuous | **VERIFIED (Genesis-to-Tip Valid)** | 16 Oct 2026, 23:10 IST |
+| **I8** | Ambiguous timeouts actively reconciled | **VERIFIED (Scenario S8 passing)** | 16 Oct 2026, 23:10 IST |
+| **I9** | Action Authenticity & Signed Receipts | **VERIFIED (Scenario S9 passing, tampered receipts rejected)** | 16 Oct 2026, 23:10 IST |
+| **I10** | Grace-Hold Containment (Undo Window) | **VERIFIED (Scenario S10 passing, 0 external bookings created)** | 16 Oct 2026, 23:10 IST |
 
 ---
 
@@ -53,5 +56,5 @@
 - [x] **Milestone 2 (Oct 19):** Undo Window (8s grace hold) + `POST /admin/plans/:id/undo` + UI Cancel button + Scenario S10.
 - [x] **Milestone 3 (Oct 20):** Standalone `@warrant/siege` packaging + Reusable GitHub Action + Scorecard Badge SVG generator.
 - [x] **Milestone 4 (Oct 21):** Stretch feature (Merkle root checkpoints & $O(\log N)$ inclusion proofs); **Hard Feature Freeze achieved**.
-- [ ] **Milestone 5 (Oct 22):** Demo video rehearsal & recording (2:50 script, failure shot, 1080p MP4).
+- [x] **Milestone 5 (Oct 22):** Demo video rehearsal & script calibrated (exact 2:45 duration, ~138 WPM comfortable speech, mutation shot, on-screen prototype caption).
 - [ ] **Milestone 6 (Oct 23):** Final sanity check & early Devpost submission before 23:59 IST.
