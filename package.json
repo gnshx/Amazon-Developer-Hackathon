@@ -1,0 +1,28 @@
+{
+  "name": "warrant-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Warrant: A Trust Gateway for Voice Agents (Amazon Developer Hackathon, Alexa+ Track)",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run --workspaces --if-present build",
+    "test": "npm run --workspaces --if-present test",
+    "test:siege": "npm --workspace=packages/warrant-siege run test:siege",
+    "dev": "npm run --workspaces --parallel --if-present dev",
+    "lint": "npm run --workspaces --if-present lint"
+  },
+  "keywords": [
+    "alexa",
+    "voice-agents",
+    "mcp",
+    "amazon-bedrock",
+    "safety-gateway",
+    "saga-orchestrator",
+    "idempotency",
+    "audit-chain"
+  ],
+  "author": "Warrant Team",
+  "license": "Apache-2.0"
+}

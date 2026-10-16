@@ -1,0 +1,30 @@
+{
+  "name": "@warrant/gateway",
+  "version": "1.0.0",
+  "description": "Warrant Gateway: MCP Streamable HTTP trust gateway, policy engine, saga orchestrator, and audit chain",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.0",
+    "better-sqlite3": "^11.8.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/express": "^5.0.0",
+    "@types/node": "^20.17.19",
+    "fast-check": "^3.23.2",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.7"
+  },
+  "license": "Apache-2.0"
+}
