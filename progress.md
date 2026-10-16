@@ -12,7 +12,8 @@
 | 2026-10-16 | 15:25 | Governance | Extracted and synthesized PRD, HLD, Test Plan, and MVP scope. | Completed |
 | 2026-10-16 | 15:27 | Architecture | Created `docs/PRD.md`, `docs/HLD.md`, and `docs/TEST_PLAN.md`. | Completed |
 | 2026-10-16 | 15:28 | Memory | Initialized `task_plan.md`, `findings.md`, and `progress.md`. | Completed |
-| 2026-10-16 | In Progress | Orchestration | Creating `PLAN.md` master roadmap and `AGENTS.md` loop engineer handbook. | In Progress |
+| 2026-10-16 | 15:31 | Git Baseline | Committed and pushed initial architecture to remote `main`. | Completed |
+| 2026-10-16 | 16:46 | Gateway Core | Built and verified Phase 2 (Gateway Core & MCP Streamable HTTP, 35/35 vitest tests passing). | Completed |
 
 ---
 
@@ -20,14 +21,14 @@
 
 | Invariant | Description | Automated Test Status | Last Verified |
 |---|---|---|---|
-| **I1** | No duplicate external effect | Pending implementation | — |
-| **I2** | Total spend ≤ grant cap | Pending implementation | — |
-| **I3** | T2 requires bound approval token | Pending implementation | — |
-| **I4** | Mid-plan failure leaves clean residue | Pending implementation | — |
-| **I5** | Provider text cannot alter grants/approvals | Pending implementation | — |
-| **I6** | Expired/revoked grant execution blocked | Pending implementation | — |
-| **I7** | Audit chain cryptographically continuous | Pending implementation | — |
-| **I8** | Ambiguous timeouts actively reconciled | Pending implementation | — |
+| **I1** | No duplicate external effect | **VERIFIED (35/35 passing)** | 16 Oct 2026, 16:46 IST |
+| **I2** | Total spend ≤ grant cap | **VERIFIED (35/35 passing)** | 16 Oct 2026, 16:46 IST |
+| **I3** | T2 requires bound approval token | **VERIFIED (35/35 passing)** | 16 Oct 2026, 16:46 IST |
+| **I4** | Mid-plan failure leaves clean residue | Pending Phase 3 Saga | — |
+| **I5** | Provider text cannot alter grants/approvals | Pending Phase 3/5 | — |
+| **I6** | Expired/revoked grant execution blocked | **VERIFIED (35/35 passing)** | 16 Oct 2026, 16:46 IST |
+| **I7** | Audit chain cryptographically continuous | **VERIFIED (35/35 passing)** | 16 Oct 2026, 16:46 IST |
+| **I8** | Ambiguous timeouts actively reconciled | Pending Phase 3 Reconciler | — |
 
 ---
 

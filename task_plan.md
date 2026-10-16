@@ -17,14 +17,14 @@ Phase 1: Project Scaffolding, Governance & Planning Architecture
 - **Status:** in_progress
 
 ### Phase 2: Gateway Core & MCP Transport (Workstream A)
-- [ ] Implement MCP Streamable HTTP transport conforming to protocol version 2025-11-25
-- [ ] Implement SQLite repository layer (WAL mode, transactions, clean interface for Postgres swap)
-- [ ] Build pure deterministic Policy Engine (T0-T3 tiers, spend caps in minor units, scopes, expiry)
-- [ ] Implement RFC 8785 canonical JSON serializer and SHA-256 parameter hasher
-- [ ] Build Out-of-Band Admin Channel & Approval Token Issuer
-- [ ] Implement Multi-layer Idempotency registry
-- [ ] Build Tamper-Evident SHA-256 chained audit logger with `/audit/verify`
-- **Status:** pending
+- [x] Implement MCP Streamable HTTP transport conforming to protocol version 2025-11-25
+- [x] Implement SQLite repository layer (WAL mode, transactions, clean interface for Postgres swap)
+- [x] Build pure deterministic Policy Engine (T0-T3 tiers, spend caps in minor units, scopes, expiry)
+- [x] Implement RFC 8785 canonical JSON serializer and SHA-256 parameter hasher
+- [x] Build Out-of-Band Admin Channel & Approval Token Issuer
+- [x] Implement Multi-layer Idempotency registry
+- [x] Build Tamper-Evident SHA-256 chained audit logger with `/audit/verify`
+- **Status:** complete
 
 ### Phase 3: Mock Providers & Saga Orchestrator (Workstream B)
 - [ ] Implement Mock Hotel, Train, and Restaurant providers with control endpoints for fault injection
