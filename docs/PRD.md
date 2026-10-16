@@ -130,11 +130,11 @@ The hackathon MVP demonstrates and proves the core trust loop. The roadmap below
 - **Managed Cloud Infrastructure:** Hosted PostgreSQL deployment with read replicas, high availability, and public trial sandboxes.
 
 ### Phase 3: Stronger Trust Guarantees
-- **Signed Action Receipts:** Every completed action produces a detached cryptographically signed receipt containing the canonical parameters, timestamps, and provider confirmation, verifiable offline by third parties without trusting the gateway.
-- **Transparency Log:** Anchor the audit hash chain into an append-only Merkle tree (RFC 6962 / Sigstore model) publishing signed tree heads (STHs) so that historical records cannot be silently rewritten even by the server operator.
+*(Notice: Signed Action Receipts [FR-14] and Grace-Hold Undo Windows [FR-15] have shipped in the hackathon release. The roadmap items below represent future architecture:)*
+- **Public Transparency Log:** Anchor the audit hash chain into an append-only Merkle tree (RFC 6962 / Sigstore model) publishing signed tree heads (STHs) so that historical records cannot be silently rewritten even by the server operator.
 - **Capability Tokens (Macaroons / Biscuit Architecture):** Attenuated authority tokens that can only shrink in scope when passed along. Establishes the mathematical foundation for multi-agent delegation: a primary agent delegating tasks to a sub-agent can never grant more authority than it holds.
 - **Policy as Code (Cedar / OPA):** Express complex household policies in formal languages (e.g. AWS Cedar or Open Policy Agent), accompanied by historical simulators demonstrating how policy revisions would have affected past decisions.
-- **Undo Windows:** Time-delayed commit windows for high-risk reversible commitments, allowing users a grace period to cancel actions before final settlement (analogous to "undo send").
+- **Multi-Cloud Trust Anchors:** Distribute Merkle audit checkpoints across independent cloud providers for Byzantine fault tolerance.
 
 ### Phase 4: Smarter Protection
 - **Behavioral Anomaly Detection:** Real-time statistical analysis flagging atypical spend spikes, unusual execution timing, or abnormal booking destinations, automatically escalating risk tiers to explicit phone confirmation.

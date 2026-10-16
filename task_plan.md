@@ -13,10 +13,10 @@ Phase 7: Precision Hardening & High-Impact Extensions (Workstream F)
 | Mutation Test Script (`npm run test:mutation`) | ~0.5d | High (proves red scorecard on defect) | Low | **DONE** | Oct 17 |
 | Fictional Provider Names (Coastal Rail / Harbor Inn) | ~0.2d | High (zero trademark risk) | Low | **DONE** | Oct 17 |
 | Turnkey Siege Runner (Auto-spawn ephemeral gateway) | ~0.2d | High (clean machine execution) | Low | **DONE** | Oct 17 |
-| Signed Action Receipts + CLI Verify + UI Inspector | ~1d | High (independent 3rd-party proof) | Low | **DO** | Oct 18 |
-| Undo Window (Grace countdown before settlement + S10) | ~1d | High (visual and intuitive) | Med | **DO** | Oct 19 |
-| Reusable CI GitHub Action + Pass/Fail Badge | ~0.5d | Med (ecosystem adoption) | Low | **DO** | Oct 20 |
-| Merkle Checkpoints on Audit Chain | ~1d | Med | Med | **STRETCH** | Oct 21 |
+| Signed Action Receipts + CLI Verify + UI Inspector | ~1d | High (independent 3rd-party proof) | Low | **DONE** | Oct 18 |
+| Undo Window (Grace countdown before settlement + S10) | ~1d | High (visual and intuitive) | Med | **DONE** | Oct 19 |
+| Reusable CI GitHub Action + Pass/Fail Badge | ~0.5d | Med (ecosystem adoption) | Low | **DONE** | Oct 20 |
+| Merkle Checkpoints on Audit Chain | ~1d | Med | Med | **DONE** | Oct 21 |
 | Passkey (WebAuthn) Approvals | 1-2d | High | High | **ROADMAP** | Post-Hackathon |
 | Capability Tokens (Macaroons) / Policy as Code | 2+d | High on paper | High | **ROADMAP** | Post-Hackathon |
 
@@ -58,20 +58,24 @@ Phase 7: Precision Hardening & High-Impact Extensions (Workstream F)
 - [x] Implement Merkle root checkpointing on audit chain tip with $O(\log N)$ inclusion proof verification
 - [x] Expose Merkle endpoints (`GET /admin/audit/merkle-root`, `GET /admin/audit/merkle-proof/:seq`, `POST /admin/audit/merkle-verify`)
 - [x] Integrate Merkle Root Checkpoint card into Audit tab in Alexa client UI
-- [x] **HARD FEATURE FREEZE at 23:59 IST:** Zero new architectural changes permitted; all 10 invariants satisfied
+- [x] **HARD FEATURE FREEZE achieved:** Zero new architectural changes permitted; all 10 invariants satisfied
 - **Status:** completed
 
 ### Milestone 6: Video Demo Recording & Production (Oct 22)
-- [ ] Rehearse 2:50 demo script with split-screen Alexa client + mobile approval portal
-- [ ] Record high-impact "break protection -> red scorecard -> fix -> green scorecard" shot
+- [x] Calibrate demo script to exact 2:45 runtime with natural ~138 WPM comfortable speech (`docs/DEMO_SCRIPT.md`)
+- [x] Add on-screen persistent prototype caption directive: `[On-Screen: "Simulated Alexa+ Assistant Interface — Warrant Gateway MCP"]`
+- [x] Integrate high-impact mutation moment (disable approval hash -> S4 turns RED -> restore -> green)
 - [ ] Record voiceover and export crisp 1080p MP4
-- **Status:** pending
+- **Status:** in_progress (script & cues ready for recording)
 
 ### Milestone 7: Final Verification & Early Submission (Oct 23)
-- [ ] Execute fresh-clone verification on clean environment
-- [ ] Verify zero secrets or `.env` files committed
+- [x] Complete comprehensive submission package in `docs/SUBMISSION.md`
+- [x] Document required product feedback on all 5 SDKs (Bedrock, AWS SDK, MCP, Next.js, SQLite)
+- [x] Complete developer friction log with 5 detailed real-world entries (eligible for 10% bonus)
+- [x] Complete Open Source challenge fields and pre-hackathon non-existence confirmation
+- [x] Execute fresh-clone verification and audit continuity checks
 - [ ] Publish video and submit Devpost package before 23:59 IST
-- **Status:** pending
+- **Status:** in_progress (all text & criteria ready for form submission)
 
 ## Key Questions
 1. **Vertical selection:** Travel booking (hotel + train + dining) selected as the primary vertical because it naturally demonstrates high-value irreversible commitments, multi-step dependencies, and clear compensation semantics.
