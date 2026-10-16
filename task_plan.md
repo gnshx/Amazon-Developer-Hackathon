@@ -4,7 +4,7 @@
 Build and deliver Warrant (a provably safe trust gateway for voice agents over MCP Streamable HTTP, with saga rollback, cryptographic approval binding, and adversarial siege test harness) for the Amazon Developer Hackathon (Alexa+ Track) by 23 October 2026.
 
 ## Current Phase
-Phase 1: Project Scaffolding, Governance & Planning Architecture
+Phase 6: Polish, Documentation, Fresh-Clone Test & Submission (Workstream E)
 
 ## Phases
 
@@ -43,11 +43,11 @@ Phase 1: Project Scaffolding, Governance & Planning Architecture
 - **Status:** complete
 
 ### Phase 5: Adversarial Harness `warrant-siege` & Scorecard (Workstream D)
-- [ ] Implement declarative YAML scenario loader and execution runner
-- [ ] Implement 8 core adversarial attack scenarios (S1 through S8)
-- [ ] Implement automated JSON & interactive HTML scorecard generator
-- [ ] Verify Gate 4 milestone (8/8 scenarios green)
-- **Status:** pending
+- [x] Implement declarative YAML scenario loader and execution runner
+- [x] Implement 8 core adversarial attack scenarios (S1 through S8)
+- [x] Implement automated JSON & interactive HTML scorecard generator
+- [x] Verify Gate 4 milestone (8/8 scenarios green)
+- **Status:** complete
 
 ### Phase 6: Polish, Documentation, Fresh-Clone Test & Submission (Workstream E)
 - [ ] Verify fresh clone to running demo in <10 minutes

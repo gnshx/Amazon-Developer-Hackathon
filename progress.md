@@ -16,6 +16,7 @@
 | 2026-10-16 | 16:46 | Gateway Core | Built and verified Phase 2 (Gateway Core & MCP Streamable HTTP, 35/35 vitest tests passing). | Completed |
 | 2026-10-16 | 16:52 | Providers & Saga | Built and verified Phase 3 (Mock Providers, Saga Rollback I4, Timeout Reconciliation I8, 38/38 tests passing). | Completed |
 | 2026-10-16 | 16:58 | Alexa Client | Built and verified Phase 4 (Next.js 14 client, Bedrock Converse agent, approval card, audit ledger, static build passing). | Completed |
+| 2026-10-16 | 17:08 | Warrant Siege | Built and verified Phase 5 (Warrant Siege CLI harness, 8/8 attack scenarios S1-S8 passing, HTML/JSON scorecards). | Completed |
 
 ---
 
@@ -23,22 +24,22 @@
 
 | Invariant | Description | Automated Test Status | Last Verified |
 |---|---|---|---|
-| **I1** | No duplicate external effect | **VERIFIED (38/38 passing)** | 16 Oct 2026, 16:52 IST |
-| **I2** | Total spend ≤ grant cap | **VERIFIED (38/38 passing)** | 16 Oct 2026, 16:52 IST |
-| **I3** | T2 requires bound approval token | **VERIFIED (38/38 passing)** | 16 Oct 2026, 16:52 IST |
-| **I4** | Mid-plan failure leaves clean residue | **VERIFIED (Scenario S2 passing)** | 16 Oct 2026, 16:52 IST |
-| **I5** | Provider text cannot alter grants/approvals | Pending Phase 5 Harness | — |
-| **I6** | Expired/revoked grant execution blocked | **VERIFIED (38/38 passing)** | 16 Oct 2026, 16:52 IST |
-| **I7** | Audit chain cryptographically continuous | **VERIFIED (38/38 passing)** | 16 Oct 2026, 16:52 IST |
-| **I8** | Ambiguous timeouts actively reconciled | **VERIFIED (Scenario S8 passing)** | 16 Oct 2026, 16:52 IST |
+| **I1** | No duplicate external effect | **VERIFIED (Scenarios S1, S8 passing)** | 16 Oct 2026, 17:07 IST |
+| **I2** | Total spend ≤ grant cap | **VERIFIED (Scenario S3 passing)** | 16 Oct 2026, 17:07 IST |
+| **I3** | T2 requires bound approval token | **VERIFIED (Scenarios S4, S7 passing)** | 16 Oct 2026, 17:07 IST |
+| **I4** | Mid-plan failure leaves clean residue | **VERIFIED (Scenario S2 passing)** | 16 Oct 2026, 17:07 IST |
+| **I5** | Provider text cannot alter grants/approvals | **VERIFIED (Scenario S5 passing)** | 16 Oct 2026, 17:07 IST |
+| **I6** | Expired/revoked grant execution blocked | **VERIFIED (Scenario S6 passing)** | 16 Oct 2026, 17:07 IST |
+| **I7** | Audit chain cryptographically continuous | **VERIFIED (Genesis-to-Tip Valid)** | 16 Oct 2026, 17:07 IST |
+| **I8** | Ambiguous timeouts actively reconciled | **VERIFIED (Scenario S8 passing)** | 16 Oct 2026, 17:07 IST |
 
 ---
 
 ## Gate Checklist & Hackathon Timeline
 
-- [ ] **Gate 1 (18 Oct 2026):** Full approval flow demonstrable via standard MCP client.
-- [ ] **Gate 2 (19 Oct 2026):** Saga rollback and reconciliation pass scenarios S2 and S8.
-- [ ] **Gate 3 (20 Oct 2026):** Alexa+ simulated client with Bedrock agent executes trip booking with live tool traces.
-- [ ] **Gate 4 (21 Oct 2026):** `warrant-siege` executes all 8 scenarios; generates verified scorecard HTML.
+- [x] **Gate 1 (18 Oct 2026):** Full approval flow demonstrable via standard MCP client.
+- [x] **Gate 2 (19 Oct 2026):** Saga rollback and reconciliation pass scenarios S2 and S8.
+- [x] **Gate 3 (20 Oct 2026):** Alexa+ simulated client with Bedrock agent executes trip booking with live tool traces.
+- [x] **Gate 4 (21 Oct 2026):** `warrant-siege` executes all 8 scenarios; generates verified scorecard HTML.
 - [ ] **Gate 5 (22 Oct 2026):** Fresh-clone test passes (<10 min); friction log & product feedback finalized.
 - [ ] **Submission (23 Oct 2026):** Demo video recorded (<3 min); Devpost submission finalized before cutoff.
