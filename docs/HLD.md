@@ -259,3 +259,31 @@ CREATE TABLE audit_events (
 | **Replay & Retry Storms** | Network stutter causes agent or client to dispatch 10 concurrent requests for the same booking. | Idempotency registry on `(grant_id, tool, idempotency_key)`. Concurrent calls lock and return the single external execution result. |
 | **Audit Ledger Tampering** | Rogue actor or compromised provider attempts to alter transaction history in database. | Tamper-evident hash chain: $\text{hash}_n = \text{SHA-256}(\text{prev\_hash} \parallel \dots)$. `GET /audit/verify` traverses the full chain and detects any mutated, inserted, or deleted record. |
 | **Approval Flooding** | Attacker floods user with 1,000 pending approval notifications. | Per-grant pending approval rate limit (maximum 3 concurrent pending approvals per active grant). |
+
+---
+
+## 6. Future Architecture: Scaling to Trust Infrastructure
+
+The architectural evolution of Warrant beyond the hackathon establishes open standards for agent-to-agent delegation, decentralized verification, and formal authorization:
+
+### 6.1 Cryptographic Signed Action Receipts & Merkle Transparency Log
+- **Offline Verifiability:** Each confirmed action produces an RFC 8785 canonical receipt signed via an Ed25519 private key held by the gateway. The receipt contains:
+  $$\text{Receipt} = \text{Sign}_{K_{\text{gateway}}}\Big(\text{grant\_id} \parallel \text{action\_id} \parallel \text{provider\_ref} \parallel \text{minor\_amount} \parallel \text{timestamp} \parallel \text{params\_hash}\Big)$$
+- **Merkle Tree Checkpointing:** Audit events are periodically accumulated into a binary Merkle tree. Signed Tree Heads (STHs) are anchored to a public transparency log (e.g. Rekor / Sigstore), enabling external auditors to detect omitted or reordered events without granting access to sensitive transaction payloads.
+
+### 6.2 Attenuated Capability Tokens (Macaroons / Biscuit Model)
+To support multi-agent hierarchies (e.g., an executive voice agent delegating travel logistics to a flight-booking sub-agent):
+- Authority is represented as an attenuated capability token.
+- A parent token can be *attenuated* (adding caveats such as stricter spend limits, tighter time windows, or restricted tool subsets) using HMAC chaining:
+  $$T_{\text{child}} = \text{HMAC}(T_{\text{parent}}, \text{Caveat}(\text{spend} \le \$50 \land \text{tool} = \text{"book\_train"}))$$
+- **Monotonic Attenuation Guarantee:** A sub-agent cannot remove caveats or grant itself greater authority than its delegator possessed, mathematically solving the confused deputy problem across agent networks.
+
+### 6.3 Policy-as-Code Engine (AWS Cedar / OPA)
+- Migration from pure TypeScript policy functions to formal declarative authorization models (AWS Cedar or Rego).
+- Decouples policy authoring from gateway deployments and enables household administrators to define context-rich rules (e.g., *"Allow up to \$50 without approval between 8 AM and 9 PM if destination is within 25 miles of home"*).
+- Includes an execution shadow simulator that evaluates proposed policy changes against historical audit logs to reveal newly permitted or blocked behaviors before activation.
+
+### 6.4 Hardware-Backed Biometric Approvals (WebAuthn / Passkeys)
+- Replaces mobile web buttons with W3C WebAuthn / FIDO2 authentication.
+- The approval token is issued only upon receiving an authenticator assertion signed by the device's Secure Enclave, linking user intent to physical biometric verification (Touch ID, Face ID, YubiKey) and eliminating shoulder-surfing or voice-replay vectors.
+

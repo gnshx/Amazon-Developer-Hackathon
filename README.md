@@ -13,11 +13,21 @@
 
 ---
 
-## 1. Executive Summary
+## 1. Problem Statement & Executive Summary
 
-Voice assistants are transitioning from passive question-answering systems into autonomous agents capable of making real-world financial commitments: booking flights, buying train tickets, and reserving dinner tables. However, **voice has no screen to review details before money is spent**. A single hallucination, dropped network connection, or prompt injection can lead to irreversible financial drain, double bookings, or corrupted state.
+AI agents are starting to book, buy, cancel, and negotiate on people's behalf, and **voice makes this fundamentally riskier because there is no screen to review the action first**. 
 
-**Warrant is a trust gateway for voice agents.** It is an open-source Model Context Protocol (MCP) server running over Streamable HTTP (spec version `2025-11-25+`) that sits between an AI assistant and real-world services. Warrant makes voice agent actions provably safe:
+Today, there is no standard way to:
+- Tell an agent how much authority it has before it acts.
+- Cryptographically prove what the agent committed to in external systems.
+- Automatically undo side effects when a multi-step sequence fails halfway.
+- Check that a third-party service or tool is safe to give an agent access to.
+
+Every brand currently builds its own one-off safeguards—if any—and users are left to trust the voice assistant blindly.
+
+**Warrant's long-term goal is to become the missing trust layer for the agentic economy.** It gives agents limited, revocable authority, produces verifiable proof of every action, handles failure automatically with zero orphan state, and lets anyone test whether a service is safe for agents.
+
+The hackathon MVP demonstrates and proves this core trust loop over the standard Model Context Protocol (MCP Streamable HTTP spec `2025-11-25+`):
 - **Scoped & Expiring Grants:** Household administrators issue temporary budgets with strict spend caps in integer minor units (zero float math).
 - **Exact Action-Hash Approval Binding:** Risky actions return `PENDING_APPROVAL` with voice-friendly summaries. Approvals are granted out-of-band on a phone-style interface cryptographically bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{params}))$. If prompt injection or model drift alters any argument, the approval is mathematically invalid.
 - **Multi-Layer Idempotency:** Guarantees retry storms or duplicate voice submissions never trigger duplicate provider charges ($I_1$).
@@ -225,7 +235,49 @@ Open `http://localhost:3000` in your browser to experience the simulated Alexa+ 
 
 ---
 
-## 8. Hackathon Submission Highlights
+## 8. Post-Hackathon Roadmap: What You Can Add Later (Future Work)
+
+> **Notice:** The roadmap items below represent future post-hackathon extensions turning Warrant from a prototype gateway into global trust infrastructure.
+
+### Phase 2: Make It Real (First Weeks Post-Hackathon)
+- **Live Provider Integrations:** Real payment sandboxes (Stripe test mode intents) and commercial booking APIs (Amadeus, Sabre, OpenTable).
+- **Passkey (WebAuthn) Approvals:** Cryptographic biometric proofs directly from the user's secure hardware enclave (Touch ID, Face ID, YubiKey) replacing simple button presses.
+- **Multi-User Accounts & OAuth Grants:** Household role hierarchies with OAuth 2.1 grant negotiation and granular revocation interfaces.
+- **Cloud Infrastructure:** Managed PostgreSQL with read replicas and a hosted public sandbox that anyone can try.
+
+### Phase 3: Stronger Trust Guarantees
+- **Signed Action Receipts:** Every action produces a detached Ed25519 cryptographically signed receipt that any third party can verify without trusting the gateway.
+- **Transparency Log:** Anchor the audit chain into an append-only Merkle tree (RFC 6962 / Sigstore) publishing signed tree heads, guaranteeing historical records cannot be silently rewritten.
+- **Capability Tokens (Macaroons / Biscuit Architecture):** Attenuated authority tokens that can only shrink when passed along. Establishes the mathematical foundation for multi-agent delegation: a sub-agent can never hold more power than its parent.
+- **Policy as Code (Cedar / OPA):** Express household policies in formal languages (AWS Cedar or Rego) with a shadow simulator testing policy changes against historical audit events.
+- **Undo Windows:** Configurable grace periods for high-risk reversible commitments before final settlement (analogous to "undo send").
+
+### Phase 4: Smarter Protection
+- **Behavioral Anomaly Detection:** Real-time flagging of unusual spend velocity, execution timing, or abnormal booking destinations with automatic escalation to phone confirmation.
+- **Plan Dry-Runs:** Deterministic previews outlining side effects, provider fees, and compensation guarantees before plan submission.
+- **Voice Step-Up Authentication:** Multi-factor step-up for high-risk vocal commands protecting against acoustic spoofing, deepfakes, or background overhearing.
+- **Privacy & PII Redaction:** Automated tokenization and redaction of personal identifiable information before writing to audit ledgers.
+
+### Phase 5: Ecosystem & Standards
+- **Provider SDK / Middleware:** Lightweight middleware allowing brands to wrap their existing MCP servers in Warrant with fewer than 10 lines of code.
+- **Safety Certification & CI Action:** Public trust badges for services passing `warrant-siege`, with a GitHub Action running scorecards on pull requests.
+- **Continuous Red-Teaming:** Dynamic LLM-generated attack scenarios, tool schema fuzzing, and a growing public corpus of prompt injections.
+- **Standards Proposals:** Proposing consent, approval, and receipt conventions to the Model Context Protocol (MCP) community as shared standards.
+
+### Household & Care Use Cases
+- **Shared Household Grants:** Multi-tier family rules (parents hold administrative caps; children hold category-locked micro-allowances).
+- **Caregiver Co-Approval:** Dual-approval flows where an elderly person's assistant requires designated family confirmation for large transactions.
+- **Context-Aware Multi-Device Approvals:** Intelligent routing of confirmations across home devices (TV canvas, smartwatch, or mobile notification).
+
+### 🌟 Core Architectural Differentiators
+The three most defensible and foundational ideas in Warrant are:
+1. **Signed Receipts with a Transparency Log:** Provides mathematically non-repudiable audit proofs that make Warrant an objective trust anchor.
+2. **Capability Tokens for Agent-to-Agent Delegation:** Solves the cascading authority problem when autonomous agents hire sub-agents.
+3. **Certification Built on the Harness:** Transforms `warrant-siege` into an open testing standard for the entire MCP ecosystem.
+
+---
+
+## 9. Hackathon Submission Highlights
 
 - **Model Context Protocol (MCP) in Actual Code:** Conforms strictly to MCP Streamable HTTP specification `2025-11-25+` via `@modelcontextprotocol/sdk`. Both the Alexa+ client and the Siege CLI communicate over real JSON-RPC 2.0 HTTP endpoints.
 - **Additional Open Source Project Mini-Challenge:** `packages/warrant-siege` is structured as an independent package under the MIT License (`packages/warrant-siege/LICENSE`), allowing any developer building MCP tools to test voice safety and generate verifiable scorecards.
@@ -234,7 +286,8 @@ Open `http://localhost:3000` in your browser to experience the simulated Alexa+ 
 
 ---
 
-## 9. License
+## 10. License
 
 - Warrant Gateway & Simulated Alexa Client: [Apache License 2.0](LICENSE)
 - Warrant Siege Adversarial Test Harness: [MIT License](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/packages/warrant-siege/LICENSE)
+

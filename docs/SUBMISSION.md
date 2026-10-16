@@ -53,3 +53,42 @@ If time pressure increases, cuts are executed in this strict priority order:
 - Cryptographic Parameter-Hash Approval Binding ($I_3$)
 - Absolute Spend Cap Enforcement ($I_2$)
 - Standalone `warrant-siege` Scorecard Generator ($I_1 - I_8$)
+
+---
+
+## 5. Official Devpost Story Text
+
+### Inspiration & Problem Statement
+AI agents are transitioning from answering trivia to executing high-stakes real-world commitments: booking vacations, purchasing tickets, and negotiating reservations. Voice interfaces make this fundamentally perilous because there is no persistent screen to review fine-grained details before money is debited. 
+
+Today, there is no standard way to define how much authority an agent holds, to cryptographically prove what action occurred, to automatically undo side effects when a multi-step plan fails halfway, or to evaluate whether a tool is safe to expose to voice assistants. Every brand builds its own fragile, one-off safeguards—if any—forcing users to trust their assistant blindly. We built **Warrant** to be the missing trust layer for the agentic economy.
+
+### What It Does
+Warrant is an open-source trust gateway operating over the Model Context Protocol (MCP Streamable HTTP). It intercepts every agent tool call and enforces mathematical safety invariants:
+1. **Scoped & Expiring Authority:** Household administrators configure spend caps (in integer minor units) and time-limited scopes out-of-band.
+2. **Exact Action-Hash Approval Binding:** Risky actions return `PENDING_APPROVAL` with voice-friendly summaries. Approvals are granted on a mobile phone interface cryptographically bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{params}))$. If prompt injection or model drift alters any argument, the approval is invalid.
+3. **Multi-Layer Idempotency:** Prevents retry storms or duplicate voice requests from double-charging ($I_1$).
+4. **Automatic Saga Rollback:** If step 2 of a multi-step booking fails, completed step 1 is automatically cancelled in reverse order, leaving zero orphan state ($I_4$).
+5. **Active Timeout Reconciliation:** Dropped connections actively query provider truth by idempotency key rather than blindly retrying ($I_8$).
+6. **Cryptographic Audit Continuity:** Append-only SHA-256 event chain verifiable from genesis ($I_7$).
+7. **Adversarial Siege Test Suite (`warrant-siege`):** A standalone open-source CLI attacking the gateway across 8 attack scenarios, generating verified HTML and JSON scorecards.
+
+### How We Built It
+- **Gateway Core:** TypeScript MCP server conforming to Streamable HTTP spec `2025-11-25+`, with an SQLite WAL repository layer and pure deterministic policy engine.
+- **Client & Voice Agent:** Next.js 14 glassmorphic UI integrated with the **Amazon Bedrock Converse API** (`@aws-sdk/client-bedrock-runtime`) for autonomous tool dispatch, with an offline deterministic fallback.
+- **Mock Services:** Autonomous Hotel, Train, and Restaurant providers with control endpoints for simulating timeouts, declines, and lost connections.
+- **Adversarial Harness:** Published as an independent MIT-licensed package (`@warrant/siege`) with interactive scorecard generation.
+
+### What's Next for Warrant (Post-Hackathon Roadmap)
+*Notice: The following represents our future architectural roadmap beyond the hackathon to scale Warrant into global trust infrastructure:*
+- **Phase 2 (Make It Real):** Live provider sandboxes (Stripe test mode intents), biometric WebAuthn / Passkey approvals directly from the device's Secure Enclave, and multi-user household accounts.
+- **Phase 3 (Stronger Trust Guarantees):**
+  - **Signed Action Receipts:** Detached Ed25519 cryptographic receipts verifiable by any third party without trusting the server.
+  - **Transparency Log:** Merkle tree checkpointing (RFC 6962 / Sigstore) publishing signed tree heads to prevent history rewriting.
+  - **Attenuated Capability Tokens (Macaroons / Biscuit):** Authority that can only shrink when passed to sub-agents, solving the cascading delegation problem.
+  - **Policy as Code:** Formal declarative policies (AWS Cedar / OPA) with shadow simulators running against historical audit logs.
+  - **Undo Windows:** Configurable grace periods before irreversible actions settle.
+- **Phase 4 (Smarter Protection):** Behavioral anomaly detection, dry-run simulation, voice biometric step-up, and automated PII redaction.
+- **Phase 5 (Ecosystem & Standards):** Provider drop-in middleware, public safety certification badges via `warrant-siege`, and formal proposals to the MCP community for shared consent standards.
+- **Household & Care Use Cases:** Multi-role family allowances, caregiver dual-approval for elderly assistance, and multi-device confirmation routing (TV canvas vs mobile).
+

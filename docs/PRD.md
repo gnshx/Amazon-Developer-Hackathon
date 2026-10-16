@@ -8,21 +8,34 @@
 
 ---
 
-## 1. Executive Summary
+## 1. Executive Summary & Product Vision
 
-Warrant is a trust gateway for voice agents. It is an MCP (Model Context Protocol) server running over Streamable HTTP that sits between an AI assistant (such as Amazon Alexa+ or an Amazon Bedrock-powered agent) and real-world services. 
+AI agents are transitioning from informational assistants into autonomous actors that book, buy, cancel, and negotiate on people's behalf. Voice makes this fundamentally riskier because there is no visual canvas or screen to review actions and parameters before money is spent. 
 
-Voice interactions lack a persistent visual canvas to inspect fine-grained parameters before execution. Consequently, a single hallucinations, ambiguous tool call, or prompt injection can lead to irreversible financial loss, double bookings, or orphan state. Warrant makes voice agent actions provably safe through:
-- Scoped and expiring grants
-- Hard spend caps (tracked strictly in minor currency units)
-- Exact parameter-hash bound approvals
-- Strict multi-layer idempotency
-- Saga orchestration with automatic compensation/rollback
-- Tamper-evident SHA-256 chained audit trail
-- An adversarial siege test harness (`warrant-siege`) that generates an automated, reproducible safety scorecard
+Today, there is **no standard way** to:
+1. Define how much authority an agent has before it acts.
+2. Cryptographically prove what the agent actually committed to.
+3. Automatically undo or compensate side effects when a multi-step sequence fails midway.
+4. Verify whether a third-party service is safe for an agent to access.
+
+Every brand currently builds its own ad-hoc, one-off safeguards—if any—leaving users forced to trust the voice assistant blindly.
+
+**Warrant's long-term goal is to become the missing trust infrastructure for the agentic economy.** It provides agents with limited, revocable authority, produces verifiable cryptographic proof of every action, handles failures automatically with zero orphan state, and empowers anyone to independently test whether a service is safe for agents.
+
+The hackathon MVP proves this core safety loop over the standard Model Context Protocol (MCP Streamable HTTP).
+
+### Core Safety Mechanisms
+- **Scoped & Expiring Grants:** Household users establish spending limits and permissions out-of-band.
+- **Hard Spend Caps:** Financial caps tracked strictly in integer minor units (zero float math).
+- **Exact Action-Hash Bound Approvals:** Risky actions require out-of-band mobile confirmation bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{params}))$.
+- **Strict Multi-Layer Idempotency:** Prevents duplicate charges and retry storms ($I_1$).
+- **Saga Orchestration with Automatic Rollback:** Partial failures trigger reverse compensations, leaving zero residue ($I_4$).
+- **Active Timeout Reconciliation:** Dropped connections actively query provider truth by idempotency key ($I_8$).
+- **Tamper-Evident SHA-256 Chained Audit Trail:** Verifiable from genesis to tip ($I_7$).
+- **Adversarial Siege Test Harness (`warrant-siege`):** Standalone CLI that subjects the gateway to 8 attack scenarios ($S_1 - S_8$) and generates automated HTML/JSON scorecards.
 
 ### Scope Honesty
-The genuine Alexa+ developer environment is restricted to select partners. To adhere to hackathon transparency guidelines, this submission uses a simulated Alexa+ client (built with Next.js) and simulated service providers (Hotel, Train, Restaurant). Both are clearly labelled as simulated in code, documentation, and the demo video.
+The genuine Alexa+ developer environment is restricted to select partners. To adhere to hackathon transparency guidelines, this submission uses a simulated Alexa+ client (Next.js 14) and simulated service providers (Hotel, Train, Restaurant with fault injection). Both are clearly labelled as simulated in code, documentation, and the demo video. All MCP and Admin communications execute over real network protocols (Streamable HTTP, JSON-RPC 2.0).
 
 ---
 
@@ -100,3 +113,46 @@ The genuine Alexa+ developer environment is restricted to select partners. To ad
 - **NFR-3 Currency Precision:** All financial figures stored strictly as integers in minor units (e.g. cents/pence/paise: $150.00 = 15000) — zero floating point arithmetic.
 - **NFR-4 Deterministic Testing:** Core policy, idempotency, saga, and audit unit tests run offline in <5 seconds without requiring live LLM or AWS credentials.
 - **NFR-5 Developer Experience:** Single-command setup (`npm run dev` or `docker compose up`) to a fully running demonstration in under 10 minutes from a clean clone.
+
+---
+
+## 8. Post-Hackathon Roadmap: What You Can Add Later
+
+The hackathon MVP demonstrates and proves the core trust loop. The roadmap below outlines the systematic evolution from a prototype gateway into foundational trust infrastructure.
+
+### Phase 2: Make It Real (First Weeks Post-Hackathon)
+- **Production Payment & Booking Sandboxes:** Real provider integrations, starting with Stripe test mode payment intents, followed by production GDS/Amadeus/Sabre travel and OpenTable/Resy APIs.
+- **Passkey (WebAuthn) Approvals:** Replace simple button taps with hardware-backed WebAuthn biometric proofs from the user's secure enclave (TouchID, FaceID, YubiKey).
+- **Multi-User Accounts & OAuth Grants:** Multi-tenant account hierarchy with household role management and OAuth 2.1 grant negotiation.
+- **Managed Cloud Infrastructure:** Hosted PostgreSQL deployment with read replicas, high availability, and public trial sandboxes.
+
+### Phase 3: Stronger Trust Guarantees
+- **Signed Action Receipts:** Every completed action produces a detached cryptographically signed receipt containing the canonical parameters, timestamps, and provider confirmation, verifiable offline by third parties without trusting the gateway.
+- **Transparency Log:** Anchor the audit hash chain into an append-only Merkle tree (RFC 6962 / Sigstore model) publishing signed tree heads (STHs) so that historical records cannot be silently rewritten even by the server operator.
+- **Capability Tokens (Macaroons / Biscuit Architecture):** Attenuated authority tokens that can only shrink in scope when passed along. Establishes the mathematical foundation for multi-agent delegation: a primary agent delegating tasks to a sub-agent can never grant more authority than it holds.
+- **Policy as Code (Cedar / OPA):** Express complex household policies in formal languages (e.g. AWS Cedar or Open Policy Agent), accompanied by historical simulators demonstrating how policy revisions would have affected past decisions.
+- **Undo Windows:** Time-delayed commit windows for high-risk reversible commitments, allowing users a grace period to cancel actions before final settlement (analogous to "undo send").
+
+### Phase 4: Smarter Protection
+- **Behavioral Anomaly Detection:** Real-time statistical analysis flagging atypical spend spikes, unusual execution timing, or abnormal booking destinations, automatically escalating risk tiers to explicit phone confirmation.
+- **Plan Dry-Runs & Simulation:** The assistant renders deterministic dry-runs outlining all expected costs, provider side effects, and compensation guarantees before submitting a binding plan.
+- **Voice Step-Up Authentication:** Multi-factor step-up for high-risk vocal commands to protect against acoustic spoofing, deepfakes, or background speech overhearing.
+- **Privacy & PII Redaction:** Automated tokenization and redaction of sensitive personal identifiable information (PII) before writing to audit logs, with local policy evaluation wherever possible.
+
+### Phase 5: Ecosystem, Certification & Standards
+- **Provider SDK & Drop-In Middleware:** Lightweight SDK allowing any existing MCP server or API brand to wrap their tools with Warrant safeguards in fewer than 10 lines of code.
+- **Safety Certification Badge & CI Action:** Public certification scoring MCP services on their resilience against the adversarial harness, with automated GitHub Actions running scorecards on every pull request.
+- **Continuous Red-Teaming Swarm:** Dynamic LLM-generated attack scenarios, schema fuzzers, and a growing public corpus of prompt injections continuously executed against registered gateways.
+- **Open Standards Collaboration:** Formally propose voice consent, approval binding, and receipt conventions to the Model Context Protocol (MCP) community to establish an open industry standard.
+
+### Household & Care Use Cases
+- **Shared Household Grants:** Tiered household authority with role-based restrictions (e.g., parents hold administrative caps; children hold constrained micro-allowances with strict category locks).
+- **Caregiver Co-Approval:** Delegated oversight flows where actions requested by an elderly or vulnerable user automatically route dual-approval requests to designated family caregivers.
+- **Context-Aware Multi-Device Approvals:** Intelligent routing of confirmation prompts across domestic surfaces (e.g., smart TV canvas, smartwatch, or mobile notification) based on room presence and activity context.
+
+### Strategic Differentiators (Core Highlights)
+The three most defensible and foundational innovations in Warrant are:
+1. **Signed Action Receipts with Transparency Logs:** Providing mathematical non-repudiation that transforms Warrant from an execution proxy into an auditable trust anchor.
+2. **Attenuated Capability Tokens for Agent-to-Agent Delegation:** Solving the cascading authority problem when autonomous agents hire sub-agents.
+3. **Automated Ecosystem Certification:** Leveraging `warrant-siege` as an objective safety standard for the entire MCP developer ecosystem.
+

@@ -187,3 +187,45 @@ If behind schedule at any gate, features are prioritized according to the strict
 - **Additional Open Source Project Mini-Challenge:** `warrant-siege` is maintained with its own standalone package and open-source license (MIT) so it cleanly qualifies as the additional open-source project.
 - **AWS Builder Mini-Challenge:** Bedrock Converse API integration documented with live tool calling.
 - **Friction Log (Up to 10% Judging Bonus):** Maintained in `docs/FRICTION_LOG.md` tracking real friction encountered with Bedrock and MCP SDKs.
+
+---
+
+## 8. Post-Hackathon Strategic Roadmap (Phases 2 – 5)
+
+The hackathon MVP proves the core trust loop. The long-term architectural trajectory evolves Warrant into global trust infrastructure:
+
+### Phase 2: Make It Real (First Weeks Post-Hackathon)
+- **Real Provider Integrations:** Stripe test mode payment intents, followed by live airline/hotel APIs.
+- **Passkey (WebAuthn) Approvals:** Replace button taps with Secure Enclave cryptographic biometric proofs.
+- **Multi-User Accounts & OAuth Grants:** Multi-tenant hierarchy with household role management.
+- **Postgres & Hosted Trial:** Managed cloud deployment for community sandbox testing.
+
+### Phase 3: Stronger Trust Guarantees
+- **Signed Action Receipts:** Every action produces a detached Ed25519 signed receipt verifiable offline by third parties.
+- **Transparency Log:** Anchor audit chains to an append-only Merkle tree (RFC 6962 / Sigstore) with signed tree heads.
+- **Capability Tokens (Macaroons / Biscuit):** Attenuated authority tokens that can only shrink when passed to sub-agents.
+- **Policy as Code:** Cedar / OPA policy definitions with historical simulation on past audit logs.
+- **Undo Windows:** Configurable grace periods before final settlement for reversible actions.
+
+### Phase 4: Smarter Protection
+- **Anomaly Detection:** Behavioral modeling detecting atypical spend velocity, timing, or geographical destinations.
+- **Plan Dry-Runs:** Complete preview of financial commitments and compensation guarantees before plan submission.
+- **Voice Step-Up Auth:** Multi-factor authentication required for highest-risk voice invocations.
+- **Privacy Controls:** Automated PII redaction and local policy evaluation.
+
+### Phase 5: Ecosystem & Standards
+- **Provider SDK:** Drop-in middleware allowing any brand to wrap their MCP tools in Warrant with <10 lines of code.
+- **Ecosystem Certification:** Badges earned via `warrant-siege` scores, with CI GitHub Actions running scorecards on PRs.
+- **Continuous Red-Teaming:** Dynamic LLM attack swarms and schema fuzzing against public tool registries.
+- **Standards Proposals:** Standardizing voice consent, approval binding, and receipts across the MCP community.
+
+### Household & Care Use Cases
+- **Shared Household Grants:** Multi-tier family rules (parents administer caps; children have category-locked allowances).
+- **Caregiver Dual Approval:** Vulnerable or elderly assistant transactions automatically trigger co-approvals.
+- **Contextual Multi-Device Prompting:** Approvals routed intelligently to TV canvas, smartwatch, or mobile.
+
+### Core Strategic Differentiators
+1. **Signed receipts with transparency logs:** Provable non-repudiation for agent actions.
+2. **Attenuated capability tokens:** Mathematically bounds agent-to-agent delegation authority.
+3. **Automated ecosystem certification:** Positions `warrant-siege` as the safety benchmark for all agent tools.
+

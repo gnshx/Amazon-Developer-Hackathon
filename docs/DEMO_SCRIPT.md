@@ -55,7 +55,16 @@
     7. **S7: Unapproved T2 Action:** Bypass attempt blocked by policy engine.
     8. **S8: Ambiguous Timeout:** Succeeded-but-lost connection resolved by idempotency inquiry, never retried blindly.
 
-### Scene 5: Scorecard & Open Source Deliverables (2:30 – 3:00)
+### Scene 5: Scorecard & Open Source Deliverables (2:30 – 2:50)
 - **Visual:** Generated `scorecard.html` opening in browser. All 8 scenarios displayed with green badges, execution durations, and SHA-256 audit proof.
 - **Voiceover:**
-  > "Warrant is open source under Apache 2.0, and Warrant Siege is published as a standalone testing harness so any brand building MCP tools can verify their safety. Scoped grants, bound approvals, automatic rollbacks, and proof you can verify. That is Warrant."
+  > "Warrant is open source under Apache 2.0, and Warrant Siege is published as a standalone testing harness so any brand building MCP tools can verify their safety. Scoped grants, bound approvals, automatic rollbacks, and proof you can verify."
+
+### Scene 6: The Roadmap Ahead (Future Work) (2:50 – 3:00)
+- **Visual:** Clean slide labeled **"Roadmap (Future Work)"** highlighting:
+  1. Signed Action Receipts with Transparency Logs
+  2. Attenuated Capability Tokens for Agent-to-Agent Delegation
+  3. Ecosystem Certification Built on the Harness
+- **Voiceover:**
+  > "Looking ahead beyond the hackathon, we're expanding Warrant into open trust infrastructure: cryptographically signed receipts anchored to a transparency log, capability tokens for agent-to-agent delegation, and safety certification badges for every MCP server. That is Warrant."
+
