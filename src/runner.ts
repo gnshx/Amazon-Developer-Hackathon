@@ -94,7 +94,8 @@ export class SiegeRunner {
     const trainBookings = await this.getProviderBookings("train");
     const matchingBookings = trainBookings.filter((b) => b.idempotencyKey.includes(idempotencyKey) || b.details?.idempotencyKey === idempotencyKey);
 
-    const passed = allSuccessful;
+    const confirmedTrainBookings = trainBookings.filter((b) => b.status === "CONFIRMED");
+    const passed = allSuccessful && confirmedTrainBookings.length === 1;
     return {
       scenarioId: "S1",
       name: "Duplicate Submit & Retry Storm",
