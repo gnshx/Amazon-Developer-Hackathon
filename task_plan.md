@@ -34,13 +34,13 @@ Phase 1: Project Scaffolding, Governance & Planning Architecture
 - **Status:** complete
 
 ### Phase 4: Simulated Alexa+ Client & Bedrock Agent Loop (Workstream C)
-- [ ] Build Next.js 14 client application with premium voice assistant aesthetics
-- [ ] Implement phone approval view (out-of-band channel)
-- [ ] Implement real-time MCP tool call inspection stream
-- [ ] Implement visual cryptographic audit timeline
-- [ ] Implement Bedrock Agent loop using AWS Bedrock Converse API with fallback stub
-- [ ] Verify Gate 3 milestone (live voice/chat trip planning flow)
-- **Status:** pending
+- [x] Build Next.js 14 client application with premium voice assistant aesthetics
+- [x] Implement phone approval view (out-of-band channel)
+- [x] Implement real-time MCP tool call inspection stream
+- [x] Implement visual cryptographic audit timeline
+- [x] Implement Bedrock Agent loop using AWS Bedrock Converse API with fallback stub
+- [x] Verify Gate 3 milestone (live voice/chat trip planning flow)
+- **Status:** complete
 
 ### Phase 5: Adversarial Harness `warrant-siege` & Scorecard (Workstream D)
 - [ ] Implement declarative YAML scenario loader and execution runner
