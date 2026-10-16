@@ -3,6 +3,8 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
 COPY packages/warrant-gateway/package*.json ./packages/warrant-gateway/
+COPY packages/warrant-siege/package*.json ./packages/warrant-siege/
+COPY packages/alexa-client/package*.json ./packages/alexa-client/
 RUN npm ci
 
 COPY packages/warrant-gateway ./packages/warrant-gateway

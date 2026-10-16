@@ -2,7 +2,9 @@
 import { Command } from "commander";
 import { SiegeRunner } from "./runner.js";
 import { generateScorecardHtml, generateScorecardJson } from "./reporter.js";
+import { createGatewayApp, WarrantRepository } from "@warrant/gateway";
 import * as path from "node:path";
+import * as http from "node:http";
 
 const program = new Command();
 
@@ -24,9 +26,35 @@ program
     console.log(`JSON Report: ${options.json}`);
     console.log("--------------------------------------------------------\n");
 
-    const runner = new SiegeRunner(options.target, options.admin);
+    let serverToClose: http.Server | null = null;
+    let repoToClose: WarrantRepository | null = null;
+    let targetMcp = options.target;
+    let targetAdmin = options.admin;
 
     try {
+      // Check if target gateway is responding
+      let isLive = false;
+      try {
+        const res = await fetch(options.target, { method: "GET", signal: AbortSignal.timeout(1200) });
+        isLive = res.status < 500;
+      } catch {
+        isLive = false;
+      }
+
+      if (!isLive) {
+        console.log("ℹ️  No external gateway running at target. Starting ephemeral in-memory gateway instance on port 8199...");
+        const PORT = 8199;
+        repoToClose = new WarrantRepository(":memory:");
+        const { app } = createGatewayApp({ repo: repoToClose, port: PORT });
+        await new Promise<void>((resolve) => {
+          serverToClose = app.listen(PORT, () => resolve());
+        });
+        targetMcp = `http://127.0.0.1:${PORT}/mcp`;
+        targetAdmin = `http://127.0.0.1:${PORT}/admin`;
+        console.log(`   Connected to ephemeral gateway at ${targetMcp}\n`);
+      }
+
+      const runner = new SiegeRunner(targetMcp, targetAdmin);
       console.log("Executing 8 Core Adversarial Scenarios (S1 – S8)...\n");
       const scorecard = await runner.runAll();
 
@@ -58,6 +86,13 @@ program
       console.log(`JSON Scorecard saved to: ${jsonPath}`);
       console.log("========================================================\n");
 
+      if (serverToClose) {
+        await new Promise<void>((resolve) => (serverToClose as http.Server).close(() => resolve()));
+      }
+      if (repoToClose) {
+        (repoToClose as WarrantRepository).close();
+      }
+
       if (scorecard.allInvariantsSatisfied) {
         console.log("🎉 ALL INVARIANTS SATISFIED. Gateway certified safe.\n");
         process.exit(0);
@@ -66,6 +101,12 @@ program
         process.exit(1);
       }
     } catch (err: any) {
+      if (serverToClose) {
+        await new Promise<void>((resolve) => (serverToClose as http.Server).close(() => resolve()));
+      }
+      if (repoToClose) {
+        (repoToClose as WarrantRepository).close();
+      }
       console.error("\n❌ Siege Execution Error:", err.message);
       process.exit(1);
     }

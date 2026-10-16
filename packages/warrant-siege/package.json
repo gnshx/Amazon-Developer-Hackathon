@@ -12,13 +12,13 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.0",
+    "@warrant/gateway": "*",
     "commander": "^12.1.0",
     "dotenv": "^16.4.7",
     "yaml": "^2.7.0"
   },
   "devDependencies": {
     "@types/node": "^20.17.19",
-    "@warrant/gateway": "*",
     "tsx": "^4.19.3",
     "typescript": "^5.7.3",
     "vitest": "^3.0.7"

@@ -130,7 +130,7 @@ export default function AlexaClientDashboard() {
       
       setTimeout(() => {
         addTrace("search_trains", { origin: "Portland", destination: "Seattle" }, "SUCCEEDED", "Found 2 trains starting at $45.00");
-        addTrace("search_hotels", { destination: "Seattle", nights: 2 }, "SUCCEEDED", "Found Grand Plaza Hotel ($120.00)");
+        addTrace("search_hotels", { destination: "Seattle", nights: 2 }, "SUCCEEDED", "Found Harbor Inn Hotel ($120.00)");
         addTrace("propose_plan", { steps: 2, totalMinor: 16500 }, "T2_APPROVAL_REQUIRED", "Created pending phone approval for hotel booking ($I3)");
 
         const planId = `plan_${Math.random().toString(36).substring(2, 9)}`;
@@ -139,7 +139,7 @@ export default function AlexaClientDashboard() {
           actionId: "act_hotel_01",
           planId,
           toolName: "book_hotel",
-          params: { hotel_id: "grand_plaza", nights: 2, price: 12000 },
+          params: { hotel_id: "harbor_inn", nights: 2, price: 12000 },
           paramsHash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
           estimatedCostMinor: 12000,
           status: "PENDING"
@@ -156,7 +156,7 @@ export default function AlexaClientDashboard() {
             {
               id: "step_train_1",
               provider: "train",
-              title: "Amtrak Pacific Surfliner",
+              title: "Coastal Rail Express",
               costMinor: 4500,
               tier: "T1",
               status: "PENDING",
@@ -165,7 +165,7 @@ export default function AlexaClientDashboard() {
             {
               id: "step_hotel_2",
               provider: "hotel",
-              title: "Grand Plaza Hotel Seattle",
+              title: "Harbor Inn Seattle",
               costMinor: 12000,
               tier: "T2",
               status: "PENDING",
@@ -178,7 +178,7 @@ export default function AlexaClientDashboard() {
         const agentMsg: Message = {
           id: `a_${Date.now()}`,
           sender: "agent",
-          text: "I've planned your weekend trip from Portland to Seattle: Amtrak train ($45.00) and Grand Plaza Hotel ($120.00) for $165.00 total. The hotel booking requires your approval on your phone.",
+          text: "I've planned your weekend trip from Portland to Seattle: Coastal Rail train ($45.00) and Harbor Inn Hotel ($120.00) for $165.00 total. The hotel booking requires your approval on your phone.",
           timestamp: new Date().toLocaleTimeString(),
           spokenSummary: "I found a train and hotel for $165.00 total. Please confirm the hotel booking on your phone.",
           planId
@@ -205,16 +205,16 @@ export default function AlexaClientDashboard() {
             {
               id: "step_hotel_1",
               provider: "hotel",
-              title: "Grand Plaza Hotel Seattle",
+              title: "Harbor Inn Seattle",
               costMinor: 12000,
               tier: "T2",
               status: "CONFIRMED",
-              details: "Pre-approved booking confirmed by Grand Plaza API"
+              details: "Pre-approved booking confirmed by Harbor Inn API"
             },
             {
               id: "step_train_2",
               provider: "train",
-              title: "Amtrak Cascades Express",
+              title: "Coastal Rail Express",
               costMinor: 4500,
               tier: "T1",
               status: "PENDING",
@@ -224,11 +224,11 @@ export default function AlexaClientDashboard() {
           outcomeMessage: "Step 1 booked ($120.00). Step 2 in flight..."
         });
 
-        addTrace("book_hotel", { hotel_id: "grand_plaza", price: 12000 }, "SUCCEEDED", "Hotel booking confirmed (Ref: RES-9821)");
+        addTrace("book_hotel", { hotel_id: "harbor_inn", price: 12000 }, "SUCCEEDED", "Hotel booking confirmed (Ref: RES-9821)");
 
         // 800ms later: Train fails and triggers compensating rollback
         setTimeout(() => {
-          addTrace("book_train", { train_id: "amtrak_502", price: 4500 }, "FAILED", "Amtrak API rejected booking: PAYMENT_DECLINED_SEAT_UNAVAILABLE");
+          addTrace("book_train", { train_id: "rail_502", price: 4500 }, "FAILED", "Coastal Rail API rejected booking: PAYMENT_DECLINED_SEAT_UNAVAILABLE");
           addTrace("saga_orchestrator", { action: "ROLLBACK_INITIATED" }, "COMPENSATING", "Compensating saga in reverse order: cancelling hotel (Ref: RES-9821)");
           addTrace("cancel_hotel", { booking_id: "RES-9821" }, "COMPENSATED", "Hotel reservation cancelled and 100% refunded ($120.00 credited back)");
 
@@ -239,7 +239,7 @@ export default function AlexaClientDashboard() {
               {
                 id: "step_hotel_1",
                 provider: "hotel",
-                title: "Grand Plaza Hotel Seattle",
+                title: "Harbor Inn Seattle",
                 costMinor: 12000,
                 tier: "T2",
                 status: "COMPENSATED",
@@ -248,17 +248,17 @@ export default function AlexaClientDashboard() {
               {
                 id: "step_train_2",
                 provider: "train",
-                title: "Amtrak Cascades Express",
+                title: "Coastal Rail Express",
                 costMinor: 4500,
                 tier: "T1",
                 status: "FAILED",
-                details: "Amtrak seat unavailable — triggered immediate backward rollback"
+                details: "Train seat unavailable — triggered immediate backward rollback"
               }
             ],
             outcomeMessage: "Saga compensation completed. Zero residue on your card ($I4 Clean Residue). Initial state restored."
           });
 
-          setPhoneNotification("Rollback Alert: Train booking failed; Grand Plaza Hotel was auto-cancelled. Net charge: $0.00.");
+          setPhoneNotification("Rollback Alert: Train booking failed; Harbor Inn Hotel was auto-cancelled. Net charge: $0.00.");
 
           const agentMsg: Message = {
             id: `a_${Date.now()}`,
@@ -343,7 +343,7 @@ export default function AlexaClientDashboard() {
         ...prev,
         status: "COMPLETED",
         steps: prev.steps.map((s) => ({ ...s, status: "CONFIRMED" })),
-        outcomeMessage: "All steps confirmed: Amtrak ($45.00) + Grand Plaza ($120.00). Total: $165.00."
+        outcomeMessage: "All steps confirmed: Coastal Rail ($45.00) + Harbor Inn ($120.00). Total: $165.00."
       }));
 
       // Add to audit trail
@@ -529,7 +529,7 @@ export default function AlexaClientDashboard() {
                 </div>
 
                 <p style={{ fontSize: "14px", fontWeight: "600", marginBottom: "6px" }}>
-                  Grand Plaza Hotel Seattle
+                  Harbor Inn Seattle
                 </p>
                 <p style={{ fontSize: "12px", color: "#38bdf8", fontWeight: "700", marginBottom: "10px" }}>
                   ${(appr.estimatedCostMinor / 100).toFixed(2)} USD

@@ -9,6 +9,9 @@ export * from "./storage/db.js";
 export * from "./approval/service.js";
 export * from "./idempotency/service.js";
 export * from "./mcp/server.js";
+export * from "./providers/train.js";
+export * from "./providers/hotel.js";
+export * from "./providers/restaurant.js";
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 8000;
 const DB_PATH = process.env.DB_PATH || "warrant.sqlite";

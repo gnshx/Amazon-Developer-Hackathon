@@ -19,6 +19,7 @@ build/
 
 # Test coverage & reports
 coverage/
+scorecard.json
 *.scorecard.json
 scorecard.html
 

@@ -11,6 +11,7 @@
     "prepare": "npm --workspace=@warrant/gateway run build && npm --workspace=@warrant/siege run build",
     "test": "npm run --workspaces --if-present test",
     "test:siege": "npm --workspace=packages/warrant-siege run test:siege",
+    "test:mutation": "tsx scripts/test-mutation.ts",
     "audit:verify": "tsx packages/warrant-gateway/scripts/verify-audit.ts",
     "dev": "npm run --workspaces --parallel --if-present dev",
     "lint": "npm run --workspaces --if-present lint"
