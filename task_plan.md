@@ -27,11 +27,11 @@ Phase 1: Project Scaffolding, Governance & Planning Architecture
 - **Status:** complete
 
 ### Phase 3: Mock Providers & Saga Orchestrator (Workstream B)
-- [ ] Implement Mock Hotel, Train, and Restaurant providers with control endpoints for fault injection
-- [ ] Build Saga Orchestrator with reverse compensation execution
-- [ ] Implement Active Reconciliation for ambiguous network outcomes (timeouts)
-- [ ] Verify Gate 1 & Gate 2 milestones (Scenarios S2 and S8 passing)
-- **Status:** pending
+- [x] Implement Mock Hotel, Train, and Restaurant providers with control endpoints for fault injection
+- [x] Build Saga Orchestrator with reverse compensation execution
+- [x] Implement Active Reconciliation for ambiguous network outcomes (timeouts)
+- [x] Verify Gate 1 & Gate 2 milestones (Scenarios S2 and S8 passing)
+- **Status:** complete
 
 ### Phase 4: Simulated Alexa+ Client & Bedrock Agent Loop (Workstream C)
 - [ ] Build Next.js 14 client application with premium voice assistant aesthetics

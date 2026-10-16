@@ -8,9 +8,18 @@ import { canonicalSha256 } from "../crypto/canonical.js";
 import { Grant, Plan, PlanAction } from "../types.js";
 import { randomUUID } from "node:crypto";
 
+import { SagaOrchestrator } from "../saga/orchestrator.js";
+import { MockHotelProvider } from "../providers/hotel.js";
+import { MockTrainProvider } from "../providers/train.js";
+import { MockRestaurantProvider } from "../providers/restaurant.js";
+import { FaultType, IMockProvider } from "../providers/types.js";
+
 export interface GatewayServerOptions {
   repo?: WarrantRepository;
   port?: number;
+  hotelProvider?: MockHotelProvider;
+  trainProvider?: MockTrainProvider;
+  restaurantProvider?: MockRestaurantProvider;
 }
 
 export function createGatewayApp(options: GatewayServerOptions = {}) {
@@ -21,8 +30,61 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
   const approvalService = new ApprovalService(repo);
   const idempotencyService = new IdempotencyService(repo);
 
+  const hotelProvider = options.hotelProvider ?? new MockHotelProvider();
+  const trainProvider = options.trainProvider ?? new MockTrainProvider();
+  const restaurantProvider = options.restaurantProvider ?? new MockRestaurantProvider();
+
+  const sagaOrchestrator = new SagaOrchestrator(
+    repo,
+    approvalService,
+    hotelProvider,
+    trainProvider,
+    restaurantProvider
+  );
+
   // Mount Out-of-band Admin Channel (Inaccessible to agent via MCP)
   app.use("/admin", createAdminRouter(repo, approvalService));
+
+  // Provider Control & Verification API (For adversarial harness & testing)
+  app.post("/admin/providers/:name/fault", (req: Request, res: Response) => {
+    const name = String(req.params.name).toLowerCase();
+    const { fault, calls } = req.body as { fault: FaultType; calls?: number };
+    let provider: IMockProvider | null = null;
+    if (name === "hotel") provider = hotelProvider;
+    if (name === "train") provider = trainProvider;
+    if (name === "restaurant") provider = restaurantProvider;
+
+    if (!provider) {
+      return res.status(404).json({ error: `Provider '${name}' not found` });
+    }
+
+    provider.injectFault(fault, calls ?? 1);
+    return res.json({
+      status: "fault_injected",
+      provider: name,
+      fault,
+      calls: calls ?? 1
+    });
+  });
+
+  app.get("/admin/providers/:name/bookings", (req: Request, res: Response) => {
+    const name = String(req.params.name).toLowerCase();
+    let provider: IMockProvider | null = null;
+    if (name === "hotel") provider = hotelProvider;
+    if (name === "train") provider = trainProvider;
+    if (name === "restaurant") provider = restaurantProvider;
+
+    if (!provider) {
+      return res.status(404).json({ error: `Provider '${name}' not found` });
+    }
+
+    const bookings = provider.getBookings();
+    return res.json({
+      provider: name,
+      count: bookings.length,
+      bookings
+    });
+  });
 
   // Health check
   app.get("/health", (_req, res) => {
@@ -420,70 +482,18 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
             });
           }
 
-          // Execute with strict Idempotency (Invariant I1)
+          // Execute with strict Idempotency (Invariant I1) and Saga Orchestration (Invariants I4, I8)
           const executionResult = await idempotencyService.executeWithIdempotency(
             grant.id,
             "execute_plan",
             idempotencyKey,
             { planId, userApprovals },
             async () => {
-              // 1. Verify all T2 actions have approved, untampered approval tokens (Invariant I3)
-              for (const act of plan.actions) {
-                if (act.riskTier === "T2") {
-                  let token = userApprovals[act.id] || userApprovals[act.toolName];
-                  if (!token) {
-                    const storedApproval = repo.getApprovalByActionId(act.id);
-                    if (storedApproval && storedApproval.status === "APPROVED") {
-                      token = storedApproval.approvalToken;
-                    }
-                  }
-
-                  if (!token) {
-                    throw new Error(`APPROVAL_REQUIRED: Action ${act.toolName} (id: ${act.id}) requires phone approval token.`);
-                  }
-
-                  const verifyResult = approvalService.verifyApprovalToken(token, act.params);
-                  if (!verifyResult.valid) {
-                    throw new Error(`APPROVAL_VALIDATION_FAILED: ${verifyResult.reason}`);
-                  }
-                }
+              const res = await sagaOrchestrator.executePlan(planId, grant.id, userApprovals);
+              if (res.state === "COMPENSATION_FAILED" || (res.state === "FAILED" && res.error)) {
+                throw new Error(res.error || "Plan execution failed");
               }
-
-              // 2. Execute plan steps sequentially
-              repo.updatePlanState(planId, "EXECUTING");
-              let confirmedSpend = 0;
-              const stepResults: any[] = [];
-
-              for (const act of plan.actions) {
-                repo.updateActionState(act.id, "EXECUTING");
-                const cost = act.estimatedCostMinor;
-
-                // Simulate booking success (wired to external providers in Phase 3)
-                const bookingRef = `bk_${act.toolName}_${randomUUID().slice(0, 8)}`;
-                const payload = { bookingRef, status: "CONFIRMED", costMinor: cost };
-
-                repo.updateActionState(act.id, "SUCCEEDED", payload, cost);
-                confirmedSpend += cost;
-                stepResults.push({ actionId: act.id, toolName: act.toolName, ...payload });
-
-                repo.appendAuditEvent("ACTION_SUCCEEDED", act.id, {
-                  toolName: act.toolName,
-                  bookingRef,
-                  costMinor: cost
-                });
-              }
-
-              // 3. Deduct total confirmed spend from grant - Invariant I2
-              repo.updateGrantSpent(grant.id, confirmedSpend);
-              repo.updatePlanState(planId, "COMPLETED");
-
-              return {
-                planId,
-                state: "COMPLETED",
-                confirmedSpendMinor: confirmedSpend,
-                results: stepResults,
-                spoken_summary: `Your trip is booked and confirmed! Total charge was $${(confirmedSpend / 100).toFixed(2)}.`
-              };
+              return res;
             }
           );
 
