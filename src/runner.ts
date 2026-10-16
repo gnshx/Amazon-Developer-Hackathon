@@ -440,6 +440,181 @@ export class SiegeRunner {
   }
 
   /**
+   * Scenario S9: Action Receipt Non-Repudiation & Cryptographic Tamper Detection (Invariant I9)
+   */
+  public async runS9(): Promise<ScenarioResult> {
+    const start = Date.now();
+    const grant = await this.createGrant(50000);
+
+    const proposeRes = await this.mcpCall(grant.sessionToken, "propose_plan", {
+      steps: [
+        {
+          toolName: "book_hotel",
+          params: { hotel_id: "harbor_inn", nights: 1, price: 9500 },
+          estimatedCostMinor: 9500
+        }
+      ]
+    });
+
+    const planData = JSON.parse(proposeRes.json.result.content[0].text);
+    const planId = planData.planId;
+    const approvalId = planData.pendingApprovals[0].approvalId;
+
+    const decideRes = await fetch(`${this.adminUrl}/approvals/${approvalId}/decide`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ decision: "APPROVED" })
+    });
+    const { approval } = await decideRes.json();
+
+    const idempotencyKey = `s9_receipt_${randomUUID()}`;
+
+    const execRes = await this.mcpCall(grant.sessionToken, "execute_plan", {
+      planId,
+      idempotencyKey,
+      approvals: { book_hotel: approval.approvalToken }
+    });
+
+    const execData = JSON.parse(execRes.json.result.content[0].text);
+    const receipts = execData.receipts as any[];
+
+    if (!receipts || receipts.length === 0) {
+      return {
+        scenarioId: "S9",
+        name: "Signed Action Receipts & Tamper Resistance",
+        targetInvariant: "I9",
+        passed: false,
+        durationMs: Date.now() - start,
+        assertion: "No action receipt issued upon successful T2 action.",
+        error: "Missing receipts array in execution response"
+      };
+    }
+
+    const receipt = receipts[0];
+
+    // 1. Verify pristine receipt via admin endpoint
+    const verifyValidRes = await fetch(`${this.adminUrl}/receipts/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receipt })
+    });
+    const validResult = await verifyValidRes.json();
+
+    // 2. Adversarial Tamper Attack A: Modify spendMinor (e.g. 9500 -> 1000)
+    const tamperedSpendReceipt = { ...receipt, spendMinor: 1000 };
+    const verifyTamperedSpend = await fetch(`${this.adminUrl}/receipts/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receipt: tamperedSpendReceipt })
+    });
+    const tamperedSpendResult = await verifyTamperedSpend.json();
+
+    // 3. Adversarial Tamper Attack B: Modify paramsHash
+    const tamperedHashReceipt = {
+      ...receipt,
+      paramsHash: "0000000000000000000000000000000000000000000000000000000000000000"
+    };
+    const verifyTamperedHash = await fetch(`${this.adminUrl}/receipts/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ receipt: tamperedHashReceipt })
+    });
+    const tamperedHashResult = await verifyTamperedHash.json();
+
+    const passed =
+      validResult.valid === true &&
+      tamperedSpendResult.valid === false &&
+      tamperedHashResult.valid === false;
+
+    return {
+      scenarioId: "S9",
+      name: "Signed Action Receipts & Tamper Resistance",
+      targetInvariant: "I9",
+      passed,
+      durationMs: Date.now() - start,
+      assertion: "Pristine receipts verify via Ed25519; spend and parameter tampering are cryptographically rejected.",
+      details: {
+        receiptId: receipt.receiptId,
+        validVerified: validResult.valid,
+        tamperedSpendRejected: !tamperedSpendResult.valid,
+        tamperedHashRejected: !tamperedHashResult.valid
+      }
+    };
+  }
+
+  /**
+   * Scenario S10: Undo Window Grace-Hold Cancellation & Zero Residue (Invariant I10)
+   */
+  public async runS10(): Promise<ScenarioResult> {
+    const start = Date.now();
+    const grant = await this.createGrant(50000);
+
+    const proposeRes = await this.mcpCall(grant.sessionToken, "propose_plan", {
+      steps: [
+        {
+          toolName: "book_train",
+          params: { origin: "Portland", destination: "Seattle", price: 4500 },
+          estimatedCostMinor: 4500
+        }
+      ]
+    });
+
+    const planData = JSON.parse(proposeRes.json.result.content[0].text);
+    const planId = planData.planId;
+    const idempotencyKey = `s10_undo_${randomUUID()}`;
+
+    // Execute with a 6-second undo window
+    const execRes = await this.mcpCall(grant.sessionToken, "execute_plan", {
+      planId,
+      idempotencyKey,
+      undoWindowSeconds: 6
+    });
+
+    const execData = JSON.parse(execRes.json.result.content[0].text);
+    const wasHeld = execData.state === "HELD";
+
+    // Call out-of-band undo endpoint while held
+    const undoRes = await fetch(`${this.adminUrl}/plans/${planId}/undo`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" }
+    });
+    const undoData = await undoRes.json();
+
+    // Verify external mock provider truth: 0 train bookings exist!
+    const trainBookings = await this.getProviderBookings("train");
+    const matchingBookings = trainBookings.filter(
+      (b) => b.idempotencyKey?.includes(idempotencyKey) || b.details?.idempotencyKey === idempotencyKey
+    );
+
+    // Verify grant spent is 0
+    const grantRes = await fetch(`${this.adminUrl}/grants/${grant.id}`);
+    const grantData = await grantRes.json();
+
+    const passed =
+      wasHeld &&
+      undoData.success === true &&
+      undoData.state === "UNDONE" &&
+      matchingBookings.length === 0 &&
+      grantData.grant.spentMinor === 0;
+
+    return {
+      scenarioId: "S10",
+      name: "Grace-Hold Undo Window Cancellation",
+      targetInvariant: "I10",
+      passed,
+      durationMs: Date.now() - start,
+      assertion: "Cancellation during grace window aborts execution with zero external provider effects and zero spend.",
+      details: {
+        wasHeld,
+        undone: undoData.success,
+        finalState: undoData.state,
+        externalBookingsCreated: matchingBookings.length,
+        spentMinor: grantData.grant.spentMinor
+      }
+    };
+  }
+
+  /**
    * Executes the entire attack suite and compiles the complete scorecard.
    */
   public async runAll(): Promise<Scorecard> {
@@ -453,6 +628,8 @@ export class SiegeRunner {
     results.push(await this.runS6());
     results.push(await this.runS7());
     results.push(await this.runS8());
+    results.push(await this.runS9());
+    results.push(await this.runS10());
 
     const passedCount = results.filter((r) => r.passed).length;
     const failedCount = results.length - passedCount;
@@ -468,8 +645,10 @@ export class SiegeRunner {
       I4: { name: "Clean Residue (Saga Rollback)", satisfied: results.find((r) => r.scenarioId === "S2")?.passed || false, testedBy: ["S2"] },
       I5: { name: "Structural Output Containment", satisfied: results.find((r) => r.scenarioId === "S5")?.passed || false, testedBy: ["S5"] },
       I6: { name: "Temporal Authorization Boundary", satisfied: results.find((r) => r.scenarioId === "S6")?.passed || false, testedBy: ["S6"] },
-      I7: { name: "Cryptographic Audit Continuity", satisfied: verifyData.valid, testedBy: ["S1-S8"] },
-      I8: { name: "Reconciliation over Blind Retries", satisfied: results.find((r) => r.scenarioId === "S8")?.passed || false, testedBy: ["S8"] }
+      I7: { name: "Cryptographic Audit Continuity", satisfied: verifyData.valid, testedBy: ["S1-S10"] },
+      I8: { name: "Reconciliation over Blind Retries", satisfied: results.find((r) => r.scenarioId === "S8")?.passed || false, testedBy: ["S8"] },
+      I9: { name: "Action Authenticity & Signed Receipts", satisfied: results.find((r) => r.scenarioId === "S9")?.passed || false, testedBy: ["S9"] },
+      I10: { name: "Grace-Hold Containment (Undo Window)", satisfied: results.find((r) => r.scenarioId === "S10")?.passed || false, testedBy: ["S10"] }
     };
 
     return {

@@ -8,7 +8,7 @@ import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as os from "node:os";
 
-describe("Warrant Siege: 8 Core Adversarial Attack Scenarios", () => {
+describe("Warrant Siege: 10 Core Adversarial Attack Scenarios", () => {
   let server: http.Server;
   let mcpUrl: string;
   let adminUrl: string;
@@ -35,16 +35,16 @@ describe("Warrant Siege: 8 Core Adversarial Attack Scenarios", () => {
     repo.close();
   });
 
-  it("executes all 8 adversarial scenarios and satisfies all invariants I1-I8", async () => {
+  it("executes all 10 adversarial scenarios and satisfies all invariants I1-I10", async () => {
     const runner = new SiegeRunner(mcpUrl, adminUrl);
     const scorecard = await runner.runAll();
 
-    expect(scorecard.totalScenarios).toBe(8);
-    expect(scorecard.passedScenarios).toBe(8);
+    expect(scorecard.totalScenarios).toBe(10);
+    expect(scorecard.passedScenarios).toBe(10);
     expect(scorecard.failedScenarios).toBe(0);
     expect(scorecard.allInvariantsSatisfied).toBe(true);
 
-    // Verify all 8 invariants I1 through I8
+    // Verify all 10 invariants I1 through I10
     expect(scorecard.invariants.I1.satisfied).toBe(true);
     expect(scorecard.invariants.I2.satisfied).toBe(true);
     expect(scorecard.invariants.I3.satisfied).toBe(true);
@@ -53,6 +53,8 @@ describe("Warrant Siege: 8 Core Adversarial Attack Scenarios", () => {
     expect(scorecard.invariants.I6.satisfied).toBe(true);
     expect(scorecard.invariants.I7.satisfied).toBe(true);
     expect(scorecard.invariants.I8.satisfied).toBe(true);
+    expect(scorecard.invariants.I9.satisfied).toBe(true);
+    expect(scorecard.invariants.I10.satisfied).toBe(true);
 
     // Verify cryptographic audit proof
     expect(scorecard.auditProofHash).toBeDefined();
@@ -70,11 +72,11 @@ describe("Warrant Siege: 8 Core Adversarial Attack Scenarios", () => {
     const jsonContent = await fs.readFile(jsonPath, "utf-8");
 
     expect(htmlContent).toContain("Warrant Siege: Safety Scorecard");
-    expect(htmlContent).toContain("All 8 Invariants Satisfied");
+    expect(htmlContent).toContain("All 10 Invariants Satisfied");
     expect(htmlContent).toContain(scorecard.auditProofHash!);
 
     const parsedJson = JSON.parse(jsonContent);
     expect(parsedJson.allInvariantsSatisfied).toBe(true);
-    expect(parsedJson.passedScenarios).toBe(8);
-  }, 30000); // 30s timeout for all 8 scenarios
+    expect(parsedJson.passedScenarios).toBe(10);
+  }, 40000); // 40s timeout for all 10 scenarios
 });
