@@ -139,37 +139,16 @@ Every requirement and user story is tied to an automated invariant test in the a
 
 ## 4. Day-by-Day Hackathon Milestones & Quality Gates
 
-```
-+-----------------------------------------------------------------------------------------+
-| TIMELINE & QUALITY GATES                                                                |
-+------------+-------------------------------------------------------------+--------------+
-| Date       | Daily Goal                                                  | Hard Gate    |
-+------------+-------------------------------------------------------------+--------------+
-| 16 Oct     | Repos & Monorepo Scaffold; MCP Streamable HTTP skeleton;    | Gate 0: Pass |
-| (Today)    | Data models; Docs and Agent contracts initialized.          | MCP ping     |
-+------------+-------------------------------------------------------------+--------------+
-| 17 Oct     | Mock Providers with fault injection; read/search tools;     | Gate 1a: Mock|
-|            | Idempotency store; SHA-256 audit chaining.                  | faults work  |
-+------------+-------------------------------------------------------------+--------------+
-| 18 Oct     | Pure Policy Engine; Grants; Spend caps; RFC 8785 Hasher;    | GATE 1: Pass |
-|            | Out-of-band approval engine and phone API.                  | Approval Flow|
-+------------+-------------------------------------------------------------+--------------+
-| 19 Oct     | Saga Orchestrator; Compensations; Timeout Reconciler.       | GATE 2: Pass |
-|            | Verify S2 (Rollback) & S8 (Reconciliation).                 | S2 & S8      |
-+------------+-------------------------------------------------------------+--------------+
-| 20 Oct     | Next.js Simulated Alexa+ Client; Phone approval portal;     | GATE 3: Pass |
-|            | Bedrock Converse Agent loop; live tool trace.               | End-to-End UI|
-+------------+-------------------------------------------------------------+--------------+
-| 21 Oct     | Warrant Siege Harness; Execute 8 attack scenarios;          | GATE 4: Pass |
-|            | HTML/JSON scorecard generation; fix edge-case bugs.         | 8/8 Green    |
-+------------+-------------------------------------------------------------+--------------+
-| 22 Oct     | Fresh-clone automated test (<10 min); Product feedback &   | GATE 5: Pass |
-|            | friction logs; README & architecture diagrams.              | Fresh-Clone  |
-+------------+-------------------------------------------------------------+--------------+
-| 23 Oct     | Record demo video (<3 min); Final rehearsal; Devpost       | SUBMISSION   |
-| (Cutoff)   | submission finalized before midnight.                       | READY        |
-+------------+-------------------------------------------------------------+--------------+
-```
+| Day | Goal | Status |
+|---|---|---|
+| **Oct 16 (today)** | Repos and licenses, MCP skeleton on Streamable HTTP with tools, verified with MCP Inspector, data model, travel booking vertical selected. | **COMPLETED & TESTED (35/35 Passing)** |
+| **Oct 17** | Mock providers with failure injection (timeout, decline, response lost), tools (search, hold, book, cancel), idempotency, audit log. | **IN PROGRESS** |
+| **Oct 18** | Policy engine, grants, spend caps, approval flow with action-hash binding (RFC 8785). | **AHEAD OF SCHEDULE (Implemented in Phase 2)** |
+| **Oct 19** | Saga orchestrator with compensation (reverse rollback), plus reconciliation for the ambiguous-timeout case. | Scheduled |
+| **Oct 20** | Simulated Alexa client (Next.js 14), Bedrock agent over MCP (Converse API), trace and approval panels. | Scheduled |
+| **Oct 21** | Attack harness (`warrant-siege`) and scorecard (JSON & HTML). Run all 8 scenarios and fix what fails. | Scheduled |
+| **Oct 22** | README, architecture diagram, fresh-install test (<10 min), friction log, product feedback, AWS documentation. | Scheduled |
+| **Oct 23 (Cutoff)**| Record the demo video (<3 min), then submit early. The deadline is 12:30 AM IST on Oct 24, so treat Oct 23 as the real cutoff. | Final Submission |
 
 ---
 
@@ -177,15 +156,34 @@ Every requirement and user story is tied to an automated invariant test in the a
 
 If behind schedule at any gate, features are prioritized according to the strict cut-order:
 
-### Must Never Cut (The Core Safety Thesis)
-- Parameter-hash approval binding ($I_3$)
-- Saga rollback with mock provider verification ($I_4$)
-- Multi-layer idempotency ($I_1$)
-- Streamable HTTP MCP server conformance
-- Adversarial test harness with automated scorecard ($I_1 - I_8$)
-
 ### Cut Order (If Behind Schedule)
-1. **Live speech recognition / microphone audio input:** Fallback to typed voice simulation with real speech synthesis output (`spoken_summary`).
-2. **Third mock provider (Restaurant):** Reduce travel vertical to Hotel + Train (sufficient for 100% of saga and rollback proofs).
-3. **Hosted cloud deployment:** Rely on local Docker Compose / `npm run dev` with fresh-clone verification.
-4. **Live Bedrock AWS execution in demo video:** Switch to deterministic Bedrock agent recording fixture if AWS quota or network latency issues arise.
+1. **Voice input (Microphone STT):** Fallback to typed voice simulation with real speech synthesis output (`spoken_summary`).
+2. **Polished approval UI:** Simplify mobile animations to standard functional cards.
+3. **End-to-end live agent attacks:** Rely on deterministic scripted protocol-level attacks in `warrant-siege`.
+4. **Cloud hosting:** Keep local demo via Docker Compose / `npm run dev`.
+
+### Must Never Cut (The Core Safety Thesis)
+- **Automatic Saga Rollback ($I_4$):** Partial failure leaves zero residue on mock providers.
+- **Approval Binding ($I_3$):** Cryptographic parameter-hash binding to RFC 8785 canonical JSON.
+- **Absolute Spend Cap ($I_2$):** Strict integer minor unit enforcement.
+- **Idempotency ($I_1$):** Replay and retry storm prevention.
+- **Scorecard Generator ($I_1 - I_8$):** Standalone open-source harness producing verifiable HTML/JSON reports.
+
+---
+
+## 6. Demo Script (Under 3 Minutes)
+
+- **0:00–0:20 (The Problem):** An assistant that can spend your money by voice with no screen to check.
+- **0:20–1:10 (Happy Path & Approval):** Book a trip, approve it on the phone with canonical parameter hash, show the live tool trace and tamper-evident audit trail.
+- **1:10–1:50 (Rollback):** A train booking fails halfway; saga orchestrator automatically cancels the hotel in reverse, leaving zero residue.
+- **1:50–2:30 (Attack Suite):** Run `warrant-siege` against the gateway, showing all 8 adversarial attacks blocked by gateway invariants.
+- **2:30–3:00 (Scorecard & Open Source):** Show the generated HTML scorecard with green verification badges and highlight the standalone open-source repo.
+
+---
+
+## 7. Submission Details & Mini-Challenge Strategy
+
+- **MCP in Actual Code:** Gateway serves MCP tools over Streamable HTTP protocol version `2025-11-25+`; Alexa client and Siege CLI connect over live HTTP.
+- **Additional Open Source Project Mini-Challenge:** `warrant-siege` is maintained with its own standalone package and open-source license (MIT) so it cleanly qualifies as the additional open-source project.
+- **AWS Builder Mini-Challenge:** Bedrock Converse API integration documented with live tool calling.
+- **Friction Log (Up to 10% Judging Bonus):** Maintained in `docs/FRICTION_LOG.md` tracking real friction encountered with Bedrock and MCP SDKs.

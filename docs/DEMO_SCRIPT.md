@@ -1,0 +1,61 @@
+# Warrant: Official Demo Video Script (Under 3:00 Minutes)
+
+**Target Runtime:** 2 minutes 50 seconds  
+**Track:** Amazon Developer Hackathon, Alexa+ Track  
+**Pacing:** Fast, technical, high-density, zero fluff  
+
+---
+
+## Timeline & Scene Breakdown
+
+### Scene 1: The Problem (0:00 – 0:20)
+- **Visual:** Split screen. Left: Voice assistant listening waveform. Right: Bank notification showing unexpected charges.
+- **Voiceover:**
+  > "Voice assistants are getting agency to act for us: book flights, buy tickets, reserve tables. But voice has no screen to review what is about to happen. One hallucination, prompt injection, or retry storm can double-book, drain a bank account, or leave a half-finished mess. Brands exposing tools to voice assistants have no standard way to make actions provably safe. That's why we built **Warrant**."
+
+### Scene 2: Happy Path, Approval Binding & Audit Chain (0:20 – 1:10)
+- **Visual:** Simulated Alexa+ client UI (dark mode, glassmorphism). User speaks or types: *"Book me a weekend trip from Portland to Seattle with a hotel under $200."*
+- **Screen Action:**
+  1. Bedrock agent calls `search_trains` and `search_hotels` via MCP Streamable HTTP.
+  2. Agent calls `propose_plan`.
+  3. Warrant Gateway Policy Engine classifies the Train as $T_1$ (reversible write within budget) and the Hotel as $T_2$ (high-value commitment).
+  4. Phone approval card pops up on mobile view showing:
+     - Exact hotel name, nights, and cost ($120.00).
+     - **RFC 8785 Canonical Hash:** `a7f9...4c21`.
+  5. User taps **Approve**. Single-use approval token is minted.
+  6. Agent dispatches `execute_plan`. Gateway recomputes parameter hash, validates match, and commits the booking.
+  7. Alexa speaks natural summary ($\le 300$ chars): *"Your train and hotel in Seattle are booked for $165.00 total."*
+  8. Click "Verify Audit Chain" in UI: Cryptographic SHA-256 chain validates green from genesis.
+- **Voiceover:**
+  > "Notice the approval: it’s cryptographically bound to the RFC 8785 canonical hash of the exact parameters. If anything alters the dates, hotel, or price after approval, execution is rejected mathematically."
+
+### Scene 3: Mid-Plan Failure & Automatic Rollback (1:10 – 1:50)
+- **Visual:** Fault injection toggle enabled: Mock Train service set to `DECLINE`.
+- **Screen Action:**
+  1. User requests a trip with hotel and train.
+  2. Step 1 (Hotel) books successfully.
+  3. Step 2 (Train) declines due to sold-out inventory.
+  4. **Warrant Saga Orchestrator** intervenes:
+     - Halts forward progress immediately.
+     - Automatically invokes `cancel_hotel(booking_id)` in reverse order.
+     - Mock Hotel database updates to `CANCELLED`.
+  5. Assistant speaks plainly: *"Your train could not be booked, so your hotel reservation was automatically cancelled at no charge."*
+  6. Audit timeline records: `ACTION_SUCCEEDED` $\to$ `ACTION_FAILED` $\to$ `SAGA_COMPENSATION_SUCCEEDED`. Zero residue left on providers.
+
+### Scene 4: Adversarial Attack Suite (`warrant-siege`) (1:50 – 2:30)
+- **Visual:** Terminal window running `npx warrant-siege`.
+- **Screen Action:**
+  - Siege harness executes all 8 adversarial scenarios against the gateway:
+    1. **S1: Duplicate Submit Storm:** 10 concurrent requests; exactly 1 external booking created.
+    2. **S2: Mid-Plan Failure:** Automatic saga rollback leaves zero orphan state.
+    3. **S3: Spend Over Cap:** Propose plan exceeding grant limit; immediate `DENY`.
+    4. **S4: Parameter Tampering:** Mutate price after approval; approval hash mismatch halts execution.
+    5. **S5: Injected Instruction:** Jailbreak inside provider description flagged and isolated; grant unmodified.
+    6. **S6: Expired Grant:** Tool invocation after grant timestamp rejected with 403.
+    7. **S7: Unapproved T2 Action:** Bypass attempt blocked by policy engine.
+    8. **S8: Ambiguous Timeout:** Succeeded-but-lost connection resolved by idempotency inquiry, never retried blindly.
+
+### Scene 5: Scorecard & Open Source Deliverables (2:30 – 3:00)
+- **Visual:** Generated `scorecard.html` opening in browser. All 8 scenarios displayed with green badges, execution durations, and SHA-256 audit proof.
+- **Voiceover:**
+  > "Warrant is open source under Apache 2.0, and Warrant Siege is published as a standalone testing harness so any brand building MCP tools can verify their safety. Scoped grants, bound approvals, automatic rollbacks, and proof you can verify. That is Warrant."
