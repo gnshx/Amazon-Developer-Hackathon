@@ -50,11 +50,11 @@ Phase 6: Polish, Documentation, Fresh-Clone Test & Submission (Workstream E)
 - **Status:** complete
 
 ### Phase 6: Polish, Documentation, Fresh-Clone Test & Submission (Workstream E)
-- [ ] Verify fresh clone to running demo in <10 minutes
-- [ ] Finalize AWS Bedrock & MCP product feedback and friction logs
-- [ ] Produce architecture diagrams and README
-- [ ] Draft Devpost submission text and demo script (<3:00 min)
-- **Status:** pending
+- [x] Verify fresh clone to running demo in <10 minutes
+- [x] Finalize AWS Bedrock & MCP product feedback and friction logs
+- [x] Produce architecture diagrams and README
+- [x] Draft Devpost submission text and demo script (<3:00 min)
+- **Status:** complete
 
 ## Key Questions
 1. **Vertical selection:** Travel booking (hotel + train + dining) selected as the primary vertical because it naturally demonstrates high-value irreversible commitments, multi-step dependencies, and clear compensation semantics.

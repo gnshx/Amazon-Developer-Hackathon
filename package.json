@@ -10,6 +10,7 @@
     "build": "npm run --workspaces --if-present build",
     "test": "npm run --workspaces --if-present test",
     "test:siege": "npm --workspace=packages/warrant-siege run test:siege",
+    "audit:verify": "tsx packages/warrant-gateway/scripts/verify-audit.ts",
     "dev": "npm run --workspaces --parallel --if-present dev",
     "lint": "npm run --workspaces --if-present lint"
   },

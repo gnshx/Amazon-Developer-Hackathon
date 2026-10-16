@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: packages/warrant-gateway/Dockerfile
+    container_name: warrant-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - DB_PATH=/app/data/warrant.sqlite
+      - NODE_ENV=production
+    volumes:
+      - gateway-data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  alexa-client:
+    build:
+      context: .
+      dockerfile: packages/alexa-client/Dockerfile
+    container_name: warrant-alexa-client
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - GATEWAY_MCP_URL=http://gateway:8000/mcp
+      - GATEWAY_ADMIN_URL=http://gateway:8000/admin
+      - AWS_REGION=us-east-1
+      - NODE_ENV=production
+    depends_on:
+      gateway:
+        condition: service_healthy
+
+volumes:
+  gateway-data:
