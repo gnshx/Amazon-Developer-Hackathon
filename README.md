@@ -146,16 +146,16 @@ If delayed at any point, non-critical features are cut in this strict order:
 
 ---
 
-## 5. Demo Video Script (Under 3:00 Minutes)
+## 5. Demo Video Script (2:45 Target)
 
 | Timestamp | Scene | Key Actions & Speaking Points |
 |---|---|---|
-| **0:00 – 0:20** | **The Problem** | Voice assistants can spend money with no screen to check. One hallucination, timeout, or prompt injection can drain accounts or double-book. Warrant makes voice agent actions safe and auditable. |
-| **0:20 – 1:10** | **Happy Path & Approval Binding** | User asks Alexa to book a weekend trip. Bedrock agent searches and proposes plan. Phone approval card displays exact parameters and **RFC 8785 Canonical Hash**. User approves; booking commits; Alexa speaks natural summary ($\le 300$ chars); 1-click audit chain validates green. |
-| **1:10 – 1:50** | **Mid-Plan Failure & Rollback** | Train service injected with `DECLINE`. Agent attempts trip booking. Hotel books, train fails. Saga Orchestrator halts forward progress and automatically cancels hotel in reverse order. Zero residue left on providers. |
-| **1:50 – 2:30** | **Adversarial Siege (`warrant-siege`)** | Run `npm run test:siege` in terminal. Show all 8 adversarial attack scenarios executing against the live gateway and getting blocked by gateway invariants. |
-| **2:30 – 2:50** | **Scorecard & Open Source Deliverables** | Open interactive `scorecard.html` showing 8/8 green badges and cryptographic audit proof. Highlight standalone open-source repo for the mini-challenge. |
-| **2:50 – 3:00** | **Roadmap Ahead (Future Work)** | Highlight 3 future post-hackathon directions: signed action receipts with transparency logs, capability tokens for agent-to-agent delegation, and certification built on the harness. |
+| **0:00 – 0:12** | **The Hook** | *"Voice assistants are starting to book and buy for us, with no screen to check first. Warrant makes every action limited, approved, and undoable."* Displays persistent on-screen prototype caption. |
+| **0:12 – 1:00** | **Happy Path & Approval Binding** | User requests weekend trip. Live MCP trace shows Bedrock tool dispatch. Phone approval card displays exact parameters and **RFC 8785 Canonical Hash**. User approves; booking commits; Alexa speaks natural summary ($\le 300$ chars); displays detached **Ed25519 signed action receipt** and **8-second grace hold undo window**. |
+| **1:00 – 1:35** | **Mid-Plan Failure & Rollback** | Mock Train service injected with `DECLINE`. Agent attempts trip booking. Hotel books, train fails. Saga Orchestrator halts forward progress and automatically cancels hotel in reverse order. Zero residue left on providers. Audit chain validates green. |
+| **1:35 – 2:15** | **Adversarial Proof & Mutation Moment** | Run `npm run test:siege` in terminal showing all 10 adversarial attack scenarios pass green. Then run `npm run test:mutation`: intentionally disable approval hash check, watch Scenario S4 turn RED, restore protection, and return to 100% green. |
+| **2:15 – 2:35** | **Scorecard & Open Source Deliverables** | Open interactive `scorecard.html` showing 10/10 green badges, SVG badge, and cryptographic audit proof. Highlight standalone open-source repo for the mini-challenge. |
+| **2:35 – 2:45** | **Roadmap Ahead (Future Work)** | Highlight 3 future post-hackathon directions: public transparency logs, attenuated capability tokens (Macaroons) for agent delegation, and hardware-secured biometric passkeys. |
 
 ---
 
@@ -171,7 +171,8 @@ Amazon-Developer-Hackathon/
 │   │   │   ├── saga/         # Compensating saga orchestrator & active timeout reconciler
 │   │   │   ├── approval/     # Out-of-band approval token issuer and verification service
 │   │   │   ├── idempotency/  # Multi-layer idempotency registry
-│   │   │   ├── audit/        # Tamper-evident SHA-256 event chaining
+│   │   │   ├── receipt/      # Ed25519 action receipt signer and offline validator
+│   │   │   ├── audit/        # Tamper-evident SHA-256 event chaining & Merkle root prover
 │   │   │   ├── providers/    # Autonomous Mock Hotel, Train, Restaurant providers with fault injection
 │   │   │   ├── storage/      # SQLite WAL repository layer
 │   │   │   └── mcp/          # Express MCP server over Streamable HTTP (2025-11-25)
@@ -179,7 +180,7 @@ Amazon-Developer-Hackathon/
 │   ├── warrant-siege/        # Standalone adversarial test harness (MIT License)
 │   │   ├── src/
 │   │   │   ├── cli.ts        # Commander CLI entrypoint
-│   │   │   ├── runner.ts     # Scenarios S1 through S8 execution logic
+│   │   │   ├── runner.ts     # Scenarios S1 through S10 execution logic
 │   │   │   └── reporter.ts   # Interactive HTML & JSON scorecard generators
 │   │   └── LICENSE           # Standalone MIT License
 │   └── alexa-client/         # Simulated Alexa+ client (Next.js 14)

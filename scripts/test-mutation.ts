@@ -110,7 +110,7 @@ async function main() {
 
   console.log("\n========================================================");
   if (mutationsDetected === 2) {
-    console.log("🎉 ALL MUTATIONS DETECTED (2/2 RED): Invariants I1 & I3 proven fail-safe.");
+    console.log("🎉 ALL MUTATIONS DETECTED (2/2 RED): Invariants I1 & I3 detected by the scorecard.");
     console.log("========================================================\n");
     process.exit(0);
   } else {

@@ -12,6 +12,7 @@
     "test": "npm run --workspaces --if-present test",
     "test:siege": "npm --workspace=packages/warrant-siege run test:siege",
     "test:mutation": "tsx scripts/test-mutation.ts",
+    "test:bedrock": "tsx scripts/test-bedrock-live.ts",
     "audit:verify": "tsx packages/warrant-gateway/scripts/verify-audit.ts",
     "receipt:verify": "tsx packages/warrant-gateway/scripts/verify-receipt.ts",
     "dev": "npm run --workspaces --parallel --if-present dev",

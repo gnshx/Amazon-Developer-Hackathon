@@ -32,7 +32,7 @@ The hackathon MVP proves this core safety loop over the standard Model Context P
 - **Saga Orchestration with Automatic Rollback:** Partial failures trigger reverse compensations, leaving zero residue ($I_4$).
 - **Active Timeout Reconciliation:** Dropped connections actively query provider truth by idempotency key ($I_8$).
 - **Tamper-Evident SHA-256 Chained Audit Trail:** Verifiable from genesis to tip ($I_7$).
-- **Adversarial Siege Test Harness (`warrant-siege`):** Standalone CLI that subjects the gateway to 8 attack scenarios ($S_1 - S_8$) and generates automated HTML/JSON scorecards.
+- **Adversarial Siege Test Harness (`warrant-siege`):** Standalone CLI that subjects the gateway to 10 attack scenarios ($S_1 - S_{10}$) and generates automated HTML/JSON scorecards.
 
 ### Scope Honesty
 The genuine Alexa+ developer environment is restricted to select partners. To adhere to hackathon transparency guidelines, this submission uses a simulated Alexa+ client (Next.js 14) and simulated service providers (Hotel, Train, Restaurant with fault injection). Both are clearly labelled as simulated in code, documentation, and the demo video. All MCP and Admin communications execute over real network protocols (Streamable HTTP, JSON-RPC 2.0).
@@ -42,7 +42,7 @@ The genuine Alexa+ developer environment is restricted to select partners. To ad
 ## 2. Deliverables
 
 1. **`warrant-gateway`**: MCP server (Streamable HTTP), deterministic policy engine, saga orchestrator, audit chain, and mock providers with fault injection.
-2. **`warrant-siege`**: Adversarial test harness executing 8 attack scenarios, generating JSON and HTML safety scorecards (standalone open-source license).
+2. **`warrant-siege`**: Adversarial test harness executing 10 attack scenarios, generating JSON and HTML safety scorecards (standalone open-source license).
 3. **`alexa-client`**: Simulated Alexa+ client with a Bedrock-powered agent loop (AWS Bedrock Converse API), chat interface, live tool execution trace, phone approval view, and audit timeline.
 4. **Demo Video**: Under 3 minutes showcasing the happy path, attack scenarios, rollback, and the generated safety scorecard.
 5. **Devpost Submission**: Submission text, architecture diagrams, product feedback, and friction logs for AWS Bedrock and MCP SDKs.
@@ -84,7 +84,7 @@ The genuine Alexa+ developer environment is restricted to select partners. To ad
 | **US-5** | Brand Developer | As a developer, retried network calls never duplicate bookings. | Repeated idempotency key returns cached result; same key with different payload is rejected with HTTP 409 Conflict. |
 | **US-6** | Brand Developer | As a developer/auditor, I can inspect what happened and verify the log was not altered. | Per-plan audit timeline; SHA-256 chain verification tool returns cryptographically verified `PASS` or `FAIL`. |
 | **US-7** | Brand Developer | As an external developer, I can run the adversarial harness against my own MCP server. | Single command `npx warrant-siege --target <url>` produces JSON and HTML scorecard. |
-| **US-8** | Hackathon Judge | As a judge, I want to see the attack suite and verification scorecard live. | All 8 attack scenarios execute on screen, showing real-time invariant enforcement and clean scorecard pass. |
+| **US-8** | Hackathon Judge | As a judge, I want to see the attack suite and verification scorecard live. | All 10 attack scenarios execute on screen, showing real-time invariant enforcement and clean scorecard pass. |
 
 ---
 
