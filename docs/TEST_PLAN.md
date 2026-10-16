@@ -8,7 +8,7 @@
 
 ## 1. Safety Invariants
 
-Every architectural claim made by Warrant is formalized as an immutable mathematical invariant ($I_1 - I_8$):
+Every architectural claim made by Warrant is formalized as an immutable mathematical invariant ($I_1 - I_{10}$):
 
 - **$I_1$ (No Duplicate External Effect):** No state-changing external provider effect occurs more than once for the same `(grant_id, tool_name, idempotency_key)`.
 - **$I_2$ (Absolute Spend Cap):** Total confirmed expenditure under any grant never exceeds `grant.spend_cap_minor`, regardless of agent instructions or concurrency.
@@ -18,12 +18,14 @@ Every architectural claim made by Warrant is formalized as an immutable mathemat
 - **$I_6$ (Temporal Authorization Boundary):** Expired or revoked grants authorize zero actions ($T_0, T_1, T_2$), returning deterministic authorization errors.
 - **$I_7$ (Cryptographic Audit Continuity):** Every action state transition generates an audit record; the SHA-256 event chain verifies successfully from genesis.
 - **$I_8$ (Reconciliation over Blind Retries):** Ambiguous network outcomes (e.g. HTTP timeouts) are actively reconciled against the provider's external truth and never blindly retried.
+- **$I_9$ (Action Authenticity & Signed Receipts):** Every confirmed action produces a detached Ed25519 signed receipt over canonical RFC 8785 parameters. Mutating any field causes deterministic offline verification failure.
+- **$I_{10}$ (Grace-Hold Containment / Undo Window):** Actions held in a grace window remain strictly pre-settled; cancellation aborts execution with zero external provider effects and zero spend deducted.
 
 ---
 
 ## 2. Adversarial Attack Scenario Catalog (`warrant-siege`)
 
-The `warrant-siege` harness executes the following 8 core adversarial scenarios against the gateway over the MCP Streamable HTTP protocol.
+The `warrant-siege` harness executes the following 10 core adversarial scenarios against the gateway over the MCP Streamable HTTP protocol.
 
 ```
 +--------------------------------------------------------------------------------------------------+
@@ -54,6 +56,12 @@ The `warrant-siege` harness executes the following 8 core adversarial scenarios 
 +----+-------------------------------+-----------------------------+--------------------+----------+
 | S8 | Ambiguous Timeout & Succeeded-| Provider succeeds but drops | I8 (Reconcile)     | Query key|
 |    | Response-Lost                 | connection before ACK       | I1 (Idempotency)   | Single OK|
++----+-------------------------------+-----------------------------+--------------------+----------+
+| S9 | Tampered / Forged Receipt     | Mutate spend or parameters  | I9 (Action Receipt)| REJECTED |
+|    | Rejection Attack              | on signed Ed25519 receipt   |                    | Sig fail |
++----+-------------------------------+-----------------------------+--------------------+----------+
+| S10| Grace-Hold Undo Window        | Cancel execution during     | I10 (Undo Hold)    | ABORTED  |
+|    | Cancellation                  | grace hold countdown window |                    | 0 residue|
 +----+-------------------------------+-----------------------------+--------------------+----------+
 ```
 
@@ -126,6 +134,25 @@ The `warrant-siege` harness executes the following 8 core adversarial scenarios 
   4. Reconciliation discovers booking succeeded; action state resolves to `SUCCEEDED`.
   5. Audit log reflects `UNKNOWN` $\to$ `RECONCILED_SUCCEEDED`.
 
+#### Scenario S9: Tampered / Forged Receipt Rejection Attack
+- **Target:** Invariant $I_9$.
+- **Execution:** Propose and execute a valid trip booking. The gateway mints a valid Ed25519 detached signature for the action receipt. The attacker attempts two tampering mutations:
+  1. Financial amount manipulation: Mutate `spendMinor` from \$120.00 (`12000`) to \$10.00 (`1000`).
+  2. Parameter hash forgery: Replace `paramsHash` with an arbitrary 64-character hash.
+- **Validation:**
+  1. Pristine receipt validates successfully with Ed25519 public key.
+  2. Both tampered variants are deterministically rejected with `Ed25519 signature mismatch; receipt payload has been tampered with`.
+  3. Offline verification requires zero network requests or trusted database lookups.
+
+#### Scenario S10: Grace-Hold Undo Window Cancellation
+- **Target:** Invariant $I_{10}$.
+- **Execution:** Agent calls `execute_plan` with an 8-second grace hold (`undoWindowSeconds: 8`). The plan transitions to `HELD` state. At second 3, the user calls out-of-band endpoint `POST /admin/plans/:id/undo`.
+- **Validation:**
+  1. Hold timer is immediately cancelled; plan transitions to `UNDONE`.
+  2. Gateway emits `ACTION_UNDO_REQUESTED` and `ACTION_UNDONE` audit events.
+  3. Reserved spend is fully released; `spent_minor` returns to 0.
+  4. Mock provider database confirms exactly 0 external bookings were created. Zero residue remains.
+
 ---
 
 ## 3. Test Levels & Methodology
@@ -135,6 +162,8 @@ The `warrant-siege` harness executes the following 8 core adversarial scenarios 
 - Canonical JSON serialisation (RFC 8785) with property tests ensuring key order, unicode, and whitespace invariance.
 - SHA-256 audit chaining and verification functions.
 - Integer minor currency calculations.
+- Ed25519 keypair generation, detached signature signing, and offline verification (`ReceiptService`).
+- Binary Merkle tree root calculation, sibling generation, and $O(\log N)$ inclusion proof verification.
 
 ### 3.2 Property-Based Testing (`fast-check`)
 - Generate 1,000 random sequences of tool calls, concurrent timestamps, and mutated JSON keys.

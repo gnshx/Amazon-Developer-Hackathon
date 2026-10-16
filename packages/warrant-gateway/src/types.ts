@@ -24,9 +24,11 @@ export type RiskTier = "T0" | "T1" | "T2" | "T3";
 
 export type PlanState =
   | "PROPOSED"
+  | "HELD"
   | "EXECUTING"
   | "COMPLETED"
   | "FAILED"
+  | "UNDONE"
   | "COMPENSATED"
   | "COMPENSATION_FAILED";
 
@@ -66,6 +68,8 @@ export interface Plan {
   totalEstimatedMinor: MinorUnits;
   totalConfirmedMinor: MinorUnits;
   actions: PlanAction[];
+  undoWindowSeconds?: number;
+  settlesAt?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -89,6 +93,7 @@ export type AuditEventType =
   | "GRANT_REVOKED"
   | "GRANT_EXPIRED"
   | "PLAN_PROPOSED"
+  | "PLAN_HELD"
   | "APPROVAL_REQUESTED"
   | "APPROVAL_GRANTED"
   | "APPROVAL_REJECTED"
@@ -101,7 +106,26 @@ export type AuditEventType =
   | "SAGA_COMPENSATION_STARTED"
   | "SAGA_COMPENSATION_SUCCEEDED"
   | "SAGA_COMPENSATION_FAILED"
+  | "ACTION_RECEIPT_ISSUED"
+  | "ACTION_UNDO_REQUESTED"
+  | "ACTION_UNDONE"
   | "POLICY_DENIED";
+
+export interface ActionReceipt {
+  version: "1.0";
+  receiptId: string;
+  actionId: string;
+  planId: string;
+  grantId: string;
+  toolName: string;
+  paramsHash: string;
+  spendMinor: MinorUnits;
+  currency: "USD";
+  providerBookingRef: string;
+  executedAt: string;
+  gatewayPublicKey: string; // Ed25519 public key in PEM or SPKI format
+  signature: string; // Hex-encoded Ed25519 signature
+}
 
 export interface AuditEvent {
   seq: number;

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import { SiegeRunner } from "./runner.js";
-import { generateScorecardHtml, generateScorecardJson } from "./reporter.js";
+import { generateScorecardHtml, generateScorecardJson, generateScorecardBadgeSvg } from "./reporter.js";
 import { createGatewayApp, WarrantRepository } from "@warrant/gateway";
 import * as path from "node:path";
 import * as http from "node:http";
@@ -16,6 +16,7 @@ program
   .option("-a, --admin <url>", "Target Warrant Gateway Admin API URL", "http://localhost:8000/admin")
   .option("-o, --out <path>", "Path to write HTML scorecard", "./scorecard.html")
   .option("-j, --json <path>", "Path to write JSON scorecard", "./scorecard.json")
+  .option("-b, --badge <path>", "Path to write SVG scorecard badge", "./scorecard-badge.svg")
   .action(async (options) => {
     console.log("\n========================================================");
     console.log("🛡️  WARRANT SIEGE: Adversarial Voice Gateway Harness");
@@ -55,7 +56,7 @@ program
       }
 
       const runner = new SiegeRunner(targetMcp, targetAdmin);
-      console.log("Executing 8 Core Adversarial Scenarios (S1 – S8)...\n");
+      console.log("Executing 10 Core Adversarial Scenarios (S1 – S10)...\n");
       const scorecard = await runner.runAll();
 
       for (const res of scorecard.results) {
@@ -76,14 +77,17 @@ program
 
       const htmlPath = path.resolve(process.cwd(), options.out);
       const jsonPath = path.resolve(process.cwd(), options.json);
+      const badgePath = path.resolve(process.cwd(), options.badge);
 
       await generateScorecardHtml(scorecard, htmlPath);
       await generateScorecardJson(scorecard, jsonPath);
+      await generateScorecardBadgeSvg(scorecard, badgePath);
 
       console.log("\n========================================================");
       console.log(`Scorecard: ${scorecard.passedScenarios}/${scorecard.totalScenarios} Scenarios Passed`);
-      console.log(`HTML Scorecard saved to: ${htmlPath}`);
-      console.log(`JSON Scorecard saved to: ${jsonPath}`);
+      console.log(`HTML Scorecard saved to:  ${htmlPath}`);
+      console.log(`JSON Scorecard saved to:  ${jsonPath}`);
+      console.log(`SVG Badge saved to:       ${badgePath}`);
       console.log("========================================================\n");
 
       if (serverToClose) {

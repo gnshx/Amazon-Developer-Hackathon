@@ -52,7 +52,9 @@ If time pressure increases, cuts are executed in this strict priority order:
 - Automatic Saga Rollback ($I_4$)
 - Cryptographic Parameter-Hash Approval Binding ($I_3$)
 - Absolute Spend Cap Enforcement ($I_2$)
-- Standalone `warrant-siege` Scorecard Generator ($I_1 - I_8$)
+- Standalone `warrant-siege` Scorecard Generator ($I_1 - I_{10}$)
+- Signed Action Receipts ($I_9$)
+- Grace-Hold Undo Window ($I_{10}$)
 
 ---
 
@@ -64,20 +66,22 @@ AI agents are transitioning from answering trivia to executing high-stakes real-
 Today, there is no standard way to define how much authority an agent holds, to cryptographically prove what action occurred, to automatically undo side effects when a multi-step plan fails halfway, or to evaluate whether a tool is safe to expose to voice assistants. Every brand builds its own fragile, one-off safeguards—if any—forcing users to trust their assistant blindly. We built **Warrant** to be the missing trust layer for the agentic economy.
 
 ### What It Does
-Warrant is an open-source trust gateway operating over the Model Context Protocol (MCP Streamable HTTP). It intercepts every agent tool call and enforces safety invariants tested by 8 adversarial scenarios:
+Warrant is an open-source trust gateway operating over the Model Context Protocol (MCP Streamable HTTP). It intercepts every agent tool call and enforces safety invariants tested by 10 adversarial scenarios:
 1. **Scoped & Expiring Authority:** Household administrators configure spend caps (in integer minor units) and time-limited scopes out-of-band.
-2. **Exact Action-Hash Approval Binding:** Risky actions return `PENDING_APPROVAL` with voice-friendly summaries. Approvals are granted on a mobile phone interface cryptographically bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{params}))$. If prompt injection or model drift alters any argument, the approval is invalid.
+2. **Exact Action-Hash Approval Binding:** Risky actions return `PENDING_APPROVAL` with voice-friendly summaries. Approvals are granted on a mobile phone interface cryptographically bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{params}))$. If prompt injection or model drift alters any argument, the approval is invalid ($I_3$).
 3. **Multi-Layer Idempotency:** Prevents retry storms or duplicate voice requests from double-charging ($I_1$).
 4. **Automatic Saga Rollback:** If step 2 of a multi-step booking fails, completed step 1 is automatically cancelled in reverse order, leaving zero orphan state ($I_4$).
 5. **Active Timeout Reconciliation:** Dropped connections actively query provider truth by idempotency key rather than blindly retrying ($I_8$).
-6. **Cryptographic Audit Continuity:** Append-only SHA-256 event chain verifiable from genesis ($I_7$).
-7. **Adversarial Siege Test Suite (`warrant-siege`):** A standalone open-source CLI attacking the gateway across 8 attack scenarios, generating verified HTML and JSON scorecards.
+6. **Detached Ed25519 Action Receipts:** Every confirmed action produces a digitally signed receipt verifiable completely offline without trusting the server ($I_9$).
+7. **Grace-Hold Undo Window:** Configurable countdown hold before irreversible provider dispatch; cancellation leaves zero provider bookings and zero charges ($I_{10}$).
+8. **Cryptographic Audit Continuity & Merkle Roots:** Append-only SHA-256 event chain verifiable from genesis, with binary Merkle tree root checkpoints allowing $O(\log N)$ inclusion verification ($I_7$).
+9. **Adversarial Siege Test Suite (`warrant-siege`):** A standalone open-source CLI attacking the gateway across 10 attack scenarios, generating verified HTML and JSON scorecards and SVG badges.
 
 ### How We Built It
-- **Gateway Core:** TypeScript MCP server conforming to Streamable HTTP spec `2025-11-25+`, with an SQLite WAL repository layer and pure deterministic policy engine.
-- **Client & Voice Agent:** Next.js 14 glassmorphic UI integrated with the **Amazon Bedrock Converse API** (`@aws-sdk/client-bedrock-runtime`) for autonomous tool dispatch, with an offline deterministic fallback.
-- **Mock Services:** Autonomous Hotel, Train, and Restaurant providers with control endpoints for simulating timeouts, declines, and lost connections.
-- **Adversarial Harness:** Published as an independent MIT-licensed package (`@warrant/siege`) with interactive scorecard generation.
+- **Gateway Core:** TypeScript MCP server conforming to Streamable HTTP spec `2025-11-25+`, with an SQLite WAL repository layer, pure deterministic policy engine, Ed25519 receipt signer, and Merkle tree audit prover.
+- **Client & Voice Agent:** Next.js 14 glassmorphic UI integrated with the **Amazon Bedrock Converse API** (`@aws-sdk/client-bedrock-runtime`) for autonomous tool dispatch, featuring receipt inspection, undo countdown, and offline deterministic fallback.
+- **Mock Services:** Autonomous Hotel, Train, and Restaurant providers (Coastal Rail Express, Harbor Inn Hotel) with control endpoints for simulating timeouts, declines, and lost connections.
+- **Adversarial Harness & CI Action:** Published as an independent MIT-licensed package (`@warrant/siege`) with interactive scorecard generation and a reusable GitHub Actions workflow.
 
 ### What's Next for Warrant (Post-Hackathon Roadmap)
 *Notice: The following represents our future architectural roadmap beyond the hackathon to scale Warrant into global trust infrastructure:*

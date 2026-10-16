@@ -1,5 +1,6 @@
 import DatabaseConstructor, { Database as DatabaseType } from "better-sqlite3";
 import {
+  ActionReceipt,
   ActionState,
   Approval,
   ApprovalStatus,
@@ -50,6 +51,8 @@ export class WarrantRepository {
         state TEXT NOT NULL,
         total_estimated_minor INTEGER NOT NULL,
         total_confirmed_minor INTEGER NOT NULL DEFAULT 0,
+        undo_window_seconds INTEGER,
+        settles_at TEXT,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       );
@@ -106,7 +109,30 @@ export class WarrantRepository {
         prev_hash TEXT NOT NULL,
         hash TEXT NOT NULL
       );
+
+      CREATE TABLE IF NOT EXISTS receipts (
+        id TEXT PRIMARY KEY,
+        action_id TEXT NOT NULL REFERENCES actions(id),
+        plan_id TEXT NOT NULL REFERENCES plans(id),
+        grant_id TEXT NOT NULL REFERENCES grants(id),
+        tool_name TEXT NOT NULL,
+        params_hash TEXT NOT NULL,
+        spend_minor INTEGER NOT NULL,
+        currency TEXT NOT NULL,
+        booking_ref TEXT NOT NULL,
+        executed_at TEXT NOT NULL,
+        public_key TEXT NOT NULL,
+        signature TEXT NOT NULL
+      );
     `);
+
+    // Safe migrations for newly added columns on existing sqlite databases
+    try {
+      this.db.exec("ALTER TABLE plans ADD COLUMN undo_window_seconds INTEGER;");
+    } catch {}
+    try {
+      this.db.exec("ALTER TABLE plans ADD COLUMN settles_at TEXT;");
+    } catch {}
   }
 
   // ================= Grant Operations =================
@@ -190,14 +216,16 @@ export class WarrantRepository {
   public createPlan(plan: Plan): void {
     const tx = this.db.transaction(() => {
       this.db.prepare(`
-        INSERT INTO plans (id, grant_id, state, total_estimated_minor, total_confirmed_minor, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO plans (id, grant_id, state, total_estimated_minor, total_confirmed_minor, undo_window_seconds, settles_at, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         plan.id,
         plan.grantId,
         plan.state,
         plan.totalEstimatedMinor,
         plan.totalConfirmedMinor,
+        plan.undoWindowSeconds ?? null,
+        plan.settlesAt ?? null,
         plan.createdAt,
         plan.updatedAt
       );
@@ -251,6 +279,8 @@ export class WarrantRepository {
       state: planRow.state as PlanState,
       totalEstimatedMinor: planRow.total_estimated_minor,
       totalConfirmedMinor: planRow.total_confirmed_minor,
+      undoWindowSeconds: planRow.undo_window_seconds ?? undefined,
+      settlesAt: planRow.settles_at ?? undefined,
       actions,
       createdAt: planRow.created_at,
       updatedAt: planRow.updated_at
@@ -260,6 +290,11 @@ export class WarrantRepository {
   public updatePlanState(id: string, state: PlanState): void {
     const now = new Date().toISOString();
     this.db.prepare("UPDATE plans SET state = ?, updated_at = ? WHERE id = ?").run(state, now, id);
+  }
+
+  public updatePlanHold(id: string, undoWindowSeconds: number, settlesAt: string): void {
+    const now = new Date().toISOString();
+    this.db.prepare("UPDATE plans SET state = 'HELD', undo_window_seconds = ?, settles_at = ?, updated_at = ? WHERE id = ?").run(undoWindowSeconds, settlesAt, now, id);
   }
 
   public updateActionState(id: string, state: ActionState, resultPayload?: Record<string, unknown>, confirmedCost?: MinorUnits): void {
@@ -461,6 +496,67 @@ export class WarrantRepository {
       expiresAt: r.expires_at,
       decidedAt: r.decided_at ?? undefined,
       createdAt: r.created_at
+    };
+  }
+
+  // ================= Receipt Operations =================
+  public saveReceipt(receipt: ActionReceipt): void {
+    const stmt = this.db.prepare(`
+      INSERT INTO receipts (
+        id, action_id, plan_id, grant_id, tool_name, params_hash,
+        spend_minor, currency, booking_ref, executed_at, public_key, signature
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    stmt.run(
+      receipt.receiptId,
+      receipt.actionId,
+      receipt.planId,
+      receipt.grantId,
+      receipt.toolName,
+      receipt.paramsHash,
+      receipt.spendMinor,
+      receipt.currency,
+      receipt.providerBookingRef,
+      receipt.executedAt,
+      receipt.gatewayPublicKey,
+      receipt.signature
+    );
+  }
+
+  public getReceipt(receiptId: string): ActionReceipt | null {
+    const stmt = this.db.prepare(`SELECT * FROM receipts WHERE id = ?`);
+    const row = stmt.get(receiptId);
+    return row ? this.mapReceipt(row) : null;
+  }
+
+  public getReceiptByActionId(actionId: string): ActionReceipt | null {
+    const stmt = this.db.prepare(`SELECT * FROM receipts WHERE action_id = ?`);
+    const row = stmt.get(actionId);
+    return row ? this.mapReceipt(row) : null;
+  }
+
+  public listReceipts(limit: number = 50): ActionReceipt[] {
+    const stmt = this.db.prepare(`SELECT * FROM receipts ORDER BY executed_at DESC LIMIT ?`);
+    const rows = stmt.all(limit);
+    return rows.map((r) => this.mapReceipt(r));
+  }
+
+  private mapReceipt(r: any): ActionReceipt {
+    return {
+      version: "1.0",
+      receiptId: r.id,
+      actionId: r.action_id,
+      planId: r.plan_id,
+      grantId: r.grant_id,
+      toolName: r.tool_name,
+      paramsHash: r.params_hash,
+      spendMinor: r.spend_minor,
+      currency: r.currency as "USD",
+      providerBookingRef: r.booking_ref,
+      executedAt: r.executed_at,
+      gatewayPublicKey: r.public_key,
+      signature: r.signature
     };
   }
 

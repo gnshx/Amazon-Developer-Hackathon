@@ -8,6 +8,7 @@ export * from "./audit/chain.js";
 export * from "./storage/db.js";
 export * from "./approval/service.js";
 export * from "./idempotency/service.js";
+export * from "./receipt/service.js";
 export * from "./mcp/server.js";
 export * from "./providers/train.js";
 export * from "./providers/hotel.js";

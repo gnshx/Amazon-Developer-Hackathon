@@ -24,40 +24,42 @@ Phase 7: Precision Hardening & High-Impact Extensions (Workstream F)
 
 ## Detailed Step-by-Step Schedule
 
-### Milestone 1: Baseline Verification & Clean Hygiene (Oct 17 - Current)
+### Milestone 1: Baseline Verification & Clean Hygiene (Oct 17)
 - [x] Replace trademarked brand names with fictional services across client UI and transcripts
 - [x] Build automated mutation test script (`scripts/test-mutation.ts` / `npm run test:mutation`)
 - [x] Enable turnkey auto-spawn in `warrant-siege` for clean-machine test runs
 - [x] Fix Dockerfile multi-package workspace copies for clean `npm ci`
-- [ ] Document real Bedrock Converse API invocation vs. offline testing fallback
-- **Status:** in_progress
+- [x] Document real Bedrock Converse API invocation vs. offline testing fallback
+- **Status:** completed
 
 ### Milestone 2: Signed Action Receipts & Offline Verification (Oct 18)
-- [ ] Implement Ed25519 keypair generation and receipt signing in Gateway on completed actions
-- [ ] Add receipt verification CLI: `npm run receipt:verify` / `warrant-verify`
-- [ ] Add "Verify Receipt" inspector and modal to Alexa client UI
-- [ ] Add Attack Scenario S9 (Forged / Altered Receipt Rejection) to `warrant-siege`
-- [ ] Verify Gate: all unit tests passing, S1–S9 passing green, fresh-clone <15s
-- **Status:** pending
+- [x] Implement Ed25519 keypair generation and receipt signing in Gateway on completed actions
+- [x] Add receipt verification CLI: `npm run receipt:verify` / `warrant-verify`
+- [x] Add "Verify Receipt" inspector and modal to Alexa client UI
+- [x] Add Attack Scenario S9 (Forged / Altered Receipt Rejection) to `warrant-siege`
+- [x] Verify Gate: all unit tests passing, S1–S9 passing green, fresh-clone <15s
+- **Status:** completed
 
 ### Milestone 3: Undo Window & Reversible Hold (Oct 19)
-- [ ] Implement configurable grace countdown (e.g. 8-second hold) before irreversible dispatch
-- [ ] Add out-of-band cancellation endpoint (`POST /admin/plans/:id/undo`)
-- [ ] Add visual Undo countdown bar and "Cancel Action" button in Alexa client UI
-- [ ] Add Attack Scenario S10 (Cancelled Action Never Reaches Downstream Provider)
-- [ ] Verify Gate: all unit tests passing, S1–S10 passing green, clean compensation check
-- **Status:** pending
+- [x] Implement configurable grace countdown (e.g. 8-second hold) before irreversible dispatch
+- [x] Add out-of-band cancellation endpoint (`POST /admin/plans/:id/undo`)
+- [x] Add visual Undo countdown bar and "Cancel Booking" button in Alexa client UI
+- [x] Add Attack Scenario S10 (Cancelled Action Never Reaches Downstream Provider)
+- [x] Verify Gate: all unit tests passing, S1–S10 passing green, clean compensation check
+- **Status:** completed
 
 ### Milestone 4: Standalone Packaging & CI GitHub Action (Oct 20)
-- [ ] Configure standalone package structure for `@warrant/siege` for separate OSS publishing
-- [ ] Create reusable GitHub Action workflow (`.github/workflows/warrant-siege.yml`)
-- [ ] Generate dynamic SVG/Markdown pass/fail badge for repository READMEs
-- **Status:** pending
+- [x] Configure standalone package structure for `@warrant/siege` for separate OSS publishing
+- [x] Create reusable GitHub Action workflow (`ci/workflows/warrant-siege.yml`, copyable to `.github/workflows/`)
+- [x] Generate dynamic SVG/Markdown pass/fail badge for repository READMEs (`scorecard-badge.svg`)
+- **Status:** completed
 
 ### Milestone 5: Stretch Feature & Feature Freeze (Oct 21)
-- [ ] Implement Merkle root checkpointing on audit chain tip (if ahead of schedule)
-- [ ] **HARD FEATURE FREEZE at 23:59 IST:** Zero new architectural changes permitted
-- **Status:** pending
+- [x] Implement Merkle root checkpointing on audit chain tip with $O(\log N)$ inclusion proof verification
+- [x] Expose Merkle endpoints (`GET /admin/audit/merkle-root`, `GET /admin/audit/merkle-proof/:seq`, `POST /admin/audit/merkle-verify`)
+- [x] Integrate Merkle Root Checkpoint card into Audit tab in Alexa client UI
+- [x] **HARD FEATURE FREEZE at 23:59 IST:** Zero new architectural changes permitted; all 10 invariants satisfied
+- **Status:** completed
 
 ### Milestone 6: Video Demo Recording & Production (Oct 22)
 - [ ] Rehearse 2:50 demo script with split-screen Alexa client + mobile approval portal

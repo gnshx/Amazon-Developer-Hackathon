@@ -1,0 +1,80 @@
+name: Warrant Siege Adversarial Safety CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  adversarial-siege:
+    name: 10-Scenario Invariant Siege & Cryptographic Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Workspace Dependencies
+        run: npm ci
+
+      - name: Build All Packages
+        run: npm run build
+
+      - name: Run Fast Unit & Property Tests
+        run: npm run test
+
+      - name: Execute Adversarial Siege Harness (S1 - S10)
+        run: npm run test:siege -- --out ./scorecard.html --json ./scorecard.json
+
+      - name: Verify Cryptographic Audit Event Chain
+        run: npm run audit:verify
+
+      - name: Upload Safety Scorecard Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: warrant-safety-scorecard
+          path: |
+            scorecard.html
+            scorecard.json
+            scorecard-badge.svg
+          retention-days: 30
+
+      - name: Publish Invariant Verification Summary
+        if: always()
+        run: |
+          if [ -f scorecard.json ]; then
+            PASSED=$(node -e "const s = require('./scorecard.json'); console.log(s.passedScenarios);")
+            TOTAL=$(node -e "const s = require('./scorecard.json'); console.log(s.totalScenarios);")
+            ALL_OK=$(node -e "const s = require('./scorecard.json'); console.log(s.allInvariantsSatisfied);")
+            
+            echo "## 🛡️ Warrant Siege Safety Scorecard" >> $GITHUB_STEP_SUMMARY
+            if [ "$ALL_OK" = "true" ]; then
+              echo "### Status: ✅ ALL $TOTAL INVARIANTS SATISFIED" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "### Status: ❌ INVARIANTS BREACHED ($PASSED / $TOTAL Passed)" >> $GITHUB_STEP_SUMMARY
+            fi
+            
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Invariant | Description | Status | Tested By |" >> $GITHUB_STEP_SUMMARY
+            echo "| :---: | :--- | :---: | :---: |" >> $GITHUB_STEP_SUMMARY
+            
+            node -e "
+              const s = require('./scorecard.json');
+              for (const [id, inv] of Object.entries(s.invariants)) {
+                const badge = inv.satisfied ? '✅ SATISFIED' : '❌ BREACHED';
+                console.log('| \`' + id + '\` | ' + inv.name + ' | ' + badge + ' | \`' + inv.testedBy.join(', ') + '\` |');
+              }
+            " >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ❌ Scorecard generation failed" >> $GITHUB_STEP_SUMMARY
+          fi

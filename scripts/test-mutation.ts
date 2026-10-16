@@ -61,10 +61,10 @@ async function main() {
   const baselineScorecard = await baseline.runner.runAll();
   await baseline.cleanup();
 
-  if (baselineScorecard.passedScenarios === 8) {
-    console.log("   ✅ Baseline clean: 8/8 Scenarios Passed (All Invariants Green)\n");
+  if (baselineScorecard.allInvariantsSatisfied && baselineScorecard.passedScenarios === baselineScorecard.totalScenarios) {
+    console.log(`   ✅ Baseline clean: ${baselineScorecard.passedScenarios}/${baselineScorecard.totalScenarios} Scenarios Passed (All Invariants Green)\n`);
   } else {
-    console.error("   ❌ Baseline failed unexpectedly!");
+    console.error(`   ❌ Baseline failed unexpectedly! (${baselineScorecard.passedScenarios}/${baselineScorecard.totalScenarios} passed)`);
     process.exit(1);
   }
 

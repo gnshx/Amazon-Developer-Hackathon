@@ -140,3 +140,106 @@ export function verifyAuditChain(events: AuditEvent[]): ChainVerificationResult 
     tipHash: events[events.length - 1].hash
   };
 }
+
+// ================= Merkle Tree Checkpointing =================
+
+export interface MerkleProofStep {
+  position: "left" | "right";
+  hash: string;
+}
+
+export interface MerkleProof {
+  seq: number;
+  leafHash: string;
+  root: string;
+  proof: MerkleProofStep[];
+}
+
+export function sha256Pair(a: string, b: string): string {
+  return createHash("sha256").update(a + b, "utf8").digest("hex");
+}
+
+/**
+ * Computes a binary Merkle tree root over an arbitrary list of SHA-256 hashes.
+ */
+export function computeMerkleRoot(hashes: string[]): string {
+  if (hashes.length === 0) return GENESIS_HASH;
+  if (hashes.length === 1) return hashes[0];
+
+  let currentLevel = [...hashes];
+  while (currentLevel.length > 1) {
+    const nextLevel: string[] = [];
+    for (let i = 0; i < currentLevel.length; i += 2) {
+      const left = currentLevel[i];
+      const right = i + 1 < currentLevel.length ? currentLevel[i + 1] : left;
+      nextLevel.push(sha256Pair(left, right));
+    }
+    currentLevel = nextLevel;
+  }
+  return currentLevel[0];
+}
+
+/**
+ * Generates an O(log N) Merkle inclusion proof for a specific event sequence.
+ */
+export function generateMerkleProof(events: AuditEvent[], targetSeq: number): MerkleProof {
+  if (events.length === 0) {
+    throw new Error("Cannot generate Merkle proof on empty audit log");
+  }
+  const targetIndex = targetSeq - 1;
+  if (targetIndex < 0 || targetIndex >= events.length) {
+    throw new Error(`Invalid event sequence ${targetSeq} for audit log of size ${events.length}`);
+  }
+
+  const leafHash = events[targetIndex].hash;
+  const proof: MerkleProofStep[] = [];
+  let currentLevel = events.map((e) => e.hash);
+  let currentIndex = targetIndex;
+
+  while (currentLevel.length > 1) {
+    const nextLevel: string[] = [];
+    for (let i = 0; i < currentLevel.length; i += 2) {
+      const left = currentLevel[i];
+      const right = i + 1 < currentLevel.length ? currentLevel[i + 1] : left;
+
+      if (i === currentIndex || i + 1 === currentIndex) {
+        if (currentIndex % 2 === 0) {
+          // Current is left, sibling is right
+          proof.push({ position: "right", hash: right });
+        } else {
+          // Current is right, sibling is left
+          proof.push({ position: "left", hash: left });
+        }
+      }
+
+      nextLevel.push(sha256Pair(left, right));
+    }
+
+    currentIndex = Math.floor(currentIndex / 2);
+    currentLevel = nextLevel;
+  }
+
+  const root = currentLevel[0];
+  return {
+    seq: targetSeq,
+    leafHash,
+    root,
+    proof
+  };
+}
+
+/**
+ * Verifies an O(log N) Merkle inclusion proof offline against an expected root hash.
+ */
+export function verifyMerkleProof(leafHash: string, proof: MerkleProofStep[], expectedRoot: string): boolean {
+  let curr = leafHash;
+  for (const step of proof) {
+    if (step.position === "left") {
+      curr = sha256Pair(step.hash, curr);
+    } else {
+      curr = sha256Pair(curr, step.hash);
+    }
+  }
+  return curr === expectedRoot;
+}
+

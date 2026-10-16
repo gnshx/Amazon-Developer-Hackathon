@@ -102,7 +102,10 @@ The genuine Alexa+ developer environment is restricted to select partners. To ad
 - **FR-10 Voice-Optimized Responses:** Spoken summaries formatted specifically for speech synthesis (concise, natural, ≤300 characters).
 - **FR-11 Client Interface:** Next.js web application with chat stream, phone approval inbox, real-time MCP tool call inspector, and audit log viewer.
 - **FR-12 Bedrock Agent:** Autonomous agent loop leveraging Amazon Bedrock (Converse API with Claude 3.5 Sonnet / Claude 3 Haiku) connected to the MCP gateway via Streamable HTTP.
-- **FR-13 Adversarial Harness:** Declarative YAML attack scenarios executing automated probes against the gateway and outputting verified safety scorecards.
+- **FR-13 Adversarial Harness:** Declarative YAML attack scenarios executing automated probes against the gateway and outputting verified safety scorecards (10 core scenarios).
+- **FR-14 Action Receipts (Ed25519):** Every confirmed action produces a detached Ed25519 digitally signed receipt over RFC 8785 canonical metadata, verifiable completely offline by third parties ($I_9$).
+- **FR-15 Grace-Hold Undo Window:** Configurable countdown hold before irreversible provider dispatch; out-of-band cancellation aborts execution with zero provider residue ($I_{10}$).
+- **FR-16 Merkle Audit Checkpointing:** Binary Merkle tree root calculation over audit events with $O(\log N)$ inclusion proof generation and verification.
 
 ---
 

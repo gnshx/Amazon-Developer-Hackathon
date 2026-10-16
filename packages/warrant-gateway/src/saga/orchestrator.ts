@@ -1,6 +1,7 @@
-import { PlanAction, PlanState } from "../types.js";
+import { ActionReceipt, PlanAction, PlanState } from "../types.js";
 import { WarrantRepository } from "../storage/db.js";
 import { ApprovalService } from "../approval/service.js";
+import { ReceiptService } from "../receipt/service.js";
 import { TimeoutReconciler } from "./reconciler.js";
 import { MockHotelProvider } from "../providers/hotel.js";
 import { MockTrainProvider } from "../providers/train.js";
@@ -23,19 +24,24 @@ export interface SagaExecutionResult {
   compensatedSteps: string[];
   spoken_summary: string;
   error?: string;
+  receipts?: ActionReceipt[];
 }
 
 export class SagaOrchestrator {
   private reconciler: TimeoutReconciler;
+  private receiptService: ReceiptService;
+  private heldTimers = new Map<string, NodeJS.Timeout>();
 
   constructor(
     private repo: WarrantRepository,
     private approvalService: ApprovalService,
     private hotelProvider: MockHotelProvider,
     private trainProvider: MockTrainProvider,
-    private restaurantProvider: MockRestaurantProvider
+    private restaurantProvider: MockRestaurantProvider,
+    receiptService?: ReceiptService
   ) {
     this.reconciler = new TimeoutReconciler(repo);
+    this.receiptService = receiptService ?? new ReceiptService(repo);
   }
 
   private getProvider(toolName: string): IMockProvider | null {
@@ -60,6 +66,7 @@ export class SagaOrchestrator {
     this.repo.updatePlanState(planId, "EXECUTING");
     const compensationStack: CompensationStep[] = [];
     const stepResults: any[] = [];
+    const receipts: ActionReceipt[] = [];
     let confirmedSpendMinor = 0;
 
     for (const act of plan.actions) {
@@ -154,9 +161,20 @@ export class SagaOrchestrator {
       }
 
       if (executionSuccess) {
-        this.repo.updateActionState(act.id, "SUCCEEDED", { bookingRef, costMinor: cost }, cost);
+        const receipt = this.receiptService.createReceipt({
+          actionId: act.id,
+          planId,
+          grantId,
+          toolName: act.toolName,
+          paramsHash: act.paramsHash,
+          spendMinor: cost,
+          providerBookingRef: bookingRef || `ref_${act.id.slice(0, 8)}`
+        });
+        receipts.push(receipt);
+
+        this.repo.updateActionState(act.id, "SUCCEEDED", { bookingRef, costMinor: cost, receiptId: receipt.receiptId }, cost);
         confirmedSpendMinor += cost;
-        stepResults.push({ actionId: act.id, toolName: act.toolName, bookingRef, costMinor: cost });
+        stepResults.push({ actionId: act.id, toolName: act.toolName, bookingRef, costMinor: cost, receipt });
 
         if (provider && bookingRef) {
           compensationStack.push({
@@ -170,7 +188,8 @@ export class SagaOrchestrator {
         this.repo.appendAuditEvent("ACTION_SUCCEEDED", act.id, {
           toolName: act.toolName,
           bookingRef,
-          costMinor: cost
+          costMinor: cost,
+          receiptId: receipt.receiptId
         });
       }
     }
@@ -185,6 +204,7 @@ export class SagaOrchestrator {
       confirmedSpendMinor,
       stepResults,
       compensatedSteps: [],
+      receipts,
       spoken_summary: `Your trip is booked and confirmed! Total spend was $${(confirmedSpendMinor / 100).toFixed(2)}.`
     };
   }
@@ -259,4 +279,149 @@ export class SagaOrchestrator {
       error: errorMessage
     };
   }
+
+  /**
+   * Executes a plan with an undo grace window (Invariant I10: Grace-Hold Containment).
+   * Actions are held in a HELD state before external settlement.
+   */
+  public async executePlanWithUndoWindow(
+    planId: string,
+    grantId: string,
+    userApprovals: Record<string, string> = {},
+    undoWindowSeconds: number = 5
+  ): Promise<SagaExecutionResult> {
+    const plan = this.repo.getPlanById(planId);
+    if (!plan) throw new Error(`Plan ${planId} not found`);
+
+    const settlesAt = new Date(Date.now() + undoWindowSeconds * 1000).toISOString();
+    this.repo.updatePlanHold(planId, undoWindowSeconds, settlesAt);
+
+    this.repo.appendAuditEvent("PLAN_HELD", planId, {
+      undoWindowSeconds,
+      settlesAt,
+      grantId
+    });
+
+    const timer = setTimeout(async () => {
+      this.heldTimers.delete(planId);
+      const current = this.repo.getPlanById(planId);
+      if (current && current.state === "HELD") {
+        await this.executePlan(planId, grantId, userApprovals);
+      }
+    }, undoWindowSeconds * 1000);
+
+    this.heldTimers.set(planId, timer);
+
+    return {
+      planId,
+      state: "HELD",
+      confirmedSpendMinor: 0,
+      stepResults: [],
+      compensatedSteps: [],
+      undoWindowSeconds,
+      settlesAt,
+      spoken_summary: `Your booking is placed on a ${undoWindowSeconds}-second grace hold. You can cancel anytime before settlement.`
+    };
+  }
+
+  /**
+   * Cancels a held or reversible plan within its grace window (Invariant I10).
+   */
+  public async undoPlan(planId: string): Promise<{
+    success: boolean;
+    state: PlanState;
+    spendReleasedMinor: number;
+    spoken_summary: string;
+    error?: string;
+  }> {
+    if (this.heldTimers.has(planId)) {
+      const timer = this.heldTimers.get(planId);
+      if (timer) clearTimeout(timer);
+      this.heldTimers.delete(planId);
+    }
+
+    const plan = this.repo.getPlanById(planId);
+    if (!plan) {
+      return {
+        success: false,
+        state: "FAILED",
+        spendReleasedMinor: 0,
+        spoken_summary: "Plan not found.",
+        error: `Plan ${planId} not found`
+      };
+    }
+
+    if (plan.state === "UNDONE") {
+      return {
+        success: true,
+        state: "UNDONE",
+        spendReleasedMinor: 0,
+        spoken_summary: "Booking was already cancelled."
+      };
+    }
+
+    if (plan.state === "HELD") {
+      this.repo.updatePlanState(planId, "UNDONE");
+      this.repo.appendAuditEvent("ACTION_UNDO_REQUESTED", planId, {
+        reason: "User cancelled during undo grace window",
+        heldAt: plan.updatedAt
+      });
+      this.repo.appendAuditEvent("ACTION_UNDONE", planId, {
+        status: "SUCCESS",
+        spendReleasedMinor: plan.totalEstimatedMinor
+      });
+
+      return {
+        success: true,
+        state: "UNDONE",
+        spendReleasedMinor: plan.totalEstimatedMinor,
+        spoken_summary: "Booking cancelled during grace window. Zero charges made."
+      };
+    }
+
+    if (plan.state === "COMPLETED") {
+      // Check if within settlesAt or grace window
+      this.repo.appendAuditEvent("ACTION_UNDO_REQUESTED", planId, {
+        reason: "User requested refund rollback on completed plan"
+      });
+
+      // Rollback actions
+      for (const act of plan.actions) {
+        const provider = this.getProvider(act.toolName);
+        if (provider && act.state === "SUCCEEDED" && act.resultPayload?.bookingRef) {
+          const bookingRef = act.resultPayload.bookingRef as string;
+          if (act.toolName === "book_hotel" && "cancelHotel" in provider) {
+            await (provider as MockHotelProvider).cancelHotel(`undo_${act.id}`, bookingRef);
+          } else if (act.toolName === "book_train" && "cancelTrain" in provider) {
+            await (provider as MockTrainProvider).cancelTrain(`undo_${act.id}`, bookingRef);
+          } else if (act.toolName === "reserve_table" && "cancelReservation" in provider) {
+            await (provider as MockRestaurantProvider).cancelReservation(`undo_${act.id}`, bookingRef);
+          }
+        }
+      }
+
+      this.repo.updateGrantSpent(plan.grantId, -plan.totalConfirmedMinor);
+      this.repo.updatePlanState(planId, "UNDONE");
+      this.repo.appendAuditEvent("ACTION_UNDONE", planId, {
+        status: "SUCCESS",
+        refundedMinor: plan.totalConfirmedMinor
+      });
+
+      return {
+        success: true,
+        state: "UNDONE",
+        spendReleasedMinor: plan.totalConfirmedMinor,
+        spoken_summary: "Confirmed booking was cancelled and refunded in full."
+      };
+    }
+
+    return {
+      success: false,
+      state: plan.state,
+      spendReleasedMinor: 0,
+      spoken_summary: "This booking cannot be cancelled in its current state.",
+      error: `Plan in state ${plan.state} cannot be undone.`
+    };
+  }
 }
+

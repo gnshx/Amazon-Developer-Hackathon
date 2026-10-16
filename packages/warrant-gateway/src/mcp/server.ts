@@ -9,6 +9,7 @@ import { Grant, Plan, PlanAction } from "../types.js";
 import { randomUUID } from "node:crypto";
 
 import { SagaOrchestrator } from "../saga/orchestrator.js";
+import { ReceiptService } from "../receipt/service.js";
 import { MockHotelProvider } from "../providers/hotel.js";
 import { MockTrainProvider } from "../providers/train.js";
 import { MockRestaurantProvider } from "../providers/restaurant.js";
@@ -20,6 +21,7 @@ export interface GatewayServerOptions {
   hotelProvider?: MockHotelProvider;
   trainProvider?: MockTrainProvider;
   restaurantProvider?: MockRestaurantProvider;
+  receiptService?: ReceiptService;
 }
 
 export function createGatewayApp(options: GatewayServerOptions = {}) {
@@ -29,6 +31,7 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
   const repo = options.repo ?? new WarrantRepository();
   const approvalService = new ApprovalService(repo);
   const idempotencyService = new IdempotencyService(repo);
+  const receiptService = options.receiptService ?? new ReceiptService(repo);
 
   const hotelProvider = options.hotelProvider ?? new MockHotelProvider();
   const trainProvider = options.trainProvider ?? new MockTrainProvider();
@@ -39,11 +42,12 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
     approvalService,
     hotelProvider,
     trainProvider,
-    restaurantProvider
+    restaurantProvider,
+    receiptService
   );
 
   // Mount Out-of-band Admin Channel (Inaccessible to agent via MCP)
-  app.use("/admin", createAdminRouter(repo, approvalService));
+  app.use("/admin", createAdminRouter(repo, approvalService, sagaOrchestrator, receiptService));
 
   // Provider Control & Verification API (For adversarial harness & testing)
   app.post("/admin/providers/:name/fault", (req: Request, res: Response) => {
@@ -89,6 +93,24 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
   // Health check
   app.get("/health", (_req, res) => {
     res.json({ status: "healthy", protocolVersion: "2025-11-25" });
+  });
+
+  // Receipts API (Non-repudiable Proof Verification)
+  app.get("/receipts/public-key", (_req: Request, res: Response) => {
+    res.json({ publicKey: receiptService.getPublicKeyPem() });
+  });
+
+  app.get("/receipts/:id", (req: Request, res: Response) => {
+    const receipt = receiptService.getReceipt(String(req.params.id));
+    if (!receipt) return res.status(404).json({ error: "Receipt not found" });
+    return res.json({ receipt });
+  });
+
+  app.post("/receipts/verify", (req: Request, res: Response) => {
+    const { receipt, expectedPublicKey } = req.body;
+    if (!receipt) return res.status(400).json({ error: "Missing receipt object" });
+    const result = ReceiptService.verifyReceipt(receipt, expectedPublicKey);
+    return res.json(result);
   });
 
   // Bearer Token Authentication Middleware for /mcp
@@ -246,7 +268,7 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         },
         {
           name: "execute_plan",
-          description: "Execute an approved plan. Enforces idempotency, spend cap, and cryptographic approval parameter binding.",
+          description: "Execute an approved plan. Enforces idempotency, spend cap, cryptographic approval parameter binding, and optional undo grace window.",
           inputSchema: {
             type: "object",
             properties: {
@@ -255,9 +277,24 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
               approvals: {
                 type: "object",
                 description: "Map of actionId or toolName to approvalToken"
+              },
+              undoWindowSeconds: {
+                type: "number",
+                description: "Hold duration in seconds before external settlement (Invariant I10)"
               }
             },
             required: ["planId", "idempotencyKey"]
+          }
+        },
+        {
+          name: "undo_plan",
+          description: "Cancel a booking or plan that is currently held in an undo grace window.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              planId: { type: "string" }
+            },
+            required: ["planId"]
           }
         },
         {
@@ -482,25 +519,54 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
             });
           }
 
-          // Execute with strict Idempotency (Invariant I1) and Saga Orchestration (Invariants I4, I8)
-          const executionResult = await idempotencyService.executeWithIdempotency(
-            grant.id,
-            "execute_plan",
-            idempotencyKey,
-            { planId, userApprovals },
-            async () => {
-              const res = await sagaOrchestrator.executePlan(planId, grant.id, userApprovals);
-              if (res.state === "COMPENSATION_FAILED" || (res.state === "FAILED" && res.error)) {
-                throw new Error(res.error || "Plan execution failed");
-              }
-              return res;
-            }
-          );
+          const undoWindowSeconds = Number(toolArgs.undoWindowSeconds ?? 0);
 
+          if (undoWindowSeconds > 0) {
+            const heldResult = await sagaOrchestrator.executePlanWithUndoWindow(
+              planId,
+              grant.id,
+              userApprovals,
+              undoWindowSeconds
+            );
+            toolResult = {
+              data: heldResult,
+              spoken_summary: heldResult.spoken_summary
+            };
+          } else {
+            // Execute with strict Idempotency (Invariant I1) and Saga Orchestration (Invariants I4, I8)
+            const executionResult = await idempotencyService.executeWithIdempotency(
+              grant.id,
+              "execute_plan",
+              idempotencyKey,
+              { planId, userApprovals },
+              async () => {
+                const res = await sagaOrchestrator.executePlan(planId, grant.id, userApprovals);
+                if (res.state === "COMPENSATION_FAILED" || (res.state === "FAILED" && res.error)) {
+                  throw new Error(res.error || "Plan execution failed");
+                }
+                return res;
+              }
+            );
+
+            toolResult = {
+              data: executionResult.result,
+              spoken_summary: executionResult.result.spoken_summary,
+              cached: executionResult.cached
+            };
+          }
+        } else if (toolName === "undo_plan") {
+          const planId = toolArgs.planId;
+          if (!planId) {
+            return res.status(400).json({
+              jsonrpc: "2.0",
+              id,
+              error: { code: -32602, message: "Missing required field: planId" }
+            });
+          }
+          const undoResult = await sagaOrchestrator.undoPlan(planId);
           toolResult = {
-            data: executionResult.result,
-            spoken_summary: executionResult.result.spoken_summary,
-            cached: executionResult.cached
+            data: undoResult,
+            spoken_summary: undoResult.spoken_summary
           };
         } else if (toolName === "get_plan_status") {
           const plan = repo.getPlanById(toolArgs.planId);

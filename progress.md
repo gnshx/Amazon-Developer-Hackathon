@@ -22,6 +22,10 @@
 | 2026-10-16 | 17:48 | IP & Compliance | Replaced third-party trademarks with fictional providers (Coastal Rail Express, Harbor Inn Hotel). | Completed |
 | 2026-10-16 | 17:52 | Mutation Testing | Built `scripts/test-mutation.ts` (`npm run test:mutation`); proved S1 and S4 turn red on injected defects. | Completed |
 | 2026-10-16 | 17:54 | Turnkey Siege | Added auto-spawn ephemeral gateway to `warrant-siege` for turnkey execution on clean machines. | Completed |
+| 2026-10-16 | 21:30 | Action Receipts | Implemented Ed25519 signed receipts, `npm run receipt:verify` CLI, UI modal, and Scenario S9 (Invariant I9). | Completed |
+| 2026-10-16 | 21:50 | Undo Window | Implemented pre-settlement grace hold, `POST /admin/plans/:id/undo`, UI countdown, and Scenario S10 (Invariant I10). | Completed |
+| 2026-10-16 | 22:15 | CI Workflow | Created reusable `ci/workflows/warrant-siege.yml` running all 10 scenarios with SVG/HTML/JSON scorecards. | Completed |
+| 2026-10-16 | 22:35 | Merkle Checkpoints | Implemented binary Merkle tree root checkpointing over audit chain with $O(\log N)$ inclusion verification. | Completed |
 
 ---
 
@@ -29,23 +33,25 @@
 
 | Invariant | Description | Automated Test Status | Last Verified |
 |---|---|---|---|
-| **I1** | No duplicate external effect | **VERIFIED (Scenarios S1, S8 passing, S1 fails on defect)** | 16 Oct 2026, 17:53 IST |
-| **I2** | Total spend ≤ grant cap | **VERIFIED (Scenario S3 passing)** | 16 Oct 2026, 17:53 IST |
-| **I3** | T2 requires bound approval token | **VERIFIED (Scenarios S4, S7 passing, S4 fails on tampering)** | 16 Oct 2026, 17:53 IST |
-| **I4** | Mid-plan failure leaves clean residue | **VERIFIED (Scenario S2 passing)** | 16 Oct 2026, 17:53 IST |
-| **I5** | Provider text cannot alter grants/approvals | **VERIFIED (Scenario S5 passing)** | 16 Oct 2026, 17:53 IST |
-| **I6** | Expired/revoked grant execution blocked | **VERIFIED (Scenario S6 passing)** | 16 Oct 2026, 17:53 IST |
-| **I7** | Audit chain cryptographically continuous | **VERIFIED (Genesis-to-Tip Valid)** | 16 Oct 2026, 17:53 IST |
-| **I8** | Ambiguous timeouts actively reconciled | **VERIFIED (Scenario S8 passing)** | 16 Oct 2026, 17:53 IST |
+| **I1** | No duplicate external effect | **VERIFIED (Scenarios S1, S8 passing, S1 fails on defect)** | 16 Oct 2026, 22:45 IST |
+| **I2** | Total spend ≤ grant cap | **VERIFIED (Scenario S3 passing)** | 16 Oct 2026, 22:45 IST |
+| **I3** | T2 requires bound approval token | **VERIFIED (Scenarios S4, S7 passing, S4 fails on tampering)** | 16 Oct 2026, 22:45 IST |
+| **I4** | Mid-plan failure leaves clean residue | **VERIFIED (Scenario S2 passing)** | 16 Oct 2026, 22:45 IST |
+| **I5** | Provider text cannot alter grants/approvals | **VERIFIED (Scenario S5 passing)** | 16 Oct 2026, 22:45 IST |
+| **I6** | Expired/revoked grant execution blocked | **VERIFIED (Scenario S6 passing)** | 16 Oct 2026, 22:45 IST |
+| **I7** | Audit chain cryptographically continuous | **VERIFIED (Genesis-to-Tip Valid)** | 16 Oct 2026, 22:45 IST |
+| **I8** | Ambiguous timeouts actively reconciled | **VERIFIED (Scenario S8 passing)** | 16 Oct 2026, 22:45 IST |
+| **I9** | Action Authenticity & Signed Receipts | **VERIFIED (Scenario S9 passing, tampered receipts rejected)** | 16 Oct 2026, 22:45 IST |
+| **I10** | Grace-Hold Containment (Undo Window) | **VERIFIED (Scenario S10 passing, 0 external bookings created)** | 16 Oct 2026, 22:45 IST |
 
 ---
 
 ## Updated Hackathon Timeline & Daily Gates (Oct 17 – Oct 23)
 
 - [x] **Milestone 0 (Oct 17):** Core Gateway, Siege Harness (S1–S8), Mutation Test (`npm run test:mutation`), Fictional Names, Fresh Clone (11s).
-- [ ] **Milestone 1 (Oct 18):** Signed Action Receipts (Ed25519) + `npm run receipt:verify` CLI + UI verify modal + Scenario S9.
-- [ ] **Milestone 2 (Oct 19):** Undo Window (8s grace hold) + `POST /admin/plans/:id/undo` + UI Cancel button + Scenario S10.
-- [ ] **Milestone 3 (Oct 20):** Standalone `@warrant/siege` packaging + Reusable GitHub Action + Scorecard Badge.
-- [ ] **Milestone 4 (Oct 21):** Stretch feature (Merkle checkpoints) if ahead; **Hard Feature Freeze at 23:59 IST**.
+- [x] **Milestone 1 (Oct 18):** Signed Action Receipts (Ed25519) + `npm run receipt:verify` CLI + UI verify modal + Scenario S9.
+- [x] **Milestone 2 (Oct 19):** Undo Window (8s grace hold) + `POST /admin/plans/:id/undo` + UI Cancel button + Scenario S10.
+- [x] **Milestone 3 (Oct 20):** Standalone `@warrant/siege` packaging + Reusable GitHub Action + Scorecard Badge SVG generator.
+- [x] **Milestone 4 (Oct 21):** Stretch feature (Merkle root checkpoints & $O(\log N)$ inclusion proofs); **Hard Feature Freeze achieved**.
 - [ ] **Milestone 5 (Oct 22):** Demo video rehearsal & recording (2:50 script, failure shot, 1080p MP4).
 - [ ] **Milestone 6 (Oct 23):** Final sanity check & early Devpost submission before 23:59 IST.

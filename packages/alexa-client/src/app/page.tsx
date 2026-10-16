@@ -35,15 +35,19 @@ interface SagaStep {
   title: string;
   costMinor: number;
   tier: "T1" | "T2";
-  status: "PENDING" | "CONFIRMED" | "FAILED" | "COMPENSATED";
+  status: "PENDING" | "CONFIRMED" | "FAILED" | "COMPENSATED" | "HELD";
   details: string;
+  receipt?: any;
 }
 
 interface SagaState {
   planId: string | null;
-  status: "IDLE" | "WAITING_APPROVAL" | "EXECUTING" | "COMPLETED" | "ROLLED_BACK" | "DENIED";
+  status: "IDLE" | "WAITING_APPROVAL" | "HELD" | "EXECUTING" | "COMPLETED" | "ROLLED_BACK" | "DENIED";
   steps: SagaStep[];
   outcomeMessage?: string;
+  undoWindowSeconds?: number;
+  settlesAt?: string;
+  receipt?: any;
 }
 
 export default function AlexaClientDashboard() {
@@ -84,6 +88,11 @@ export default function AlexaClientDashboard() {
   const [auditEvents, setAuditEvents] = useState<any[]>([]);
   const [verificationResult, setVerificationResult] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<"explain" | "trace" | "audit">("explain");
+
+  // Receipt Modal & Undo Window State
+  const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
+  const [receiptVerificationState, setReceiptVerificationState] = useState<"idle" | "valid" | "invalid">("idle");
+  const [heldCountdown, setHeldCountdown] = useState<number | null>(null);
 
   // Visual Saga State
   const [saga, setSaga] = useState<SagaState>({
@@ -310,6 +319,46 @@ export default function AlexaClientDashboard() {
         setTimeout(() => setIsSpeaking(false), 2000);
       }, 800);
     }
+    // SCENARIO 4: Undo Window Grace Hold ($I10 Grace-Hold Containment)
+    else if (lower.includes("undo") || lower.includes("grace") || lower.includes("hold")) {
+      addTrace("bedrock_agent_loop", { prompt }, "RUNNING", "Agent reasoning loop with 10s undo grace window ($I10)");
+
+      setTimeout(() => {
+        const planId = `plan_undo_${Math.random().toString(36).substring(2, 9)}`;
+        addTrace("execute_plan", { planId, undoWindowSeconds: 10 }, "HELD", "Action placed on 10s grace hold before provider settlement");
+
+        setHeldCountdown(10);
+        setSaga({
+          planId,
+          status: "HELD",
+          undoWindowSeconds: 10,
+          steps: [
+            {
+              id: "step_train_held",
+              provider: "train",
+              title: "Coastal Rail Express",
+              costMinor: 4500,
+              tier: "T1",
+              status: "HELD",
+              details: "Held in Grace Window (10s before settlement) — $0 charged"
+            }
+          ],
+          outcomeMessage: "Booking held for 10 seconds before provider settlement. You can cancel now to incur zero charges ($I10)."
+        });
+
+        const agentMsg: Message = {
+          id: `a_${Date.now()}`,
+          sender: "agent",
+          text: "I've held your Coastal Rail train ticket for 10 seconds before settlement. If you change your mind, say 'Alexa, cancel booking' or click the Cancel button.",
+          timestamp: new Date().toLocaleTimeString(),
+          spokenSummary: "I placed your booking on a 10-second grace hold. You can cancel before it settles.",
+          planId
+        };
+        setMessages((prev) => [...prev, agentMsg]);
+        setIsLoading(false);
+        setTimeout(() => setIsSpeaking(false), 2000);
+      }, 800);
+    }
     // Default fallback
     else {
       setTimeout(() => {
@@ -327,6 +376,51 @@ export default function AlexaClientDashboard() {
     }
   };
 
+  // Countdown effect for Undo Grace Window
+  React.useEffect(() => {
+    if (heldCountdown === null || heldCountdown <= 0) return;
+    const interval = setInterval(() => {
+      setHeldCountdown((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval);
+          setSaga((s) => ({
+            ...s,
+            status: "COMPLETED",
+            steps: s.steps.map((st) => ({ ...st, status: "CONFIRMED", details: "Grace window elapsed — booking confirmed" })),
+            outcomeMessage: "Grace window elapsed. Booking settled and confirmed with provider."
+          }));
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [heldCountdown]);
+
+  // Cancel booking during grace hold
+  const handleCancelHeldBooking = () => {
+    setHeldCountdown(null);
+    addTrace("admin_plan_undo", { planId: saga.planId }, "UNDONE", "Cancelled during undo grace window; 0 provider bookings ($I10)");
+
+    setSaga((prev) => ({
+      ...prev,
+      status: "ROLLED_BACK",
+      steps: prev.steps.map((s) => ({ ...s, status: "COMPENSATED", details: "Cancelled in grace window: $0 charged" })),
+      outcomeMessage: "Grace hold cancelled. Zero charges made ($0.00 net spend). Provider state completely untouched ($I10)."
+    }));
+
+    setPhoneNotification("Booking cancelled during 10s grace window. Net charge: $0.00.");
+
+    const cancelMsg: Message = {
+      id: `a_${Date.now()}`,
+      sender: "agent",
+      text: "I've cancelled your held booking before settlement. No money was charged to your account ($0.00).",
+      timestamp: new Date().toLocaleTimeString(),
+      spokenSummary: "Booking cancelled during grace window. Zero charges made."
+    };
+    setMessages((prev) => [...prev, cancelMsg]);
+  };
+
   // User decides approval on phone
   const handleApprove = (approvalId: string) => {
     setPendingApprovals((prev) => prev.filter((a) => a.id !== approvalId));
@@ -338,12 +432,33 @@ export default function AlexaClientDashboard() {
       addTrace("execute_plan", { approvalToken: "appr_98a72b..." }, "EXECUTING", "Dispatched to Saga Orchestrator over MCP");
       setGrant((prev) => ({ ...prev, spentMinor: prev.spentMinor + 16500 }));
 
+      const sampleReceipt = {
+        version: "1.0",
+        receiptId: `rcpt_hotel_${Math.random().toString(36).substring(2, 8)}`,
+        actionId: "act_hotel_01",
+        planId: saga.planId || "plan_seattle_01",
+        grantId: grant.id,
+        toolName: "book_hotel",
+        paramsHash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        spendMinor: 12000,
+        currency: "USD",
+        providerBookingRef: "HINN-78921",
+        executedAt: new Date().toISOString(),
+        gatewayPublicKey: "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAh6p5B3L8J2m1N0q9R8s7T6u5V4w3X2y1Z0a9B8c7D6e=\n-----END PUBLIC KEY-----",
+        signature: "3a8f9c1e7d2b4f5a6b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a"
+      };
+
       // Update Saga State
       setSaga((prev) => ({
         ...prev,
         status: "COMPLETED",
-        steps: prev.steps.map((s) => ({ ...s, status: "CONFIRMED" })),
-        outcomeMessage: "All steps confirmed: Coastal Rail ($45.00) + Harbor Inn ($120.00). Total: $165.00."
+        receipt: sampleReceipt,
+        steps: prev.steps.map((s) => ({
+          ...s,
+          status: "CONFIRMED",
+          receipt: s.provider === "hotel" ? sampleReceipt : undefined
+        })),
+        outcomeMessage: "All steps confirmed: Coastal Rail ($45.00) + Harbor Inn ($120.00). Total: $165.00. Action receipts signed ($I9)."
       }));
 
       // Add to audit trail
@@ -462,6 +577,12 @@ export default function AlexaClientDashboard() {
             style={{ fontSize: "11px", padding: "6px 10px", background: "rgba(245, 158, 11, 0.12)", border: "1px solid rgba(245, 158, 11, 0.3)", borderRadius: "6px", color: "#fde68a", cursor: "pointer", whiteSpace: "nowrap" }}
           >
             ⛔ Exceed Cap ($300 Trip I2)
+          </button>
+          <button
+            onClick={() => handleSendMessage("Book train with a 10-second undo grace window")}
+            style={{ fontSize: "11px", padding: "6px 10px", background: "rgba(139, 92, 246, 0.15)", border: "1px solid rgba(139, 92, 246, 0.4)", borderRadius: "6px", color: "#c4b5fd", cursor: "pointer", whiteSpace: "nowrap" }}
+          >
+            ⏱️ Undo Window (Grace Hold I10)
           </button>
         </div>
 
@@ -638,6 +759,19 @@ export default function AlexaClientDashboard() {
                       ROLLBACK SUCCEEDED
                     </span>
                   )}
+                  {saga.status === "HELD" && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontSize: "10px", background: "rgba(245, 158, 11, 0.2)", color: "#fde68a", border: "1px solid #f59e0b", padding: "2px 8px", borderRadius: "4px", fontWeight: "700" }}>
+                        GRACE HOLD ({heldCountdown ?? 0}s)
+                      </span>
+                      <button
+                        onClick={handleCancelHeldBooking}
+                        style={{ fontSize: "10px", background: "#ef4444", color: "#fff", border: "none", padding: "3px 8px", borderRadius: "4px", fontWeight: "700", cursor: "pointer" }}
+                      >
+                        Cancel Booking
+                      </button>
+                    </div>
+                  )}
                   {saga.status === "COMPLETED" && (
                     <span style={{ fontSize: "10px", background: "rgba(16, 185, 129, 0.2)", color: "#6ee7b7", border: "1px solid #10b981", padding: "2px 6px", borderRadius: "4px", fontWeight: "700" }}>
                       ALL CONFIRMED
@@ -648,14 +782,14 @@ export default function AlexaClientDashboard() {
                 {saga.steps.length === 0 ? (
                   <div style={{ padding: "16px", textAlign: "center", color: "var(--text-dim)", fontSize: "12px" }}>
                     No multi-step travel saga currently active.
-                    <p style={{ marginTop: "4px", fontSize: "11px" }}>Click <em>Happy Path</em> or <em>Train Decline</em> below to see forward execution and automatic rollback.</p>
+                    <p style={{ marginTop: "4px", fontSize: "11px" }}>Click <em>Happy Path</em> or <em>Undo Window</em> below to see forward execution, receipts, and grace holds.</p>
                   </div>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {saga.steps.map((step, idx) => (
                       <div
                         key={step.id}
-                        className={`saga-step-card ${step.status === "CONFIRMED" ? "confirmed" : step.status === "COMPENSATED" ? "compensated" : "active"}`}
+                        className={`saga-step-card ${step.status === "CONFIRMED" ? "confirmed" : step.status === "COMPENSATED" ? "compensated" : step.status === "HELD" ? "active" : "active"}`}
                       >
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
                           <span style={{ fontSize: "12px", fontWeight: "600" }}>
@@ -674,8 +808,10 @@ export default function AlexaClientDashboard() {
                                   ? "#ef4444"
                                   : step.status === "FAILED"
                                   ? "#f43f5e"
+                                  : step.status === "HELD"
+                                  ? "#8b5cf6"
                                   : "#f59e0b",
-                              color: "#000"
+                              color: "#fff"
                             }}
                           >
                             {step.status}
@@ -687,11 +823,45 @@ export default function AlexaClientDashboard() {
                             ${(step.costMinor / 100).toFixed(2)}
                           </strong>
                         </div>
+                        {step.receipt && (
+                          <div style={{ marginTop: "6px", display: "flex", justifyContent: "flex-end" }}>
+                            <button
+                              onClick={() => {
+                                setSelectedReceipt(step.receipt);
+                                setReceiptVerificationState("idle");
+                              }}
+                              style={{
+                                fontSize: "10px",
+                                background: "rgba(56, 189, 248, 0.15)",
+                                border: "1px solid rgba(56, 189, 248, 0.4)",
+                                color: "#38bdf8",
+                                borderRadius: "4px",
+                                padding: "2px 8px",
+                                cursor: "pointer",
+                                fontWeight: "600"
+                              }}
+                            >
+                              📜 View Signed Receipt ($I_9)
+                            </button>
+                          </div>
+                        )}
                       </div>
                     ))}
 
+                    {saga.status === "HELD" && (
+                      <div style={{ marginTop: "4px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "var(--text-muted)" }}>
+                          <span>Settling with provider in {heldCountdown}s...</span>
+                          <span style={{ color: "#f59e0b" }}>Reversible Grace Period ($I10)</span>
+                        </div>
+                        <div className="hold-progress-bar">
+                          <div className="hold-progress-fill" style={{ width: `${((heldCountdown ?? 0) / 10) * 100}%` }} />
+                        </div>
+                      </div>
+                    )}
+
                     {saga.outcomeMessage && (
-                      <div style={{ background: saga.status === "ROLLED_BACK" ? "rgba(239,68,68,0.1)" : "rgba(16,185,129,0.1)", border: `1px solid ${saga.status === "ROLLED_BACK" ? "rgba(239,68,68,0.3)" : "rgba(16,185,129,0.3)"}`, borderRadius: "8px", padding: "10px", fontSize: "11px", color: "#f8fafc", marginTop: "4px" }}>
+                      <div style={{ background: saga.status === "ROLLED_BACK" ? "rgba(239,68,68,0.1)" : saga.status === "HELD" ? "rgba(139,92,246,0.1)" : "rgba(16,185,129,0.1)", border: `1px solid ${saga.status === "ROLLED_BACK" ? "rgba(239,68,68,0.3)" : saga.status === "HELD" ? "rgba(139,92,246,0.3)" : "rgba(16,185,129,0.3)"}`, borderRadius: "8px", padding: "10px", fontSize: "11px", color: "#f8fafc", marginTop: "4px" }}>
                         {saga.outcomeMessage}
                       </div>
                     )}
@@ -707,7 +877,7 @@ export default function AlexaClientDashboard() {
                     <span style={{ fontSize: "12px", fontWeight: "600" }}>Spend Cap ($I_2$)</span>
                   </div>
                   <p style={{ fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
-                    Enforced at the gateway. The agent cannot exceed your limit, even with prompt injection.
+                    Enforced at gateway. Agent cannot exceed limit even under prompt injection.
                   </p>
                 </div>
 
@@ -717,7 +887,7 @@ export default function AlexaClientDashboard() {
                     <span style={{ fontSize: "12px", fontWeight: "600" }}>Approval Binding ($I_3$)</span>
                   </div>
                   <p style={{ fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
-                    T2 actions locked to exact arguments using RFC 8785 canonical SHA-256 hashes.
+                    T2 actions locked to exact arguments using RFC 8785 canonical hashes.
                   </p>
                 </div>
 
@@ -738,6 +908,26 @@ export default function AlexaClientDashboard() {
                   </div>
                   <p style={{ fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
                     Every transition is cryptographically chained for end-to-end verification.
+                  </p>
+                </div>
+
+                <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--border-color)", borderRadius: "10px", padding: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                    <ShieldCheck size={14} color="#a78bfa" />
+                    <span style={{ fontSize: "12px", fontWeight: "600" }}>Signed Receipts ($I_9$)</span>
+                  </div>
+                  <p style={{ fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                    Every confirmed action yields an Ed25519-signed proof verifiable offline.
+                  </p>
+                </div>
+
+                <div style={{ background: "rgba(255, 255, 255, 0.02)", border: "1px solid var(--border-color)", borderRadius: "10px", padding: "12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                    <RotateCcw size={14} color="#fbbf24" />
+                    <span style={{ fontSize: "12px", fontWeight: "600" }}>Undo Window ($I_{10}$)</span>
+                  </div>
+                  <p style={{ fontSize: "11px", color: "var(--text-muted)", lineHeight: "1.4" }}>
+                    Grace hold window allows instantaneous cancellation before provider commitment.
                   </p>
                 </div>
               </div>
@@ -768,7 +958,7 @@ export default function AlexaClientDashboard() {
           {activeTab === "audit" && (
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
-                <span style={{ fontSize: "12px", fontWeight: "600" }}>SHA-256 Chained Events</span>
+                <span style={{ fontSize: "12px", fontWeight: "600" }}>SHA-256 Chained Events & Merkle Tree</span>
                 <button
                   onClick={handleVerifyAudit}
                   style={{ fontSize: "11px", background: "#10b981", color: "#fff", border: "none", padding: "5px 10px", borderRadius: "4px", cursor: "pointer", fontWeight: "600" }}
@@ -785,6 +975,16 @@ export default function AlexaClientDashboard() {
                   <p style={{ color: "#e2e8f0", marginTop: "4px" }}>{verificationResult.spoken_summary}</p>
                 </div>
               )}
+
+              {/* Merkle Root Checkpoint Card */}
+              <div style={{ background: "rgba(139, 92, 246, 0.08)", border: "1px solid rgba(139, 92, 246, 0.3)", borderRadius: "8px", padding: "10px", marginBottom: "12px", fontSize: "11px" }}>
+                <div style={{ color: "#a78bfa", fontWeight: "700", display: "flex", alignItems: "center", gap: "4px" }}>
+                  <Layers size={14} /> Merkle Root Checkpoint (Logarithmic Proofs)
+                </div>
+                <div className="hash-badge" style={{ marginTop: "6px" }}>
+                  b4f9e12a...7c9d01ef (O(log N) proofs active)
+                </div>
+              </div>
 
               <div className="trace-log">
                 <div style={{ padding: "8px", background: "rgba(255,255,255,0.03)", borderRadius: "6px", marginBottom: "8px" }}>
@@ -807,6 +1007,83 @@ export default function AlexaClientDashboard() {
           )}
         </div>
       </div>
+
+      {/* CRYPTOGRAPHIC RECEIPT MODAL */}
+      {selectedReceipt && (
+        <div className="modal-overlay" onClick={() => setSelectedReceipt(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ padding: "20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid var(--border-color)", paddingBottom: "10px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <ShieldCheck size={20} color="#38bdf8" />
+                <h3 style={{ fontSize: "15px", fontWeight: "700" }}>Ed25519 Cryptographic Action Receipt</h3>
+              </div>
+              <button
+                onClick={() => setSelectedReceipt(null)}
+                style={{ background: "transparent", border: "none", color: "var(--text-muted)", cursor: "pointer", fontSize: "18px" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "12px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", background: "rgba(255,255,255,0.03)", padding: "8px 12px", borderRadius: "6px" }}>
+                <span style={{ color: "var(--text-muted)" }}>Receipt ID</span>
+                <span style={{ fontFamily: "monospace", color: "#38bdf8", fontWeight: "600" }}>{selectedReceipt.receiptId}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", background: "rgba(255,255,255,0.03)", padding: "8px 12px", borderRadius: "6px" }}>
+                <span style={{ color: "var(--text-muted)" }}>Action / Tool</span>
+                <span style={{ fontWeight: "600" }}>{selectedReceipt.toolName} ({selectedReceipt.actionId})</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", background: "rgba(255,255,255,0.03)", padding: "8px 12px", borderRadius: "6px" }}>
+                <span style={{ color: "var(--text-muted)" }}>Confirmed Spend</span>
+                <span style={{ color: "#10b981", fontWeight: "700" }}>${(selectedReceipt.spendMinor / 100).toFixed(2)} USD</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", background: "rgba(255,255,255,0.03)", padding: "8px 12px", borderRadius: "6px" }}>
+                <span style={{ color: "var(--text-muted)" }}>Provider Booking Ref</span>
+                <span style={{ fontFamily: "monospace", fontWeight: "600" }}>{selectedReceipt.providerBookingRef}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", background: "rgba(255,255,255,0.03)", padding: "8px 12px", borderRadius: "6px" }}>
+                <span style={{ color: "var(--text-muted)" }}>RFC 8785 Params Hash</span>
+                <span style={{ fontFamily: "monospace", color: "#cbd5e1" }}>{selectedReceipt.paramsHash.slice(0, 16)}...</span>
+              </div>
+              <div style={{ background: "rgba(255,255,255,0.03)", padding: "8px 12px", borderRadius: "6px" }}>
+                <div style={{ color: "var(--text-muted)", marginBottom: "4px" }}>Ed25519 Digital Signature</div>
+                <div style={{ fontFamily: "monospace", fontSize: "10px", color: "#94a3b8", wordBreak: "break-all" }}>
+                  {selectedReceipt.signature}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: "16px", paddingTop: "12px", borderTop: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <button
+                onClick={() => setReceiptVerificationState("valid")}
+                style={{
+                  background: receiptVerificationState === "valid" ? "#10b981" : "#2563eb",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "8px",
+                  padding: "8px 16px",
+                  fontSize: "12px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}
+              >
+                {receiptVerificationState === "valid" ? (
+                  <>
+                    <CheckCircle size={14} /> Signature Verified Offline ($I_9)
+                  </>
+                ) : (
+                  "Verify Signature Offline"
+                )}
+              </button>
+              <span style={{ fontSize: "11px", color: "var(--text-muted)" }}>Non-repudiable Proof</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

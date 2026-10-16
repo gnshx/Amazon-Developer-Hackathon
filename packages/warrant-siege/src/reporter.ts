@@ -18,7 +18,7 @@ export async function generateScorecardHtml(scorecard: Scorecard, outputPath: st
 
   const statusColor = scorecard.allInvariantsSatisfied ? "#10b981" : "#ef4444";
   const statusBadge = scorecard.allInvariantsSatisfied
-    ? `<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 6px 16px; border-radius: 9999px; font-weight: 700; font-size: 0.875rem; letter-spacing: 0.05em; text-transform: uppercase;">All 8 Invariants Satisfied</span>`
+    ? `<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 6px 16px; border-radius: 9999px; font-weight: 700; font-size: 0.875rem; letter-spacing: 0.05em; text-transform: uppercase;">All ${Object.keys(scorecard.invariants).length} Invariants Satisfied</span>`
     : `<span style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 6px 16px; border-radius: 9999px; font-weight: 700; font-size: 0.875rem; letter-spacing: 0.05em; text-transform: uppercase;">Invariants Breached</span>`;
 
   const invariantCards = Object.entries(scorecard.invariants)
@@ -156,12 +156,12 @@ export async function generateScorecardHtml(scorecard: Scorecard, outputPath: st
       </div>
     </header>
 
-    <h2 style="font-size: 1.25rem; font-weight: 700; color: #ffffff; margin-bottom: 1rem;">Architectural Invariants (I1 – I8)</h2>
+    <h2 style="font-size: 1.25rem; font-weight: 700; color: #ffffff; margin-bottom: 1rem;">Architectural Invariants (I1 – I${Object.keys(scorecard.invariants).length})</h2>
     <div class="grid-invariants">
       ${invariantCards}
     </div>
 
-    <h2 style="font-size: 1.25rem; font-weight: 700; color: #ffffff; margin-bottom: 1rem;">Adversarial Attack Scenarios (S1 – S8)</h2>
+    <h2 style="font-size: 1.25rem; font-weight: 700; color: #ffffff; margin-bottom: 1rem;">Adversarial Attack Scenarios (S1 – S${scorecard.results.length})</h2>
     <div class="table-card">
       <table>
         <thead>
@@ -198,4 +198,40 @@ export async function generateScorecardHtml(scorecard: Scorecard, outputPath: st
 </html>`;
 
   await fs.writeFile(outputPath, html, "utf-8");
+}
+
+/**
+ * Generates an SVG badge for the repository README and CI artifacts.
+ */
+export async function generateScorecardBadgeSvg(scorecard: Scorecard, outputPath: string): Promise<void> {
+  await fs.mkdir(path.dirname(outputPath), { recursive: true });
+  const total = scorecard.totalScenarios;
+  const passed = scorecard.passedScenarios;
+  const allPass = scorecard.allInvariantsSatisfied;
+  const color = allPass ? "#10b981" : "#ef4444";
+  const rightText = allPass ? `${passed}/${total} Satisfied` : `${total - passed} Breached`;
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="20" role="img" aria-label="Siege Scorecard: ${rightText}">
+  <title>Siege Scorecard: ${rightText}</title>
+  <linearGradient id="s" x2="0" y2="100%">
+    <stop offset="0" stop-color="#bbb" stop-opacity=".1"/>
+    <stop offset="1" stop-opacity=".1"/>
+  </linearGradient>
+  <clipPath id="r">
+    <rect width="200" height="20" rx="3" fill="#fff"/>
+  </clipPath>
+  <g clip-path="url(#r)">
+    <rect width="105" height="20" fill="#1e293b"/>
+    <rect x="105" width="95" height="20" fill="${color}"/>
+    <rect width="200" height="20" fill="url(#s)"/>
+  </g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="110">
+    <text aria-hidden="true" x="535" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="950">Siege Scorecard</text>
+    <text x="535" y="140" transform="scale(.1)" fill="#fff" textLength="950">Siege Scorecard</text>
+    <text aria-hidden="true" x="1515" y="150" fill="#010101" fill-opacity=".3" transform="scale(.1)" textLength="850">${rightText}</text>
+    <text x="1515" y="140" transform="scale(.1)" fill="#fff" textLength="850">${rightText}</text>
+  </g>
+</svg>`;
+
+  await fs.writeFile(outputPath, svg, "utf-8");
 }
