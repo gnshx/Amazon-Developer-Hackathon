@@ -137,37 +137,48 @@ Every requirement and user story is tied to an automated invariant test in the a
 
 ---
 
-## 4. Day-by-Day Hackathon Milestones & Quality Gates
+## 4. Day-by-Day Hackathon Milestones & Quality Gates (Oct 17 – Oct 23)
 
-| Day | Goal | Status |
-|---|---|---|
-| **Oct 16 (today)** | Repos and licenses, MCP skeleton on Streamable HTTP with tools, verified with MCP Inspector, data model, travel booking vertical selected. | **COMPLETED & TESTED (35/35 Passing)** |
-| **Oct 17** | Mock providers with failure injection (timeout, decline, response lost), tools (search, hold, book, cancel), idempotency, audit log. | **IN PROGRESS** |
-| **Oct 18** | Policy engine, grants, spend caps, approval flow with action-hash binding (RFC 8785). | **AHEAD OF SCHEDULE (Implemented in Phase 2)** |
-| **Oct 19** | Saga orchestrator with compensation (reverse rollback), plus reconciliation for the ambiguous-timeout case. | Scheduled |
-| **Oct 20** | Simulated Alexa client (Next.js 14), Bedrock agent over MCP (Converse API), trace and approval panels. | Scheduled |
-| **Oct 21** | Attack harness (`warrant-siege`) and scorecard (JSON & HTML). Run all 8 scenarios and fix what fails. | Scheduled |
-| **Oct 22** | README, architecture diagram, fresh-install test (<10 min), friction log, product feedback, AWS documentation. | Scheduled |
-| **Oct 23 (Cutoff)**| Record the demo video (<3 min), then submit early. The deadline is 12:30 AM IST on Oct 24, so treat Oct 23 as the real cutoff. | Final Submission |
+### Feature Triage & Priority Matrix
+
+| Feature | Effort | Demo Impact | Risk | Verdict | Target Gate |
+|---|---|---|---|---|---|
+| **Mutation test script (`npm run test:mutation`)** | ~0.5d | High (shows scorecard turn red on defect) | Low | **DONE (Oct 17)** | Gate 0 |
+| **Fictional provider names (Coastal Rail / Harbor Inn)** | ~0.2d | High (clean IP & compliance) | Low | **DONE (Oct 17)** | Gate 0 |
+| **Turnkey auto-spawn siege runner** | ~0.2d | High (one-shot clean machine test) | Low | **DONE (Oct 17)** | Gate 0 |
+| **Signed action receipts & verify CLI / UI modal** | ~1d | High (offline independent verification) | Low | **DO (Oct 18)** | Gate 1 |
+| **Undo window (pre-settlement hold countdown + cancel)** | ~1d | High (intuitive, visual demo impact) | Med | **DO (Oct 19)** | Gate 2 |
+| **Harness as reusable GitHub Action with badge** | ~0.5-1d | Med (ecosystem adoption) | Low | **DO (Oct 20)** | Gate 3 |
+| **Merkle checkpoints on audit chain tip** | ~1d | Med | Med | **STRETCH (Oct 21)**| Gate 4 |
+| **Passkey (WebAuthn) approvals** | 1-2d | High | High | **ROADMAP ONLY** | Post-Hackathon |
+| **Capability tokens (Macaroons) / Policy as code** | 2+d | High on paper | High | **ROADMAP ONLY** | Post-Hackathon |
+
+### Daily Execution Schedule
+
+| Date | Focus Area | Deliverables & Gates | Status |
+|---|---|---|---|
+| **Oct 17 (Today)** | Review Items & Hardening | Fictional names, mutation test script, turnkey siege auto-spawn, clean clone <15s, Dockerfile fix. | **COMPLETED & TESTED** |
+| **Oct 18** | Signed Receipts | Ed25519 action receipts, `npm run receipt:verify` CLI, UI Verify button, Attack Scenario S9. | **Next Up** |
+| **Oct 19** | Undo Window | Grace hold countdown (8s), cancel endpoint, UI cancel button, Attack Scenario S10. | Scheduled |
+| **Oct 20** | Reusable CI Action | Standalone `@warrant/siege` package, GitHub Action workflow, pass/fail badge generator. | Scheduled |
+| **Oct 21** | Stretch & Feature Freeze | Merkle checkpoints (if ahead); otherwise final polish. **Hard feature freeze at 23:59 IST.** | Scheduled |
+| **Oct 22** | Video Rehearsal & Recording | Rehearse 2:50 demo script; record break-and-fix scorecard shot; export final 1080p MP4. | Scheduled |
+| **Oct 23** | Early Submission | Fresh-clone sanity check, secret scan (`git ls-files \| grep env`), submit on Devpost before 23:59 IST. | Submission Day |
 
 ---
 
-## 5. Scope Management & Cut Order Protocol
+## 5. Scope Management & Strict Safety Rules
 
-If behind schedule at any gate, features are prioritized according to the strict cut-order:
+To prevent broken demos from half-finished features, every agent and engineer must follow these rules:
 
-### Cut Order (If Behind Schedule)
-1. **Voice input (Microphone STT):** Fallback to typed voice simulation with real speech synthesis output (`spoken_summary`).
-2. **Polished approval UI:** Simplify mobile animations to standard functional cards.
-3. **End-to-end live agent attacks:** Rely on deterministic scripted protocol-level attacks in `warrant-siege`.
-4. **Cloud hosting:** Keep local demo via Docker Compose / `npm run dev`.
-
-### Must Never Cut (The Core Safety Thesis)
-- **Automatic Saga Rollback ($I_4$):** Partial failure leaves zero residue on mock providers.
-- **Approval Binding ($I_3$):** Cryptographic parameter-hash binding to RFC 8785 canonical JSON.
-- **Absolute Spend Cap ($I_2$):** Strict integer minor unit enforcement.
-- **Idempotency ($I_1$):** Replay and retry storm prevention.
-- **Scorecard Generator ($I_1 - I_8$):** Standalone open-source harness producing verifiable HTML/JSON reports.
+1. **Don't Touch Core After Freeze:** After Oct 21 (23:59 IST), zero modifications are permitted to the core demo path (grant issuance, phone approval, booking execution, saga rollback).
+2. **Cut Cleanly If Incomplete:** If a feature is not 100% finished, tested, and passing all invariants, cut it entirely. Never present a half-working feature in the video or Devpost.
+3. **Honest Documentation:** All fully tested capabilities go in "Features"; anything planned goes in "Roadmap".
+4. **Step-by-Step Gated Execution:** Execute one feature at a time. After each feature:
+   - Run unit tests: `npm run test` (0 failures).
+   - Run siege harness: `npm run test:siege` (all scenarios pass).
+   - Run mutation test: `npm run test:mutation` (all defects detected).
+   - Verify fresh clone in isolated directory.
 
 ---
 
