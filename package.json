@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "build": "npm run --workspaces --if-present build",
-    "prepare": "npm run build",
+    "prepare": "npm --workspace=@warrant/gateway run build && npm --workspace=@warrant/siege run build",
     "test": "npm run --workspaces --if-present test",
     "test:siege": "npm --workspace=packages/warrant-siege run test:siege",
     "audit:verify": "tsx packages/warrant-gateway/scripts/verify-audit.ts",

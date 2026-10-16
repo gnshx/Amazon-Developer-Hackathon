@@ -140,11 +140,12 @@ If delayed at any point, non-critical features are cut in this strict order:
 
 | Timestamp | Scene | Key Actions & Speaking Points |
 |---|---|---|
-| **0:00 – 0:20** | **The Problem** | Voice assistants can spend money with no screen to check. One hallucination, timeout, or prompt injection can drain accounts or double-book. Warrant makes voice agent actions provably safe. |
+| **0:00 – 0:20** | **The Problem** | Voice assistants can spend money with no screen to check. One hallucination, timeout, or prompt injection can drain accounts or double-book. Warrant makes voice agent actions safe and auditable. |
 | **0:20 – 1:10** | **Happy Path & Approval Binding** | User asks Alexa to book a weekend trip. Bedrock agent searches and proposes plan. Phone approval card displays exact parameters and **RFC 8785 Canonical Hash**. User approves; booking commits; Alexa speaks natural summary ($\le 300$ chars); 1-click audit chain validates green. |
 | **1:10 – 1:50** | **Mid-Plan Failure & Rollback** | Train service injected with `DECLINE`. Agent attempts trip booking. Hotel books, train fails. Saga Orchestrator halts forward progress and automatically cancels hotel in reverse order. Zero residue left on providers. |
 | **1:50 – 2:30** | **Adversarial Siege (`warrant-siege`)** | Run `npm run test:siege` in terminal. Show all 8 adversarial attack scenarios executing against the live gateway and getting blocked by gateway invariants. |
-| **2:30 – 3:00** | **Scorecard & Open Source Deliverables** | Open interactive `scorecard.html` showing 8/8 green badges and cryptographic audit proof. Highlight standalone open-source repo for the mini-challenge. |
+| **2:30 – 2:50** | **Scorecard & Open Source Deliverables** | Open interactive `scorecard.html` showing 8/8 green badges and cryptographic audit proof. Highlight standalone open-source repo for the mini-challenge. |
+| **2:50 – 3:00** | **Roadmap Ahead (Future Work)** | Highlight 3 future post-hackathon directions: signed action receipts with transparency logs, capability tokens for agent-to-agent delegation, and certification built on the harness. |
 
 ---
 

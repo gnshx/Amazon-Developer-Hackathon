@@ -9,7 +9,7 @@
 ## 1. Project Title & Taglines
 
 - **Project Title:** Warrant — A Trust Gateway for Voice Agents
-- **Elevator Pitch (1 sentence):** An open-source MCP trust gateway that makes voice agent actions provably safe through scoped grants, cryptographic approval binding, automatic saga rollback, and an adversarial attack scorecard.
+- **Elevator Pitch (1 sentence):** An open-source MCP trust gateway that makes voice agent actions safe and auditable through scoped grants, cryptographic approval binding, automatic saga rollback, and an adversarial attack scorecard.
 - **Track Selection:** Alexa+ Track
 - **Mini-Challenge Selections:**
   1. **Additional Open Source Project Mini-Challenge:** `warrant-siege` is an independent, standalone open-source testing CLI (MIT License) that attacks any MCP server with 8 standard adversarial scenarios and generates an automated safety scorecard.
@@ -64,7 +64,7 @@ AI agents are transitioning from answering trivia to executing high-stakes real-
 Today, there is no standard way to define how much authority an agent holds, to cryptographically prove what action occurred, to automatically undo side effects when a multi-step plan fails halfway, or to evaluate whether a tool is safe to expose to voice assistants. Every brand builds its own fragile, one-off safeguards—if any—forcing users to trust their assistant blindly. We built **Warrant** to be the missing trust layer for the agentic economy.
 
 ### What It Does
-Warrant is an open-source trust gateway operating over the Model Context Protocol (MCP Streamable HTTP). It intercepts every agent tool call and enforces mathematical safety invariants:
+Warrant is an open-source trust gateway operating over the Model Context Protocol (MCP Streamable HTTP). It intercepts every agent tool call and enforces safety invariants tested by 8 adversarial scenarios:
 1. **Scoped & Expiring Authority:** Household administrators configure spend caps (in integer minor units) and time-limited scopes out-of-band.
 2. **Exact Action-Hash Approval Binding:** Risky actions return `PENDING_APPROVAL` with voice-friendly summaries. Approvals are granted on a mobile phone interface cryptographically bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{params}))$. If prompt injection or model drift alters any argument, the approval is invalid.
 3. **Multi-Layer Idempotency:** Prevents retry storms or duplicate voice requests from double-charging ($I_1$).
