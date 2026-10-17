@@ -1,0 +1,15 @@
+{
+  "actionId": "act_hotel_harbor_inn",
+  "currency": "USD",
+  "executedAt": "2026-10-17T11:26:05.322Z",
+  "grantId": "grant_prod_chicago_trip",
+  "paramsHash": "9f2c81a41e98d41c8810e4a7b54a88bc3e4301fa3829ad41029e0b82f819a41e",
+  "planId": "plan_chicago_weekend_01",
+  "providerBookingRef": "RES-HARBOR-INN-9912",
+  "receiptId": "rcpt_b02b8cd787e7456296d66b8a0e62c031",
+  "spendMinor": 36000,
+  "toolName": "book_hotel",
+  "version": "1.0",
+  "gatewayPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAtYvt6K/vv7yYodPuMhIZ8KKL8JBtNw44IUR0xohqKn8=\n-----END PUBLIC KEY-----\n",
+  "signature": "d39ffd866a89baba9940fb391ee414c51aad826bca30ef9429d4b9206aa790469dd11af90ee897aaf0cbf7f727ac13c1039c081abb0f210034221bc6d48e4f06"
+}

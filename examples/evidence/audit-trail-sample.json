@@ -1,0 +1,74 @@
+[
+  {
+    "seq": 1,
+    "timestamp": "2026-10-17T10:59:25.283Z",
+    "eventType": "GRANT_CREATED",
+    "refId": "grant_0ea1a796f02f45f99781a3e135c618b3",
+    "payloadCanonical": "{\"expiresAt\":\"2026-10-17T11:59:25.201Z\",\"scopes\":[\"*\"],\"spendCapMinor\":50000}",
+    "prevHash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "hash": "b9f70077456dfdfdb7d6f8625905dc12684a52e9ab8e5c0a0b40603c470df6f8"
+  },
+  {
+    "seq": 2,
+    "timestamp": "2026-10-17T10:59:25.301Z",
+    "eventType": "PLAN_PROPOSED",
+    "refId": "plan_62a56d28bf044ffe95fe8038ba8f4ed8",
+    "payloadCanonical": "{\"grantId\":\"grant_0ea1a796f02f45f99781a3e135c618b3\",\"stepCount\":1,\"totalEstimatedMinor\":4500}",
+    "prevHash": "b9f70077456dfdfdb7d6f8625905dc12684a52e9ab8e5c0a0b40603c470df6f8",
+    "hash": "ae8c017210fcb42aeed95b33a43b1f7ae6c3013550df20877df2ef5b98c2063b"
+  },
+  {
+    "seq": 3,
+    "timestamp": "2026-10-17T10:59:25.311Z",
+    "eventType": "ACTION_EXECUTION_STARTED",
+    "refId": "act_5bc29540ed79418bb4b89ab2f360634b",
+    "payloadCanonical": "{\"planId\":\"plan_62a56d28bf044ffe95fe8038ba8f4ed8\",\"toolName\":\"book_train\"}",
+    "prevHash": "ae8c017210fcb42aeed95b33a43b1f7ae6c3013550df20877df2ef5b98c2063b",
+    "hash": "fe0bb5e27054b7f331118a369267c36759dee0d63d20cdda745fcfd6c1477add"
+  },
+  {
+    "seq": 4,
+    "timestamp": "2026-10-17T10:59:25.311Z",
+    "eventType": "ACTION_RECEIPT_ISSUED",
+    "refId": "act_5bc29540ed79418bb4b89ab2f360634b",
+    "payloadCanonical": "{\"paramsHash\":\"a26ccace1afb7e662ee3d3e6707fa04aa4634eeaaeceb9f4d69b2c8fe238e5c0\",\"receiptId\":\"rcpt_70e53e3285ba4831a0122995c734dc76\",\"signaturePrefix\":\"05dc925fea45236f\",\"spendMinor\":4500,\"toolName\":\"book_train\"}",
+    "prevHash": "fe0bb5e27054b7f331118a369267c36759dee0d63d20cdda745fcfd6c1477add",
+    "hash": "306937c4c7a56606dc616860a475be1c0600c86b4aed1282645bcdfaeab089f3"
+  },
+  {
+    "seq": 5,
+    "timestamp": "2026-10-17T10:59:25.312Z",
+    "eventType": "ACTION_SUCCEEDED",
+    "refId": "act_5bc29540ed79418bb4b89ab2f360634b",
+    "payloadCanonical": "{\"bookingRef\":\"trn_05ff3dc0\",\"costMinor\":4500,\"receiptId\":\"rcpt_70e53e3285ba4831a0122995c734dc76\",\"toolName\":\"book_train\"}",
+    "prevHash": "306937c4c7a56606dc616860a475be1c0600c86b4aed1282645bcdfaeab089f3",
+    "hash": "9a237ee5b8c389f94bdc5c1e213fb2d1d08e6fe16bcf232f4bb9d735aa98a4ad"
+  },
+  {
+    "seq": 6,
+    "timestamp": "2026-10-17T10:59:25.323Z",
+    "eventType": "GRANT_CREATED",
+    "refId": "grant_609f552fa02d418e8b35f93f4800a5e8",
+    "payloadCanonical": "{\"expiresAt\":\"2026-10-17T11:59:25.322Z\",\"scopes\":[\"*\"],\"spendCapMinor\":50000}",
+    "prevHash": "9a237ee5b8c389f94bdc5c1e213fb2d1d08e6fe16bcf232f4bb9d735aa98a4ad",
+    "hash": "e560f607b11c9e24a2c0701049544b8e8139d0318c872b867cf48741123c8d3c"
+  },
+  {
+    "seq": 7,
+    "timestamp": "2026-10-17T10:59:25.326Z",
+    "eventType": "PLAN_PROPOSED",
+    "refId": "plan_11e880ea2fc743e59adf6962a706ad16",
+    "payloadCanonical": "{\"grantId\":\"grant_609f552fa02d418e8b35f93f4800a5e8\",\"stepCount\":2,\"totalEstimatedMinor\":16500}",
+    "prevHash": "e560f607b11c9e24a2c0701049544b8e8139d0318c872b867cf48741123c8d3c",
+    "hash": "f3cc36dd05bae832fdfe6baac72b89de968e91124b8de8118f0d5130f9dc7c68"
+  },
+  {
+    "seq": 8,
+    "timestamp": "2026-10-17T10:59:25.326Z",
+    "eventType": "APPROVAL_REQUESTED",
+    "refId": "apr_59127a54376a4dc2bb54e07be1443e1e",
+    "payloadCanonical": "{\"actionId\":\"act_22999b1ecf52431eaa7f2c9008708d9c\",\"paramsHash\":\"81586a13422b7ed862224b797a43175fc28f578259c1565f2aabf5bb293ae645\",\"planId\":\"plan_11e880ea2fc743e59adf6962a706ad16\"}",
+    "prevHash": "f3cc36dd05bae832fdfe6baac72b89de968e91124b8de8118f0d5130f9dc7c68",
+    "hash": "f87162e67cac0b192a81743facf4d965b170ed6bf99b5ab9f00b691d8d72e453"
+  }
+]

@@ -16,6 +16,7 @@
     "check:bedrock-models": "tsx scripts/check-bedrock-models.ts",
     "audit:verify": "tsx packages/warrant-gateway/scripts/verify-audit.ts",
     "receipt:verify": "tsx packages/warrant-gateway/scripts/verify-receipt.ts",
+    "verify:evidence": "tsx scripts/verify-evidence.ts",
     "dev": "npm run --workspaces --parallel --if-present dev",
     "lint": "npm run --workspaces --if-present lint"
   },

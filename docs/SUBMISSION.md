@@ -41,13 +41,16 @@ To satisfy all requirements for the Additional Open Source Project Mini-Challeng
 ## 3. Scope Honesty & Transparency Statement
 
 > **Mandatory Transparency Disclosure for Hackathon Judges:**  
-> The genuine Alexa+ developer environment is restricted to select preview partners. In full alignment with hackathon scope-honesty guidelines, this submission uses:
-> 1. **Simulated Alexa+ Client:** A Next.js 14 web application simulating voice interaction, Web Speech synthesis of natural summaries, approval cards, and live MCP tool traces.
+> The genuine Alexa+ developer environment is restricted to select preview partners. In full alignment with hackathon scope-honesty guidelines, this submission discloses:
+> 1. **Simulated Alexa+ Client:** The official Alexa+ developer preview is currently restricted to select partners. The Alexa+ companion web console is a high-fidelity Next.js simulator with speech synthesis, approval cards, and live MCP tool traces.
 > 2. **Simulated Mock Providers:** Standalone Hotel, Train, and Restaurant mock services (Harbor Inn Hotel, Coastal Rail Express) with control endpoints for simulating faults (`TIMEOUT`, `DECLINE`, `DISCONNECT`).
-> 3. **Environment Constraints:** Docker Compose configuration is provided, but is currently **untested on this specific host** due to the absence of a local Docker daemon. The primary verified setup and test path is a clean clone running `npm install && npm run test && npm run dev`.
-> 4. **Bedrock Loop:** Integrates with `@aws-sdk/client-bedrock-runtime` using the Converse API with default model `amazon.nova-pro-v1:0` (overrideable via `BEDROCK_MODEL_ID` or cross-region inference profiles), and includes an offline deterministic stub fallback for environments without active AWS credentials.
+> 3. **No Real Financial Settlement:** All transactions are denominated in integer minor units (cents) and settled within mock booking stores; no actual credit card or bank rails are charged.
+> 4. **Model Plan Generation vs. Gateway Damage Limitation:** LLMs can still hallucinate or generate inefficient plans; Warrant's role is not to guarantee LLM conversational brilliance, but to mathematically guarantee that no action executes outside policy bounds, spend caps, or unapproved parameters.
+> 5. **Structural Defense vs. Text Heuristics:** Warrant defends against prompt injection structurally (by separating data plane from out-of-band control plane and validating canonical parameter hashes), rather than relying on brittle regex or heuristic sentiment/prompt-guard classifiers.
+> 6. **Storage Architecture & Scalability:** Uses SQLite in WAL mode with a decoupled repository interface; while ideal for single-node / edge deployment, distributed production environments would swap the repository implementation for PostgreSQL or Amazon DynamoDB.
+> 7. **No External Third-Party Audit & Prior Work Disclosure:** While verified against 10 automated attack scenarios, property tests, and mutation tests, Warrant has not undergone a formal third-party commercial pen-test. We transparently acknowledge prior architectural concepts in autonomous agent bounding (including the author's previous exploration of passkey-bounded mandates on Monad in `AgentTrust`), adapted and re-architected from scratch for AWS Bedrock, Amazon Alexa+, and Model Context Protocol Streamable HTTP under Apache 2.0 / MIT.
 > 
-> Both the client and mock providers are explicitly labeled as simulated in code, documentation, UI badges, and the demo video. The MCP gateway (`@warrant/gateway`) and adversarial test harness (`@warrant/siege`) communicate over actual standard network protocols (Streamable HTTP, JSON-RPC 2.0).
+> *For an instant evaluation path and full scoring rubric mapping, see [**`JUDGES.md`**](../JUDGES.md).*
 
 ---
 
