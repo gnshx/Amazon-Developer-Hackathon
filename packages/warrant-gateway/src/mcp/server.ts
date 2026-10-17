@@ -24,6 +24,7 @@ export interface GatewayServerOptions {
   trainProvider?: MockTrainProvider;
   restaurantProvider?: MockRestaurantProvider;
   receiptService?: ReceiptService;
+  disableUserIsolation?: boolean;
 }
 
 export function createGatewayApp(options: GatewayServerOptions = {}) {
@@ -31,6 +32,7 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
+  const disableUserIsolation = options.disableUserIsolation ?? false;
   const repo = options.repo ?? new WarrantRepository();
   const approvalService = options.approvalService ?? new ApprovalService(repo);
   const idempotencyService = new IdempotencyService(repo);
@@ -541,6 +543,7 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
           const plan: Plan = {
             id: planId,
             grantId: grant.id,
+            userId: grant.userId ?? grant.id,
             state: "PROPOSED",
             totalEstimatedMinor,
             totalConfirmedMinor: 0,
@@ -615,6 +618,22 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
             });
           }
 
+          // Invariant I6: User Identity Binding & Cross-User Plan Execution Protection
+          if (!disableUserIsolation) {
+            const planUserId = plan.userId ?? repo.getGrantById(plan.grantId)?.userId ?? plan.grantId;
+            const currentUserId = grant.userId ?? grant.id;
+            if (planUserId !== currentUserId) {
+              return res.status(403).json({
+                jsonrpc: "2.0",
+                id,
+                error: {
+                  code: -32008,
+                  message: `Forbidden: Cross-user violation. Cannot execute plan ${plan.id} belonging to user ${planUserId}.`
+                }
+              });
+            }
+          }
+
           const undoWindowSeconds = Number(toolArgs.undoWindowSeconds ?? 0);
 
           if (undoWindowSeconds > 0) {
@@ -659,6 +678,32 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
               error: { code: -32602, message: "Missing required field: planId" }
             });
           }
+
+          const plan = repo.getPlanById(planId);
+          if (!plan) {
+            return res.status(404).json({
+              jsonrpc: "2.0",
+              id,
+              error: { code: -32007, message: `Plan ${planId} not found` }
+            });
+          }
+
+          // Invariant I6: Cross-User Plan Cancellation Protection
+          if (!disableUserIsolation) {
+            const planUserId = plan.userId ?? repo.getGrantById(plan.grantId)?.userId ?? plan.grantId;
+            const currentUserId = grant.userId ?? grant.id;
+            if (planUserId !== currentUserId) {
+              return res.status(403).json({
+                jsonrpc: "2.0",
+                id,
+                error: {
+                  code: -32008,
+                  message: `Forbidden: Cross-user violation. Cannot cancel/undo plan ${plan.id} belonging to user ${planUserId}.`
+                }
+              });
+            }
+          }
+
           const undoResult = await sagaOrchestrator.undoPlan(planId);
           toolResult = {
             data: undoResult,
@@ -673,6 +718,23 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
               error: { code: -32007, message: `Plan ${toolArgs.planId} not found` }
             });
           }
+
+          // Invariant I6: Cross-User Plan Read Protection
+          if (!disableUserIsolation) {
+            const planUserId = plan.userId ?? repo.getGrantById(plan.grantId)?.userId ?? plan.grantId;
+            const currentUserId = grant.userId ?? grant.id;
+            if (planUserId !== currentUserId) {
+              return res.status(403).json({
+                jsonrpc: "2.0",
+                id,
+                error: {
+                  code: -32008,
+                  message: `Forbidden: Cross-user violation. Plan ${plan.id} belongs to user ${planUserId}, not authenticated user ${currentUserId}.`
+                }
+              });
+            }
+          }
+
           toolResult = {
             data: plan,
             spoken_summary: `Plan ${plan.id} is currently ${plan.state.toLowerCase()} with ${plan.actions.length} steps.`

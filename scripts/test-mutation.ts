@@ -7,6 +7,7 @@ async function runScenarioWithHarness(
   options: {
     disableIdempotency?: boolean;
     disableApprovalVerification?: boolean;
+    disableUserIsolation?: boolean;
   } = {}
 ) {
   const repo = new WarrantRepository(":memory:");
@@ -38,7 +39,8 @@ async function runScenarioWithHarness(
   const { app } = createGatewayApp({
     repo,
     trainProvider,
-    approvalService
+    approvalService,
+    disableUserIsolation: options.disableUserIsolation
   });
 
   const server = await new Promise<http.Server>((resolve) => {
@@ -108,13 +110,27 @@ async function main() {
     console.error("   ❌ Error: S4 did not turn red when approval check was disabled!");
   }
 
+  // TEST 4: Mutation S11 (Disable User Isolation / Cross-User Access Boundary)
+  console.log("\n4. Mutating Invariant I6 (Disabling User Isolation / Cross-User Plan Check):");
+  const m3 = await runScenarioWithHarness({ disableUserIsolation: true });
+  const s11Result = await m3.runner.runS11();
+  await m3.cleanup();
+
+  if (!s11Result.passed) {
+    mutationsDetected++;
+    console.log("   🎯 Mutation Detected! S11 turned RED as expected:");
+    console.log(`      ↳ Failure caught: Cross-user violation allowed User B to access/execute User A's plan.`);
+  } else {
+    console.error("   ❌ Error: S11 did not turn red when user isolation was disabled!");
+  }
+
   console.log("\n========================================================");
-  if (mutationsDetected === 2) {
-    console.log("🎉 ALL MUTATIONS DETECTED (2/2 RED): Invariants I1 & I3 detected by the scorecard.");
+  if (mutationsDetected === 3) {
+    console.log("🎉 ALL MUTATIONS DETECTED (3/3 RED): Invariants I1, I3, & I6 detected by the scorecard.");
     console.log("========================================================\n");
     process.exit(0);
   } else {
-    console.error(`⚠️ FAILED: Only ${mutationsDetected}/2 mutations were detected.`);
+    console.error(`⚠️ FAILED: Only ${mutationsDetected}/3 mutations were detected.`);
     console.log("========================================================\n");
     process.exit(1);
   }

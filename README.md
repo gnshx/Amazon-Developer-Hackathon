@@ -3,8 +3,8 @@
 [![Amazon Developer Hackathon: Alexa+ Track](https://img.shields.io/badge/Amazon%20Developer%20Hackathon-Alexa%2B%20Track-FF9900?logo=amazon)](https://devpost.com)
 [![Protocol: MCP Streamable HTTP](https://img.shields.io/badge/Protocol-MCP%20Streamable%20HTTP%202025--11--25-0066FF)](https://modelcontextprotocol.io)
 [![Agent: Amazon Bedrock](https://img.shields.io/badge/Agent-Amazon%20Bedrock%20Converse%20API-232F3E?logo=amazon-aws)](https://aws.amazon.com/bedrock/)
-[![Test Suite: 55+ Passing](https://img.shields.io/badge/Tests-55%2B%20Passing-brightgreen)](https://github.com/gnshx/Amazon-Developer-Hackathon)
-[![Siege Scorecard: 10/10 Invariants Satisfied](https://img.shields.io/badge/Siege%20Scorecard-10%2F10%20Satisfied-10b981)](#-the-10-safety-invariants--adversarial-attack-suite)
+[![Test Suite: 60 Passing](https://img.shields.io/badge/Tests-60%20Passing-brightgreen)](https://github.com/gnshx/Amazon-Developer-Hackathon)
+[![Siege Scorecard: 11/11 Invariants Satisfied](https://img.shields.io/badge/Siege%20Scorecard-11%2F11%20Satisfied-10b981)](#-the-10-safety-invariants--adversarial-attack-suite)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 > **Amazon Developer Hackathon, Alexa+ Track (16 Oct 2026 – 23 Oct 2026)**  
@@ -40,7 +40,7 @@ Approval gates and audit logs are common in this track. However, existing submis
 #### What Warrant Has That Others Lack:
 1. **True Transactional Safety:** Multi-layer idempotency against duplicate voice retry storms ($I_1$), multi-step saga rollback with zero orphan residue ($I_4$), and active timeout reconciliation against provider truth ($I_8$). This aligns directly with Alexa+'s checkout requirements for distributed transactional resilience.
 2. **Cryptographic Approval Binding & Signed Receipts:** High-risk actions are cryptographically bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{params}))$ ($I_3$), generating detached Ed25519 signed receipts ($I_9$) and Merkle inclusion proofs ($I_7$) verifiable completely offline.
-3. **Falsifiable Proof (The Adversarial Harness):** A standalone suite (`warrant-siege`) executing 10 attack scenarios ($S_1 - S_{10}$), coupled with automated mutation testing (`npm run test:mutation`) that intentionally breaks safeguards to prove the scorecard turns RED.
+3. **Falsifiable Proof (The Adversarial Harness):** A standalone suite (`warrant-siege`) executing 11 attack scenarios ($S_1 - S_{11}$), coupled with automated mutation testing (`npm run test:mutation`) that intentionally breaks 3 safeguards to prove the scorecard turns RED.
 4. **Tool-Agnostic, Reusable Testing:** A standalone CLI that can be cloned and run against *any* MCP server over Streamable HTTP.
 
 #### Relationship to Big Players & Academic Research:
@@ -83,7 +83,7 @@ The hackathon MVP demonstrates and proves this core trust loop:
 - **Detached Ed25519 Action Receipts:** Every confirmed action produces a cryptographically signed receipt verifiable completely offline without trusting server state ($I_9$).
 - **Undo Window & Grace Hold:** Reversible pre-settlement hold countdown on high-value plans; out-of-band cancellation aborts with zero provider bookings and zero charges ($I_{10}$).
 - **Tamper-Evident Audit Ledger & Merkle Roots:** Append-only SHA-256 chained event log with binary Merkle tree checkpointing and $O(\log N)$ inclusion proof verification ($I_7$).
-- **Adversarial Siege Test Harness (`warrant-siege`):** A standalone open-source CLI that subjects the gateway to 10 attack scenarios, generating interactive HTML/JSON scorecards and SVG badges.
+- **Adversarial Siege Test Harness (`warrant-siege`):** A standalone open-source CLI that subjects the gateway to 11 attack scenarios, generating interactive HTML/JSON scorecards and SVG badges.
 
 ### ⚠️ Limitations & Transparent Scope Disclosures
 To maintain uncompromising engineering transparency, the following constraints are explicitly documented:
@@ -92,7 +92,7 @@ To maintain uncompromising engineering transparency, the following constraints a
 3. **Model Plan Generation vs. Gateway Damage Limitation:** LLMs can still hallucinate or generate inefficient plans; Warrant's role is not to guarantee LLM conversational brilliance, but to mathematically guarantee that no action executes outside policy bounds, spend caps, or unapproved parameters.
 4. **Structural Defense vs. Text Heuristics:** Warrant defends against prompt injection structurally (by separating data plane from out-of-band control plane and validating canonical parameter hashes), rather than relying on brittle regex or heuristic sentiment/prompt-guard classifiers.
 5. **Storage Architecture:** Uses SQLite in WAL mode with a decoupled repository interface; while ideal for single-node / edge deployment, distributed production environments would swap the repository implementation for PostgreSQL or Amazon DynamoDB.
-6. **No External Third-Party Audit:** While verified against 10 automated attack scenarios, property tests, and mutation tests, Warrant has not undergone a formal third-party commercial pen-test.
+6. **No External Third-Party Audit:** While verified against 11 automated attack scenarios, property tests, and mutation tests, Warrant has not undergone a formal third-party commercial pen-test.
 7. **Prior Work & Open Source Disclosure:** Transparently acknowledges prior architectural concepts in autonomous agent bounding (including the author's previous exploration of passkey-bounded mandates on Monad in `AgentTrust`), adapted and re-architected from scratch for AWS Bedrock, Amazon Alexa+, and Model Context Protocol Streamable HTTP under Apache 2.0 / MIT.
 8. **Simulated Demo OAuth 2.1 Server:** The repository includes a lightweight, simulated OAuth 2.1 authorization server (`/.well-known/oauth-authorization-server`, `GET /oauth/authorize`, `POST /oauth/token`) with PKCE (S256 mandatory) and RFC 8707 Resource Indicators for local testing, evaluation, and CI workflows. It is strictly a demo authorization server for developer evaluation and does not represent official Amazon Alexa+ certification or production identity infrastructure.
 
@@ -101,7 +101,7 @@ To maintain uncompromising engineering transparency, the following constraints a
 | 1. Assistant Console & Live MCP Traces | 2. Out-of-Band Phone Approval Card |
 |:---:|:---:|
 | ![Assistant Console](docs/assets/1-assistant-console.png) | ![Phone Approval](docs/assets/2-phone-approval.png) |
-| **3. Mid-Plan Failure & Saga Rollback** | **4. Adversarial Siege Safety Scorecard (10/10)** |
+| **3. Mid-Plan Failure & Saga Rollback** | **4. Adversarial Siege Safety Scorecard (11/11)** |
 | ![When Something Fails](docs/assets/3-when-something-fails.png) | ![Safety Scorecard](docs/assets/4-safety-scorecard.png) |
 
 | 5. Your Assistant's Limits (Out-of-Band Household Policy) |
@@ -163,13 +163,13 @@ To maintain uncompromising engineering transparency, the following constraints a
 2. **Bedrock Voice Agent:** Autonomous agent loop using the AWS Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`). Configured for Amazon Nova Pro (`amazon.nova-pro-v1:0`) or Claude cross-region inference profiles, with a deterministic zero-credential fallback stub for offline testing and automated CI.
 3. **Warrant Gateway (MCP Server):** TypeScript MCP server running over Streamable HTTP (spec version `2025-11-25+`) with an SQLite WAL repository, pure deterministic policy engine, RFC 8785 canonical JSON serializer, Ed25519 receipt signer, and chained SHA-256 audit ledger with Merkle root checkpointing.
 4. **Mock Providers with Fault Injection:** Autonomous mock Hotel, Train, and Restaurant providers maintaining independent booking state queryable via `GET /admin/providers/:name/bookings`, with fault injection endpoints for `TIMEOUT`, `DECLINE`, and `SUCCEEDED_BUT_DISCONNECTED`.
-5. **Warrant Siege Adversarial Harness:** Standalone testing CLI package (`packages/warrant-siege`) with its own MIT License that executes 10 attack scenarios against the gateway and produces machine-verifiable `scorecard.json`, interactive `scorecard.html` reports, and SVG badges.
+5. **Warrant Siege Adversarial Harness:** Standalone testing CLI package (`packages/warrant-siege`) with its own MIT License that executes 11 attack scenarios against the gateway and produces machine-verifiable `scorecard.json`, interactive `scorecard.html` reports, and SVG badges.
 
 ---
 
 ## 3. The 10 Safety Invariants & Adversarial Attack Suite
 
-Every user story and safety requirement maps directly to an architectural invariant ($I_1 - I_{10}$) verified by an attack scenario ($S_1 - S_{10}$) in `warrant-siege`:
+Every user story and safety requirement maps directly to an architectural invariant ($I_1 - I_{10}$) verified by an attack scenario ($S_1 - S_{11}$) in `warrant-siege`:
 
 | Invariant | Name | Description | Attack Scenario & Verification | Status |
 |---|---|---|---|---|
@@ -178,8 +178,8 @@ Every user story and safety requirement maps directly to an architectural invari
 | **$I_3$** | **Cryptographic Approval Binding** | No $T_2$ action executes without an approval token bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{args}))$. | **S4 & S7 (Parameter Tampering & Bypass):** Altering price or omitting phone approval yields immediate execution rejection. | **✅ SATISFIED** |
 | **$I_4$** | **Clean Residue (Saga Rollback)** | Mid-plan failure triggers automatic reverse compensation, restoring provider state to clean baseline. | **S2 (Mid-Plan Failure Rollback):** Train booking declines after hotel succeeds. Orchestrator automatically cancels hotel; 0 orphan bookings remain. | **✅ SATISFIED** |
 | **$I_5$** | **Structural Output Containment** | Third-party provider responses cannot elevate privileges, alter active grants, or bypass approvals. | **S5 (Indirect Prompt Injection):** Malicious provider text attempting to call administrative grant-widening tools is blocked by MCP surface isolation. | **✅ SATISFIED** |
-| **$I_6$** | **Temporal Authorization Boundary** | Expired or revoked grants authorize zero actions ($T_0, T_1, T_2$), returning deterministic 403 Forbidden. | **S6 (Expired Grant Boundary):** Invoking tools after grant expiration TTL immediately fails with `Grant Expired`. | **✅ SATISFIED** |
-| **$I_7$** | **Cryptographic Audit Continuity** | Every state transition appends a SHA-256 chained event verifiable from genesis. | **S1–S10 (Audit Integrity Check):** `GET /admin/audit/verify` re-computes every hash from genesis to tip, confirming zero tampering. | **✅ SATISFIED** |
+| **$I_6$** | **Temporal Authorization & Isolation Boundary** | Expired/revoked grants authorize zero actions ($T_0, T_1, T_2$); plans, grants, and budgets are strictly isolated across users. | **S6 & S11 (Expired Boundary & Cross-User Isolation):** Invoking tools after grant expiration TTL fails with 403; User B cannot read, execute, or cancel User A's plan. | **✅ SATISFIED** |
+| **$I_7$** | **Cryptographic Audit Continuity** | Every state transition appends a SHA-256 chained event verifiable from genesis. | **S1–S11 (Audit Integrity Check):** `GET /admin/audit/verify` re-computes every hash from genesis to tip, confirming zero tampering. | **✅ SATISFIED** |
 | **$I_8$** | **Reconciliation over Blind Retries** | Ambiguous network timeouts are actively reconciled against external provider truth. | **S8 (Ambiguous Timeout & Reconciliation):** Provider drops connection after save; reconciler verifies status by idempotency key and avoids dupe booking. | **✅ SATISFIED** |
 | **$I_9$** | **Action Authenticity & Receipts** | Every confirmed action produces a detached Ed25519 signed receipt over RFC 8785 canonical metadata. | **S9 (Receipt Tampering Attack):** Mutating spend amount or parameter hash fails Ed25519 signature verification offline. | **✅ SATISFIED** |
 | **$I_{10}$** | **Grace-Hold Containment (Undo)** | Actions held in a grace window remain pre-settled; cancellation leaves zero provider side effects and zero spend. | **S10 (Grace-Hold Undo Cancellation):** Cancelling during hold aborts execution with 0 bookings and releases 100% of reserved spend. | **✅ SATISFIED** |
@@ -197,19 +197,20 @@ Every user story and safety requirement maps directly to an architectural invari
 | **Replay Attack** | Network retry storm or duplicate voice submits multi-fire | Multi-layer idempotency cache with request parameter fingerprinting | $I_1$ | **S1** | ✅ Passing |
 | **State Residue** | Multi-step booking fails mid-flight, leaving orphaned bookings | Compensating Saga Orchestrator executes reverse cancellations with clean baseline | $I_4$ | **S2** | ✅ Passing |
 | **Accidental Commitment**| User changes mind immediately after voice confirmation | Grace-hold undo window (8s delay) allows out-of-band cancellation before provider settlement | $I_{10}$ | **S10** | ✅ Passing |
+| **Isolation Violation** | User B attempts to access User A's plans or spend budget | Strict subject binding on plans and grants; shared budget across user's sessions | $I_6$ | **S11** | ✅ Passing |
 
 ### Comprehensive Verification Summary
 
 > **Exact Verification Breakdown:**  
-> **60 automated unit & integration tests**, **10 adversarial siege attack scenarios** ($S_1 - S_{10}$), **2 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 requests), and **1 comparative benchmark** (3 scenarios).
+> **60 automated unit & integration tests**, **11 adversarial siege attack scenarios** ($S_1 - S_{11}$), **3 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 requests), and **1 comparative benchmark** (3 scenarios).
 
 | Verification Suite | Type | Verified Scope | Execution Time | Status |
 |:---|:---|:---:|:---:|:---:|
-| **`@warrant/gateway`** | Vitest Unit & Integration | 51 unit & integration tests | ~500ms | ✅ 51/51 Passing |
+| **`@warrant/gateway`** | Vitest Unit & Integration | 58 unit & integration tests | ~500ms | ✅ 58/58 Passing |
 | **`@warrant/alexa-client`** | Vitest Agent Integration | 1 Bedrock agent loop test | ~300ms | ✅ 1/1 Passing |
 | **`@warrant/siege`** | Vitest Scenario Runner | 1 scenario suite test | ~1.6s | ✅ 1/1 Passing |
-| **`warrant-siege` (CLI)** | Standalone Adversarial Suite | 10 attack scenarios ($S_1 - S_{10}$) | ~1.6s | ✅ 10/10 Passing |
-| **`Mutation Suite`** | Architectural Negative Testing | 2 mutations caught RED | ~2.5s | ✅ 2/2 Caught |
+| **`warrant-siege` (CLI)** | Standalone Adversarial Suite | 11 attack scenarios ($S_1 - S_{11}$) | ~1.6s | ✅ 11/11 Passing |
+| **`Mutation Suite`** | Architectural Negative Testing | 3 mutations caught RED | ~2.5s | ✅ 3/3 Caught |
 | **`Agent Skill Suite`** | Skill Boundary Evaluation | 3 rule boundary checks | ~200ms | ✅ 3/3 Passing |
 | **`Latency SLA Gate`** | Streamable HTTP SLA Benchmark | 50 operations (avg 1.58ms, p99 34ms) | ~1.5s | ✅ <500ms Passing |
 | **`Comparative Benchmark`**| Naive vs. Warrant Attack Run | 3 comparative attack scenarios | ~600ms | ✅ 3/3 Warrant vs 0/3 Naive |
@@ -227,7 +228,7 @@ Every user story and safety requirement maps directly to an architectural invari
 | **Oct 18 (Day 3)** | Policy engine, grants, spend caps in integer minor units, approval flow with RFC 8785 canonical hash binding. | **✅ COMPLETED** |
 | **Oct 19 (Day 4)** | Saga orchestrator with reverse compensation, active timeout reconciler for ambiguous network outcomes. | **✅ COMPLETED** |
 | **Oct 20 (Day 5)** | Simulated Alexa+ Next.js 14 client, Bedrock Converse API agent loop with offline stub, live tool trace inspector. | **✅ COMPLETED** |
-| **Oct 21 (Day 6)** | Standalone `warrant-siege` attack harness & HTML/JSON scorecard generator. All 10 scenarios passing. | **✅ COMPLETED** |
+| **Oct 21 (Day 6)** | Standalone `warrant-siege` attack harness & HTML/JSON scorecard generator. All 11 scenarios passing. | **✅ COMPLETED** |
 | **Oct 22 (Day 7)** | Polish, Docker Compose, fresh-clone test (<10 min), friction log, AWS product feedback, architecture docs. | **✅ COMPLETED** |
 | **Oct 23 (Day 8 - Cutoff)** | Record 3-minute demo video, complete Devpost submission package before 11:59 PM IST cutoff. | **READY FOR SUBMISSION** |
 

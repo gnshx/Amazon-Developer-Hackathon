@@ -10,7 +10,7 @@ on:
 
 jobs:
   adversarial-siege:
-    name: 10-Scenario Invariant Siege & Cryptographic Audit
+    name: 11-Scenario Invariant Siege & Cryptographic Audit
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -33,7 +33,7 @@ jobs:
       - name: Run Fast Unit & Property Tests
         run: npm run test
 
-      - name: Execute Adversarial Siege Harness (S1 - S10)
+      - name: Execute Adversarial Siege Harness (S1 - S11)
         run: npm run test:siege -- --out ./scorecard.html --json ./scorecard.json
 
       - name: Execute Comparative Benchmark (Naive vs Warrant)

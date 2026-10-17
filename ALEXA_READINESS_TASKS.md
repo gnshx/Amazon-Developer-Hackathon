@@ -55,6 +55,8 @@ Acceptance (all as automated tests):
 
 ## T3. Bind grants to the user, not the MCP session (P1)
 
+Status: COMPLETED
+
 Why: Alexa+ sessions are based on the customer's conversation history, not an explicit session identifier.
 
 Do:

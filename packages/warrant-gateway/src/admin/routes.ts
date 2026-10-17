@@ -17,7 +17,7 @@ export function createAdminRouter(
   // POST /admin/grants
   router.post("/grants", (req: Request, res: Response) => {
     try {
-      const { scopes, spendCapMinor, expiresAt, sessionToken, id } = req.body;
+      const { scopes, spendCapMinor, expiresAt, sessionToken, id, userId } = req.body;
       if (!scopes || spendCapMinor === undefined || !expiresAt) {
         return res.status(400).json({ error: "Missing required fields: scopes, spendCapMinor, expiresAt" });
       }
@@ -28,6 +28,7 @@ export function createAdminRouter(
       const grant = repo.createGrant({
         id: grantId,
         sessionToken: token,
+        userId: userId ?? `user_${grantId}`,
         scopes: Array.isArray(scopes) ? scopes : [scopes],
         spendCapMinor: Number(spendCapMinor),
         expiresAt: new Date(expiresAt).toISOString(),
@@ -91,6 +92,20 @@ export function createAdminRouter(
       }
 
       const id = String(req.params.id);
+      const approvingUserId = (req.headers["x-user-id"] || req.body.userId) as string | undefined;
+      if (approvingUserId) {
+        const approvalRecord = repo.getApprovalById(id);
+        if (approvalRecord) {
+          const plan = repo.getPlanById(approvalRecord.planId);
+          const planUserId = plan?.userId ?? (plan ? repo.getGrantById(plan.grantId)?.userId : null);
+          if (planUserId && planUserId !== approvingUserId) {
+            return res.status(403).json({
+              error: `Forbidden: User ${approvingUserId} cannot approve actions for user ${planUserId}'s plan.`
+            });
+          }
+        }
+      }
+
       const approval = approvalService.decide(id, decision);
       return res.json({
         approval,

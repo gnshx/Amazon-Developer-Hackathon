@@ -49,6 +49,7 @@ export class WarrantRepository {
       CREATE TABLE IF NOT EXISTS plans (
         id TEXT PRIMARY KEY,
         grant_id TEXT NOT NULL REFERENCES grants(id),
+        user_id TEXT,
         state TEXT NOT NULL,
         total_estimated_minor INTEGER NOT NULL,
         total_confirmed_minor INTEGER NOT NULL DEFAULT 0,
@@ -142,9 +143,17 @@ export class WarrantRepository {
   // ================= Grant Operations =================
   public createGrant(grant: Omit<Grant, "spentMinor" | "createdAt">): Grant {
     const createdAt = new Date().toISOString();
+    let initialSpent = 0;
+    if (grant.userId) {
+      const existing = this.db.prepare("SELECT MAX(spent_minor) as max_spent FROM grants WHERE user_id = ?").get(grant.userId) as any;
+      if (existing?.max_spent !== undefined && existing?.max_spent !== null) {
+        initialSpent = existing.max_spent;
+      }
+    }
+
     const fullGrant: Grant = {
       ...grant,
-      spentMinor: 0,
+      spentMinor: initialSpent,
       createdAt
     };
 
@@ -192,7 +201,11 @@ export class WarrantRepository {
       if (!grant) throw new Error(`Grant ${id} not found`);
 
       const newSpent = grant.spentMinor + additionalSpentMinor;
-      this.db.prepare("UPDATE grants SET spent_minor = ? WHERE id = ?").run(newSpent, id);
+      if (grant.userId) {
+        this.db.prepare("UPDATE grants SET spent_minor = spent_minor + ? WHERE user_id = ?").run(additionalSpentMinor, grant.userId);
+      } else {
+        this.db.prepare("UPDATE grants SET spent_minor = ? WHERE id = ?").run(newSpent, id);
+      }
       grant.spentMinor = newSpent;
       return grant;
     });
@@ -220,12 +233,16 @@ export class WarrantRepository {
   // ================= Plan Operations =================
   public createPlan(plan: Plan): void {
     const tx = this.db.transaction(() => {
+      const grant = this.getGrantById(plan.grantId);
+      const userId = plan.userId ?? grant?.userId ?? null;
+
       this.db.prepare(`
-        INSERT INTO plans (id, grant_id, state, total_estimated_minor, total_confirmed_minor, undo_window_seconds, settles_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO plans (id, grant_id, user_id, state, total_estimated_minor, total_confirmed_minor, undo_window_seconds, settles_at, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         plan.id,
         plan.grantId,
+        userId,
         plan.state,
         plan.totalEstimatedMinor,
         plan.totalConfirmedMinor,
@@ -281,6 +298,7 @@ export class WarrantRepository {
     return {
       id: planRow.id,
       grantId: planRow.grant_id,
+      userId: planRow.user_id ?? undefined,
       state: planRow.state as PlanState,
       totalEstimatedMinor: planRow.total_estimated_minor,
       totalConfirmedMinor: planRow.total_confirmed_minor,
@@ -344,6 +362,12 @@ export class WarrantRepository {
 
   public getApprovalByActionId(actionId: string): Approval | null {
     const row = this.db.prepare("SELECT * FROM approvals WHERE action_id = ?").get(actionId) as any;
+    if (!row) return null;
+    return this.mapApproval(row);
+  }
+
+  public getApprovalById(id: string): Approval | null {
+    const row = this.db.prepare("SELECT * FROM approvals WHERE id = ?").get(id) as any;
     if (!row) return null;
     return this.mapApproval(row);
   }
@@ -458,13 +482,20 @@ export class WarrantRepository {
 
   // ================= Helpers =================
   private mapGrant(row: any): Grant {
+    let spent = row.spent_minor;
+    if (row.user_id) {
+      const liveSpent = this.db.prepare("SELECT MAX(spent_minor) as max_spent FROM grants WHERE user_id = ?").get(row.user_id) as any;
+      if (liveSpent?.max_spent !== undefined && liveSpent?.max_spent !== null) {
+        spent = liveSpent.max_spent;
+      }
+    }
     return {
       id: row.id,
       sessionToken: row.session_token,
       userId: row.user_id ?? undefined,
       scopes: JSON.parse(row.scopes),
       spendCapMinor: row.spend_cap_minor,
-      spentMinor: row.spent_minor,
+      spentMinor: spent,
       expiresAt: row.expires_at,
       status: row.status as GrantStatus,
       createdAt: row.created_at

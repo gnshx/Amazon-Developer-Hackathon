@@ -65,6 +65,7 @@ export interface PlanAction {
 export interface Plan {
   id: string;
   grantId: string;
+  userId?: string;
   state: PlanState;
   totalEstimatedMinor: MinorUnits;
   totalConfirmedMinor: MinorUnits;

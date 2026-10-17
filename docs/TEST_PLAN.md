@@ -41,7 +41,7 @@ Every architectural claim made by Warrant is formalized as an immutable mathemat
 
 ## 3. Adversarial Attack Scenario Catalog (`warrant-siege`)
 
-The `warrant-siege` harness executes the following 10 core adversarial scenarios against the gateway over the MCP Streamable HTTP protocol.
+The `warrant-siege` harness executes the following 11 core adversarial scenarios against the gateway over the MCP Streamable HTTP protocol.
 
 ```
 +--------------------------------------------------------------------------------------------------+
@@ -78,6 +78,9 @@ The `warrant-siege` harness executes the following 10 core adversarial scenarios
 +----+-------------------------------+-----------------------------+--------------------+----------+
 | S10| Grace-Hold Undo Window        | Cancel execution during     | I10 (Undo Hold)    | ABORTED  |
 |    | Cancellation                  | grace hold countdown window |                    | 0 residue|
++----+-------------------------------+-----------------------------+--------------------+----------+
+| S11| Cross-User Plan & Budget      | User B attempts read/exec   | I6 (User Boundary) | REJECTED |
+|    | Isolation                     | of User A plan; spend split |                    | 403 / Iso|
 +----+-------------------------------+-----------------------------+--------------------+----------+
 ```
 
@@ -168,6 +171,14 @@ The `warrant-siege` harness executes the following 10 core adversarial scenarios
   2. Gateway emits `ACTION_UNDO_REQUESTED` and `ACTION_UNDONE` audit events.
   3. Reserved spend is fully released; `spent_minor` returns to 0.
   4. Mock provider database confirms exactly 0 external bookings were created. Zero residue remains.
+
+#### Scenario S11: Cross-User Plan & Budget Isolation
+- **Target:** Invariant $I_6$ (Temporal & User Identity Authorization Boundary).
+- **Execution:** Grant A created for User A; Grant B created for User B. User A proposes Plan A. User B attempts to read Plan A via `get_plan_status`, execute Plan A via `execute_plan`, and cancel Plan A via `undo_plan`. User B executes their own plan. Session A2 is created for User A and executes Plan A.
+- **Validation:**
+  1. All cross-user attempts by User B to read, execute, or cancel Plan A return HTTP 403 with `Forbidden: Cross-user violation`.
+  2. User B's execution only debits User B's budget; User A's spent amount remains 0.
+  3. When User A executes via Session 1, Session 2 immediately observes the spent budget (shared multi-session budget for same user).
 
 ---
 

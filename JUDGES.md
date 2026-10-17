@@ -11,10 +11,10 @@
 Evaluators do not need an AWS account, Bedrock credentials, an Alexa developer preview seat, or live payment cards. Everything can be verified deterministically from source in under 60 seconds:
 
 ```bash
-# 1. Run the Adversarial Siege Harness (Executes all 10 attack scenarios in ~2s)
+# 1. Run the Adversarial Siege Harness (Executes all 11 attack scenarios in ~2s)
 npm run test:siege
 
-# 2. Run the Mutation Test (Intentionally breaks 2 safeguards; proves scorecard turns RED)
+# 2. Run the Mutation Test (Intentionally breaks 3 safeguards; proves scorecard turns RED)
 npm run test:mutation
 
 # 3. Run Comparative Benchmark (Naive unprotected server 0/3 vs Warrant Gateway 3/3)
@@ -28,11 +28,12 @@ npm run verify:evidence
 ```
 
 ### What a Pass Looks Like:
-1. **`npm run test:siege`** reports `Scorecard: 10/10 Scenarios Passed`, confirms Invariants $I_1 - I_{10}$ satisfied, and generates [`packages/warrant-siege/scorecard.html`](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/packages/warrant-siege/scorecard.html).
+1. **`npm run test:siege`** reports `Scorecard: 11/11 Scenarios Passed`, confirms Invariants $I_1 - I_{10}$ satisfied, and generates [`packages/warrant-siege/scorecard.html`](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/packages/warrant-siege/scorecard.html).
 2. **`npm run test:mutation`** passes its detection check:
-   - Baseline clean (10/10 green).
+   - Baseline clean (11/11 green).
    - Invariant $I_1$ mutated (idempotency disabled) $\to$ **Scenario S1 fails RED** as expected.
    - Invariant $I_3$ mutated (approval hash disabled) $\to$ **Scenario S4 fails RED** as expected.
+   - Invariant $I_6$ mutated (user isolation disabled) $\to$ **Scenario S11 fails RED** as expected.
    - Proves the test suite is actively catching attacks rather than vacuously passing.
 3. **`npm run test:compare`** tests an unprotected naive server vs. Warrant under identical attack loads:
    - Naive server fails 0/3 (10 duplicate bookings charged, $120 orphaned hotel residue, budget exceeded).
@@ -85,7 +86,7 @@ npm run verify:evidence
 ### 4. Quality of the Idea
 - **Novel Synthesis of Distributed Systems & Agent Safety:** Unifies Saga orchestration, RFC 8785 canonical hashing, detached Ed25519 signatures, and active timeout reconciliation into an elegant gateway architecture.
 - **Propose-then-Execute Structural Containment (CaMeL Research):** Immunizes against indirect prompt injection at the tool boundary ($I_5$) by physically isolating the data plane from administrative grant widening.
-- **Falsifiable Security Proof:** Instead of claiming safety hypothetically, Warrant proves it with 10 attack scenarios in `warrant-siege` and an automated mutation test (`npm run test:mutation`) that breaks protections to prove the scorecard turns RED.
+- **Falsifiable Security Proof:** Instead of claiming safety hypothetically, Warrant proves it with 11 attack scenarios in `warrant-siege` and an automated mutation test (`npm run test:mutation`) that breaks 3 distinct safeguards to prove the scorecard turns RED.
 - **Portable Agent Skill (`skills/warrant-safe-actions/SKILL.md`):** Defense-in-depth pairing: a cooperative prompt skill that guides conversational agent behavior, enforced by a mathematical gateway boundary that catches any deviation. Evaluated via `npm run test:skill` (executing live against Bedrock when AWS credentials exist, or deterministically labeled as an offline contract stub otherwise).
 
 ---
@@ -103,21 +104,22 @@ npm run verify:evidence
 | **Replay Attack** | Network retry storm or duplicate voice submits multi-fire | Multi-layer idempotency cache with request parameter fingerprinting | $I_1$ | **S1** | ✅ Passing |
 | **State Residue** | Multi-step booking fails mid-flight, leaving orphaned bookings | Compensating Saga Orchestrator executes reverse cancellations with clean baseline | $I_4$ | **S2** | ✅ Passing |
 | **Accidental Commitment**| User changes mind immediately after voice confirmation | Grace-hold undo window (8s delay) allows out-of-band cancellation before provider settlement | $I_{10}$ | **S10** | ✅ Passing |
+| **Isolation Violation** | User B attempts to access User A's plans or spend budget | Strict subject binding on plans and grants; shared budget across user's sessions | $I_6$ | **S11** | ✅ Passing |
 
 ---
 
 ## 📊 Comprehensive Verification Summary
 
 > **Exact Verification Breakdown:**  
-> **60 automated unit & integration tests**, **10 adversarial siege attack scenarios** ($S_1 - S_{10}$), **2 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 requests), and **1 comparative benchmark** (3 scenarios).
+> **60 automated unit & integration tests**, **11 adversarial siege attack scenarios** ($S_1 - S_{11}$), **3 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 requests), and **1 comparative benchmark** (3 scenarios).
 
 | Verification Suite | Type | Verified Scope | Execution Time | Status |
 |:---|:---|:---:|:---:|:---:|
-| **`@warrant/gateway`** | Vitest Unit & Integration | 51 unit & integration tests | ~500ms | ✅ 51/51 Passing |
+| **`@warrant/gateway`** | Vitest Unit & Integration | 58 unit & integration tests | ~500ms | ✅ 58/58 Passing |
 | **`@warrant/alexa-client`** | Vitest Agent Integration | 1 Bedrock agent loop test | ~300ms | ✅ 1/1 Passing |
 | **`@warrant/siege`** | Vitest Scenario Runner | 1 scenario suite test | ~1.6s | ✅ 1/1 Passing |
-| **`warrant-siege` (CLI)** | Standalone Adversarial Suite | 10 attack scenarios ($S_1 - S_{10}$) | ~1.6s | ✅ 10/10 Passing |
-| **`Mutation Suite`** | Architectural Negative Testing | 2 mutations caught RED | ~2.5s | ✅ 2/2 Caught |
+| **`warrant-siege` (CLI)** | Standalone Adversarial Suite | 11 attack scenarios ($S_1 - S_{11}$) | ~1.6s | ✅ 11/11 Passing |
+| **`Mutation Suite`** | Architectural Negative Testing | 3 mutations caught RED | ~2.5s | ✅ 3/3 Caught |
 | **`Agent Skill Suite`** | Skill Boundary Evaluation | 3 rule boundary checks | ~200ms | ✅ 3/3 Passing |
 | **`Latency SLA Gate`** | Streamable HTTP SLA Benchmark | 50 operations (avg 1.58ms, p99 34ms) | ~1.5s | ✅ <500ms Passing |
 | **`Comparative Benchmark`**| Naive vs. Warrant Attack Run | 3 comparative attack scenarios | ~600ms | ✅ 3/3 Warrant vs 0/3 Naive |
@@ -134,7 +136,7 @@ To preserve uncompromising engineering honesty, the following constraints are ex
 3. **Model Plan Generation vs. Gateway Damage Limitation:** LLMs can still hallucinate or generate inefficient plans; Warrant's role is not to guarantee LLM conversational brilliance, but to mathematically guarantee that no action executes outside policy bounds, spend caps, or unapproved parameters.
 4. **Structural Defense vs. Text Heuristics:** Warrant defends against prompt injection structurally (by separating data plane from out-of-band control plane and validating canonical parameter hashes), rather than relying on brittle regex or heuristic sentiment/prompt-guard classifiers.
 5. **Storage Architecture:** Uses SQLite in WAL mode with a repository interface pattern; while ideal for single-node / edge deployment, distributed production environments would swap the repository implementation for PostgreSQL or Amazon DynamoDB.
-6. **No External Third-Party Audit:** While verified against 10 automated attack scenarios, property tests, and mutation tests, Warrant has not undergone a formal third-party commercial pen-test.
+6. **No External Third-Party Audit:** While verified against 11 automated attack scenarios, property tests, and mutation tests, Warrant has not undergone a formal third-party commercial pen-test.
 7. **Prior Work & Open Source Disclosure:** Transparently acknowledges prior architectural concepts in autonomous agent bounding (including the author's previous exploration of passkey-bounded mandates on Monad in `AgentTrust`), adapted and re-architected from scratch for AWS Bedrock, Amazon Alexa+, and Model Context Protocol Streamable HTTP under Apache 2.0 / MIT.
 
 ---
@@ -151,7 +153,7 @@ npm run build
 # 3. Run fast unit and integration tests (<5s)
 npm run test
 
-# 4. Run adversarial siege harness (executes 10 attack scenarios)
+# 4. Run adversarial siege harness (executes 11 attack scenarios)
 npm run test:siege
 
 # 5. Run mutation fault test (proves scorecard catches broken invariants)
