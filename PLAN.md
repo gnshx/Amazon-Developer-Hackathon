@@ -103,11 +103,11 @@ Every requirement and user story is tied to an automated invariant test in the a
   - High-fidelity offline stub agent for instant local execution without requiring live AWS credentials.
 
 ### Workstream D: Warrant Siege (Adversarial Harness & Scorecard)
-*Objective: Build the standalone adversarial attack CLI, 10 attack scenarios, and automated scorecard generator.*
+*Objective: Build the standalone adversarial attack CLI, 11 attack scenarios, and automated scorecard generator.*
 - [x] **D.1 Standalone CLI Runner (`packages/warrant-siege`):**
   - Command: `npm run test:siege` / `tsx src/cli.ts --target <mcp-url> --admin <admin-url>`.
   - Ephemeral gateway auto-spawn for turnkey single-command execution on clean machines.
-- [x] **D.2 Core Scenario Implementations (10 Scenarios):**
+- [x] **D.2 Core Scenario Implementations (11 Scenarios):**
   - S1: Duplicate Submit & Retry Storm ($I_1$).
   - S2: Mid-Plan Partial Failure & Rollback ($I_4$).
   - S3: Spend Cap Overflow Attack ($I_2$).
@@ -118,6 +118,7 @@ Every requirement and user story is tied to an automated invariant test in the a
   - S8: Ambiguous Timeout & Succeeded-Response-Lost ($I_8, I_1$).
   - S9: Tampered / Forged Action Receipt Rejection ($I_9$).
   - S10: Grace-Hold Undo Window Cancellation ($I_{10}$).
+  - S11: Cross-User Plan & Budget Isolation ($I_6$).
 - [x] **D.3 Automated Scorecard Generation:**
   - `scorecard.json`: Machine-verifiable summary with timestamps, invariant assertions, and SHA-256 run hash.
   - `scorecard.html`: Self-contained interactive report with pass/fail badges, step-by-step logs, and external provider verification evidence.

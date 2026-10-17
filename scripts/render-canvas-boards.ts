@@ -20,7 +20,7 @@ const board4Html = `<!DOCTYPE html>
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     padding: 32px;
     width: 1120px;
-    height: 1480px;
+    height: 1580px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -177,7 +177,7 @@ const board4Html = `<!DOCTYPE html>
         <div class="subtitle">Adversarial verification of 10 architectural invariants over MCP Streamable HTTP</div>
       </div>
     </div>
-    <div class="score-badge">10 of 10 Passed</div>
+    <div class="score-badge">11 of 11 Passed</div>
   </div>
 
   <table>
@@ -259,6 +259,13 @@ const board4Html = `<!DOCTYPE html>
         <td class="name-col">Undo During Hold Window</td>
         <td><span class="inv-tag">I10 Grace Hold</span></td>
         <td>Undo during hold cancelled with $0 spent (pre-settled)</td>
+        <td style="text-align: right;"><span class="pass-badge">✓ PASS</span></td>
+      </tr>
+      <tr>
+        <td class="id-col">S11</td>
+        <td class="name-col">Cross-User Plan & Budget Isolation</td>
+        <td><span class="inv-tag">I6 User Boundary</span></td>
+        <td>Cross-user access denied (403); budgets isolated across users</td>
         <td style="text-align: right;"><span class="pass-badge">✓ PASS</span></td>
       </tr>
     </tbody>
@@ -552,7 +559,7 @@ fs.writeFileSync(tmpB5, board5Html);
 
 console.log("Rendering Board 4 to docs/assets/4-safety-scorecard.png...");
 execSync(
-  `google-chrome --headless --no-sandbox --disable-gpu --force-device-scale-factor=2 --window-size=1120,1480 --screenshot="${path.join(assetsDir, "4-safety-scorecard.png")}" ${tmpB4}`
+  `google-chrome --headless --no-sandbox --disable-gpu --force-device-scale-factor=2 --window-size=1120,1580 --screenshot="${path.join(assetsDir, "4-safety-scorecard.png")}" ${tmpB4}`
 );
 
 console.log("Rendering Board 5 to docs/assets/5-assistants-limits.png...");

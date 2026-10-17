@@ -70,12 +70,12 @@
 - **Framing:** Full-screen clean Terminal window.
 - **Screen Actions (Pre-recorded & Spliced):**
   1. **1:35 – 1:52:** Run `npm run test:siege`.  
-     Terminal streams 10 scenarios ($S_1 - S_{10}$) executing over real HTTP: **10 passed, 0 failed**.
+     Terminal streams 11 scenarios ($S_1 - S_{11}$) executing over real HTTP: **11 passed, 0 failed**.
   2. **1:52 – 2:15:** Run `npm run test:mutation`.  
      Harness intentionally disables approval verification: **Scenario S4 turns RED!**  
      Harness restores protection: scorecard returns to 100% green.
 - **Voiceover (138 WPM):**
-  > *"A safety gateway is only as trustworthy as the tests that attack it. We run our adversarial test harness with npm run test:siege. It executes all 10 attack scenarios over real HTTP: concurrency storms, prompt injections, and expired grants. All 10 pass green. But can the harness actually catch a real security flaw? We run npm run test:mutation. We deliberately disable the approval-hash check. Instantly, scenario S4 turns red, catching the parameter tampering. We restore the check, and the scorecard returns to 100% green."*
+  > *"A safety gateway is only as trustworthy as the tests that attack it. We run our adversarial test harness with npm run test:siege. It executes all 11 attack scenarios over real HTTP: concurrency storms, prompt injections, and expired grants. All 11 pass green. But can the harness actually catch a real security flaw? We run npm run test:mutation. We deliberately disable the approval-hash check. Instantly, scenario S4 turns red, catching the parameter tampering. We restore the check, and the scorecard returns to 100% green."*
 
 ---
 

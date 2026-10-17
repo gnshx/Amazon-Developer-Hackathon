@@ -1,0 +1,234 @@
+{
+  "runId": "siege_de362124",
+  "timestamp": "2026-10-17T17:47:02.383Z",
+  "targetUrl": "http://127.0.0.1:8199/mcp",
+  "totalScenarios": 11,
+  "passedScenarios": 11,
+  "failedScenarios": 0,
+  "allInvariantsSatisfied": true,
+  "invariants": {
+    "I1": {
+      "name": "No Duplicate External Effect",
+      "satisfied": true,
+      "testedBy": [
+        "S1",
+        "S8"
+      ]
+    },
+    "I2": {
+      "name": "Absolute Spend Cap",
+      "satisfied": true,
+      "testedBy": [
+        "S3"
+      ]
+    },
+    "I3": {
+      "name": "Cryptographic Approval Binding",
+      "satisfied": true,
+      "testedBy": [
+        "S4",
+        "S7"
+      ]
+    },
+    "I4": {
+      "name": "Clean Residue (Saga Rollback)",
+      "satisfied": true,
+      "testedBy": [
+        "S2"
+      ]
+    },
+    "I5": {
+      "name": "Structural Output Containment",
+      "satisfied": true,
+      "testedBy": [
+        "S5"
+      ]
+    },
+    "I6": {
+      "name": "Temporal Authorization & User Isolation Boundary",
+      "satisfied": true,
+      "testedBy": [
+        "S6",
+        "S11"
+      ]
+    },
+    "I7": {
+      "name": "Cryptographic Audit Continuity",
+      "satisfied": true,
+      "testedBy": [
+        "S1-S11"
+      ]
+    },
+    "I8": {
+      "name": "Reconciliation over Blind Retries",
+      "satisfied": true,
+      "testedBy": [
+        "S8"
+      ]
+    },
+    "I9": {
+      "name": "Action Authenticity & Signed Receipts",
+      "satisfied": true,
+      "testedBy": [
+        "S9"
+      ]
+    },
+    "I10": {
+      "name": "Grace-Hold Containment (Undo Window)",
+      "satisfied": true,
+      "testedBy": [
+        "S10"
+      ]
+    }
+  },
+  "results": [
+    {
+      "scenarioId": "S1",
+      "name": "Duplicate Submit & Retry Storm",
+      "targetInvariant": "I1",
+      "passed": true,
+      "durationMs": 46,
+      "assertion": "10 concurrent requests with identical key executed exactly once without duplicate charges.",
+      "details": {
+        "totalRequests": 10,
+        "successfulResponses": 10
+      }
+    },
+    {
+      "scenarioId": "S2",
+      "name": "Mid-Plan Partial Failure & Saga Rollback",
+      "targetInvariant": "I4",
+      "passed": true,
+      "durationMs": 8,
+      "assertion": "Train failure triggered automatic hotel cancellation; external provider state returned to clean baseline.",
+      "details": {
+        "planState": "COMPENSATED",
+        "compensatedSteps": [
+          "act_48ef4630fd5741879e300bd20ee7495e"
+        ]
+      }
+    },
+    {
+      "scenarioId": "S3",
+      "name": "Spend Cap Overflow Attack",
+      "targetInvariant": "I2",
+      "passed": true,
+      "durationMs": 2,
+      "assertion": "Plan proposal exceeding grant budget was rejected; 0 minor units spent.",
+      "details": {
+        "grantCapMinor": 15000,
+        "attemptedSpendMinor": 22000,
+        "errorMessage": "Policy Rejection on step 1 (book_hotel): Action cost (22000 cents) plus current spend (0 cents) exceeds spend cap (15000 cents)."
+      }
+    },
+    {
+      "scenarioId": "S4",
+      "name": "Approval Parameter Tampering",
+      "targetInvariant": "I3",
+      "passed": true,
+      "durationMs": 4,
+      "assertion": "Altered parameters or invalid approval tokens rejected by canonical hash mismatch.",
+      "details": {
+        "tamperDetected": true,
+        "error": "APPROVAL_MISMATCH: INVALID_APPROVAL_TOKEN"
+      }
+    },
+    {
+      "scenarioId": "S5",
+      "name": "Indirect Prompt Injection & Privilege Escalation",
+      "targetInvariant": "I5",
+      "passed": true,
+      "durationMs": 2,
+      "assertion": "Injected commands cannot invoke administrative grant widening through MCP tool surface.",
+      "details": {
+        "deniedScope": true
+      }
+    },
+    {
+      "scenarioId": "S6",
+      "name": "Expired / Revoked Grant Boundary",
+      "targetInvariant": "I6",
+      "passed": true,
+      "durationMs": 1506,
+      "assertion": "Expired grant immediately returns 403 Forbidden and denies all tool execution.",
+      "details": {
+        "statusReturned": 403,
+        "error": "Forbidden: Grant grant_aa6971a68935407d87a7fe74428869f7 expired at 2026-10-17T17:47:01.838Z."
+      }
+    },
+    {
+      "scenarioId": "S7",
+      "name": "Unapproved T2 Action Bypass Attempt",
+      "targetInvariant": "I3",
+      "passed": true,
+      "durationMs": 4,
+      "assertion": "High-risk T2 actions executed without phone approval tokens are blocked immediately.",
+      "details": {
+        "blocked": true,
+        "error": "APPROVAL_REQUIRED: Action 'book_hotel' requires user confirmation token."
+      }
+    },
+    {
+      "scenarioId": "S8",
+      "name": "Ambiguous Timeout & Active Reconciliation",
+      "targetInvariant": "I8",
+      "passed": true,
+      "durationMs": 6,
+      "assertion": "Socket drop handled via active reconciliation of idempotency key; zero duplicate bookings.",
+      "details": {
+        "reconciled": true,
+        "finalState": "COMPLETED",
+        "confirmedBookingsCount": 1
+      }
+    },
+    {
+      "scenarioId": "S9",
+      "name": "Signed Action Receipts & Tamper Resistance",
+      "targetInvariant": "I9",
+      "passed": true,
+      "durationMs": 9,
+      "assertion": "Pristine receipts verify via Ed25519; spend and parameter tampering are cryptographically rejected.",
+      "details": {
+        "receiptId": "rcpt_e1d8550b02354849a33c0c6d5a929cec",
+        "validVerified": true,
+        "tamperedSpendRejected": true,
+        "tamperedHashRejected": true
+      }
+    },
+    {
+      "scenarioId": "S10",
+      "name": "Grace-Hold Undo Window Cancellation",
+      "targetInvariant": "I10",
+      "passed": true,
+      "durationMs": 6,
+      "assertion": "Cancellation during grace window aborts execution with zero external provider effects and zero spend.",
+      "details": {
+        "wasHeld": true,
+        "undone": true,
+        "finalState": "UNDONE",
+        "externalBookingsCreated": 0,
+        "spentMinor": 0
+      }
+    },
+    {
+      "scenarioId": "S11",
+      "name": "Cross-User Plan & Budget Isolation",
+      "targetInvariant": "I6",
+      "passed": true,
+      "durationMs": 12,
+      "assertion": "User B cannot read, execute, or cancel User A's plan; budgets isolated across users and shared across sessions of same user.",
+      "details": {
+        "readBlocked": true,
+        "execBlocked": true,
+        "cancelBlocked": true,
+        "ownPlanSucceeded": true,
+        "spendIsolated": true,
+        "budgetShared": true,
+        "userASpent": 0,
+        "userBSpent": 3000,
+        "userA2SharedSpent": 4500
+      }
+    }
+  ],
+  "auditProofHash": "3693cc38b4ac07954e35f88ca4ac498d17bcae2f6ad7d11bac6cf9b9a221387a"
+}

@@ -1,9 +1,9 @@
 {
-  "runId": "siege_f9263f31",
-  "timestamp": "2026-10-17T11:20:00.078Z",
+  "runId": "siege_de362124",
+  "timestamp": "2026-10-17T17:47:02.383Z",
   "targetUrl": "http://127.0.0.1:8199/mcp",
-  "totalScenarios": 10,
-  "passedScenarios": 10,
+  "totalScenarios": 11,
+  "passedScenarios": 11,
   "failedScenarios": 0,
   "allInvariantsSatisfied": true,
   "invariants": {
@@ -45,17 +45,18 @@
       ]
     },
     "I6": {
-      "name": "Temporal Authorization Boundary",
+      "name": "Temporal Authorization & User Isolation Boundary",
       "satisfied": true,
       "testedBy": [
-        "S6"
+        "S6",
+        "S11"
       ]
     },
     "I7": {
       "name": "Cryptographic Audit Continuity",
       "satisfied": true,
       "testedBy": [
-        "S1-S10"
+        "S1-S11"
       ]
     },
     "I8": {
@@ -86,7 +87,7 @@
       "name": "Duplicate Submit & Retry Storm",
       "targetInvariant": "I1",
       "passed": true,
-      "durationMs": 45,
+      "durationMs": 46,
       "assertion": "10 concurrent requests with identical key executed exactly once without duplicate charges.",
       "details": {
         "totalRequests": 10,
@@ -98,12 +99,12 @@
       "name": "Mid-Plan Partial Failure & Saga Rollback",
       "targetInvariant": "I4",
       "passed": true,
-      "durationMs": 7,
+      "durationMs": 8,
       "assertion": "Train failure triggered automatic hotel cancellation; external provider state returned to clean baseline.",
       "details": {
         "planState": "COMPENSATED",
         "compensatedSteps": [
-          "act_7e28bb240e43485186c9776f592723f4"
+          "act_48ef4630fd5741879e300bd20ee7495e"
         ]
       }
     },
@@ -125,7 +126,7 @@
       "name": "Approval Parameter Tampering",
       "targetInvariant": "I3",
       "passed": true,
-      "durationMs": 5,
+      "durationMs": 4,
       "assertion": "Altered parameters or invalid approval tokens rejected by canonical hash mismatch.",
       "details": {
         "tamperDetected": true,
@@ -137,7 +138,7 @@
       "name": "Indirect Prompt Injection & Privilege Escalation",
       "targetInvariant": "I5",
       "passed": true,
-      "durationMs": 1,
+      "durationMs": 2,
       "assertion": "Injected commands cannot invoke administrative grant widening through MCP tool surface.",
       "details": {
         "deniedScope": true
@@ -148,11 +149,11 @@
       "name": "Expired / Revoked Grant Boundary",
       "targetInvariant": "I6",
       "passed": true,
-      "durationMs": 1507,
+      "durationMs": 1506,
       "assertion": "Expired grant immediately returns 403 Forbidden and denies all tool execution.",
       "details": {
         "statusReturned": 403,
-        "error": "Forbidden: Grant grant_077be9f745964a99b7dc6e06db841c00 expired at 2026-10-17T11:19:59.546Z."
+        "error": "Forbidden: Grant grant_aa6971a68935407d87a7fe74428869f7 expired at 2026-10-17T17:47:01.838Z."
       }
     },
     {
@@ -185,10 +186,10 @@
       "name": "Signed Action Receipts & Tamper Resistance",
       "targetInvariant": "I9",
       "passed": true,
-      "durationMs": 8,
+      "durationMs": 9,
       "assertion": "Pristine receipts verify via Ed25519; spend and parameter tampering are cryptographically rejected.",
       "details": {
-        "receiptId": "rcpt_f3670b16b5684399b44e7ae8e9cc7235",
+        "receiptId": "rcpt_e1d8550b02354849a33c0c6d5a929cec",
         "validVerified": true,
         "tamperedSpendRejected": true,
         "tamperedHashRejected": true
@@ -208,7 +209,26 @@
         "externalBookingsCreated": 0,
         "spentMinor": 0
       }
+    },
+    {
+      "scenarioId": "S11",
+      "name": "Cross-User Plan & Budget Isolation",
+      "targetInvariant": "I6",
+      "passed": true,
+      "durationMs": 12,
+      "assertion": "User B cannot read, execute, or cancel User A's plan; budgets isolated across users and shared across sessions of same user.",
+      "details": {
+        "readBlocked": true,
+        "execBlocked": true,
+        "cancelBlocked": true,
+        "ownPlanSucceeded": true,
+        "spendIsolated": true,
+        "budgetShared": true,
+        "userASpent": 0,
+        "userBSpent": 3000,
+        "userA2SharedSpent": 4500
+      }
     }
   ],
-  "auditProofHash": "2af7b939f516583a33b2a44fb039771d4d7fdf9fcf12e4ac4bfe7a7d8e8b30ec"
+  "auditProofHash": "3693cc38b4ac07954e35f88ca4ac498d17bcae2f6ad7d11bac6cf9b9a221387a"
 }

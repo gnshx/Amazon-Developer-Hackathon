@@ -74,14 +74,14 @@
 - **Visual:** Terminal window running `npm run test:siege`, then `npm run test:mutation`.
 - **Screen Action:**
   1. Terminal runs: `npm run test:siege`  
-     Output streams all 10 adversarial attack scenarios (duplicate storms, spend cap breaches, parameter tampering, prompt injection, expired grants, ambiguous timeouts).  
-     Scorecard: **10 passed, 0 failed**.
+     Output streams all 11 adversarial attack scenarios (duplicate storms, spend cap breaches, parameter tampering, prompt injection, expired grants, ambiguous timeouts, cross-user isolation).  
+     Scorecard: **11 passed, 0 failed**.
   2. Terminal runs: `npm run test:mutation`  
      - Harness intentionally mutates the gateway: disables approval hash verification.
      - **Mutation Detected! Scenario S4 turns RED!** Showing that tampered parameters fail verification when protection is active.
      - Harness restores protection, and tests return to green.
 - **Voiceover:**
-  > "A safety gateway is only as trustworthy as the tests that attack it. We run our adversarial test harness with npm run test:siege. It executes all 10 attack scenarios over real HTTP: concurrency storms, prompt injections, and expired grants. All 10 pass green. But can the harness actually catch a real security flaw? We run npm run test:mutation. We deliberately disable the approval-hash check. Instantly, scenario S4 turns red, catching the parameter tampering. We restore the check, and the scorecard returns to 100% green."
+  > "A safety gateway is only as trustworthy as the tests that attack it. We run our adversarial test harness with npm run test:siege. It executes all 11 attack scenarios over real HTTP: concurrency storms, prompt injections, and expired grants. All 11 pass green. But can the harness actually catch a real security flaw? We run npm run test:mutation. We deliberately disable the approval-hash check. Instantly, scenario S4 turns red, catching the parameter tampering. We restore the check, and the scorecard returns to 100% green."
 
 ---
 

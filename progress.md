@@ -32,6 +32,7 @@
 | 2026-10-17 | 03:45 | Pre-Flight Audit | Verified runtime seams (zero backdoors in process.env), softened mutation phrasing, aligned 10 scenarios across all docs, created `test-bedrock-live.ts`, `split-siege-repo.sh`, verified `/tmp` fresh-clone in 16s, and published 1-page recording checklist. | Completed |
 | 2026-10-17 | 17:15 | Risk Removal & Judgment Ready | Implemented MCP 2025-11-25 contract test, Screen 5 interactive limits UI, JUDGES.md, STRIDE threat matrix, 7 limitations disclosures, offline evidence bundle (`npm run verify:evidence`), Bedrock live lifecycle scripts, standalone `gnshx/warrant-siege` repo validation, and generated `docs/EXECUTION_CHECKLIST.md` & `hackathon_checklist.csv`. | Completed |
 | 2026-10-17 | 20:00 | Alexa+ Readiness & Positioning | Implemented RFC 9728 OAuth Protected Resource Metadata, user identity binding (`userId`), MCP 2025-11-25 tool annotations & URL elicitation, latency SLA benchmark (<500ms), and Naive vs Warrant comparative benchmark (0/3 vs 3/3). Updated README, JUDGES.md, and SUBMISSION.md with ecosystem positioning (AWS AgentCore Policy GA March 2026, Google AP2, CaMeL, Alexa checkout). | Completed |
+| 2026-10-17 | 23:25 | Alexa+ Readiness & 11 Scenarios | Fully verified T1-T7 readiness tasks: RFC 9728 PRM, demo OAuth PKCE, user identity binding, scenario S11 cross-user isolation (11/11 passed), 3/3 mutations caught, 50-call latency SLA benchmark (<2.8ms p95), 21-row Alexa+ checklist, and rendered 11/11 visual canvas scorecard boards. | Completed |
 
 ---
 
@@ -39,16 +40,16 @@
 
 | Invariant | Description | Automated Test Status | Last Verified |
 |---|---|---|---|
-| **I1** | No duplicate external effect | **VERIFIED (Scenarios S1, S8 passing, S1 turns RED on defect)** | 17 Oct 2026, 03:45 IST |
-| **I2** | Total spend ≤ grant cap | **VERIFIED (Scenario S3 passing)** | 17 Oct 2026, 03:45 IST |
-| **I3** | T2 requires bound approval token | **VERIFIED (Scenarios S4, S7 passing, S4 turns RED on defect)** | 17 Oct 2026, 03:45 IST |
-| **I4** | Mid-plan failure leaves clean residue | **VERIFIED (Scenario S2 passing)** | 17 Oct 2026, 03:45 IST |
-| **I5** | Provider text cannot alter grants/approvals | **VERIFIED (Scenario S5 passing)** | 17 Oct 2026, 03:45 IST |
-| **I6** | Expired/revoked grant execution blocked | **VERIFIED (Scenario S6 passing)** | 17 Oct 2026, 03:45 IST |
-| **I7** | Audit chain cryptographically continuous | **VERIFIED (Genesis-to-Tip Valid)** | 17 Oct 2026, 03:45 IST |
-| **I8** | Ambiguous timeouts actively reconciled | **VERIFIED (Scenario S8 passing)** | 17 Oct 2026, 03:45 IST |
-| **I9** | Action Authenticity & Signed Receipts | **VERIFIED (Scenario S9 passing, tampered receipts rejected)** | 17 Oct 2026, 03:45 IST |
-| **I10** | Grace-Hold Containment (Undo Window) | **VERIFIED (Scenario S10 passing, 0 external bookings created)** | 17 Oct 2026, 03:45 IST |
+| **I1** | No duplicate external effect | **VERIFIED (Scenarios S1, S8 passing, S1 turns RED on defect)** | 17 Oct 2026, 23:25 IST |
+| **I2** | Total spend ≤ grant cap | **VERIFIED (Scenario S3 passing)** | 17 Oct 2026, 23:25 IST |
+| **I3** | T2 requires bound approval token | **VERIFIED (Scenarios S4, S7 passing, S4 turns RED on defect)** | 17 Oct 2026, 23:25 IST |
+| **I4** | Mid-plan failure leaves clean residue | **VERIFIED (Scenario S2 passing)** | 17 Oct 2026, 23:25 IST |
+| **I5** | Provider text cannot alter grants/approvals | **VERIFIED (Scenario S5 passing)** | 17 Oct 2026, 23:25 IST |
+| **I6** | Expired/revoked grant execution blocked & User Isolation | **VERIFIED (Scenarios S6, S11 passing, S11 turns RED on defect)** | 17 Oct 2026, 23:25 IST |
+| **I7** | Audit chain cryptographically continuous | **VERIFIED (Genesis-to-Tip Valid)** | 17 Oct 2026, 23:25 IST |
+| **I8** | Ambiguous timeouts actively reconciled | **VERIFIED (Scenario S8 passing)** | 17 Oct 2026, 23:25 IST |
+| **I9** | Action Authenticity & Signed Receipts | **VERIFIED (Scenario S9 passing, tampered receipts rejected)** | 17 Oct 2026, 23:25 IST |
+| **I10** | Grace-Hold Containment (Undo Window) | **VERIFIED (Scenario S10 passing, 0 external bookings created)** | 17 Oct 2026, 23:25 IST |
 
 ---
 

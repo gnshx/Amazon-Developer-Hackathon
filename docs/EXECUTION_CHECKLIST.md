@@ -44,12 +44,12 @@
 
 - [x] **Step 4: Push Siege Harness to Standalone Public Repo**
   - **Repository:** [`https://github.com/gnshx/warrant-siege.git`](https://github.com/gnshx/warrant-siege.git)
-  - **Verification:** Cloned alone in `/tmp/siege-standalone-test` and executed `npx tsx src/cli.ts --target <URL>` against external gateway with 10/10 scenarios green.
+  - **Verification:** Cloned alone in `/tmp/siege-standalone-test` and executed `npx tsx src/cli.ts --target <URL>` against external gateway with 11/11 scenarios green.
   - **Status:** `DONE`
 
 - [x] **Step 5: Clone Main Repo Fresh from GitHub & Run Documented Path**
   - **Repository:** [`https://github.com/gnshx/Amazon-Developer-Hackathon.git`](https://github.com/gnshx/Amazon-Developer-Hackathon.git)
-  - **Verification:** Fresh clone into `/tmp/fresh-clone-eval` passed `npm run verify:evidence`, `npm run test:siege` (10/10), and `npm run test:mutation` (2/2) in <16 seconds.
+  - **Verification:** Fresh clone into `/tmp/fresh-clone-eval` passed `npm run verify:evidence`, `npm run test:siege` (11/11), and `npm run test:mutation` (3/3) in <16 seconds.
   - **Status:** `DONE`
 
 ---

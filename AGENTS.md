@@ -60,7 +60,7 @@ npm run build
 # Run fast unit and property tests (<5s)
 npm run test
 
-# Run adversarial siege test harness (executes 10 attack scenarios)
+# Run adversarial siege test harness (executes 11 attack scenarios)
 npm run test:siege
 
 # Verify cryptographic audit chain integrity
@@ -111,13 +111,13 @@ When autonomous coding loops (such as `/goal`, Antigravity loop agents, or Claud
 
 ### 5.4 Warrant Siege Adversarial Harness Loop Contract
 ```markdown
-**Objective:** Implement the standalone `warrant-siege` CLI test harness executing all 10 core attack scenarios (S1-S10) against the gateway over MCP Streamable HTTP and generating JSON and HTML scorecards.
+**Objective:** Implement the standalone `warrant-siege` CLI test harness executing all 11 core attack scenarios (S1-S11) against the gateway over MCP Streamable HTTP and generating JSON and HTML scorecards.
 **Read first:** docs/TEST_PLAN.md, docs/HLD.md, packages/warrant-siege/
-**Constraints:** Siege talks to the gateway strictly over MCP and Admin HTTP; all 10 scenarios must execute deterministically; scorecard must verify invariants I1 through I10; do not delete or weaken test assertions.
+**Constraints:** Siege talks to the gateway strictly over MCP and Admin HTTP; all 11 scenarios must execute deterministically; scorecard must verify invariants I1 through I10; do not delete or weaken test assertions.
 **Validate:** `npm run test:siege` after each change
 **Document:** Write concise, targeted documentation for all changes — create new .md files or update existing docs as needed.
 **Checkpoints:** work in checkpoints and log progress briefly in progress.md
-**Stop when:** All 10 adversarial scenarios (S1 to S10) pass with green badges and generate a complete scorecard.html, OR when further changes require human input.
+**Stop when:** All 11 adversarial scenarios (S1 to S11) pass with green badges and generate a complete scorecard.html, OR when further changes require human input.
 ```
 
 ---
@@ -126,7 +126,7 @@ When autonomous coding loops (such as `/goal`, Antigravity loop agents, or Claud
 
 Before presenting any phase as complete, every agent must verify:
 1. `npm run test` executes with 0 failures and 0 warnings.
-2. `npm run test:siege` reports `10 passed, 0 failed` on the invariant scorecard.
+2. `npm run test:siege` reports `11 passed, 0 failed` on the invariant scorecard.
 3. `npm run audit:verify` confirms the SHA-256 audit chain is continuous from genesis.
 4. `task_plan.md` and `progress.md` are updated with the latest session results.
 5. All newly created files include concise docstrings and unit test coverage.
