@@ -30,6 +30,7 @@
 | 2026-10-16 | 23:10 | Demo Script & Docs | Rewrote `DEMO_SCRIPT.md` to 2:45 target with exact WPM budgets, mutation moment, and on-screen caption. | Completed |
 | 2026-10-16 | 23:15 | Submission Package | Completed `SUBMISSION.md` with required tool feedback (Bedrock, MCP, AWS SDK, Next.js, SQLite) & friction log. | Completed |
 | 2026-10-17 | 03:45 | Pre-Flight Audit | Verified runtime seams (zero backdoors in process.env), softened mutation phrasing, aligned 10 scenarios across all docs, created `test-bedrock-live.ts`, `split-siege-repo.sh`, verified `/tmp` fresh-clone in 16s, and published 1-page recording checklist. | Completed |
+| 2026-10-17 | 17:15 | Risk Removal & Judgment Ready | Implemented MCP 2025-11-25 contract test, Screen 5 interactive limits UI, JUDGES.md, STRIDE threat matrix, 7 limitations disclosures, offline evidence bundle (`npm run verify:evidence`), Bedrock live lifecycle scripts, standalone `gnshx/warrant-siege` repo validation, and generated `docs/EXECUTION_CHECKLIST.md` & `hackathon_checklist.csv`. | Completed |
 
 ---
 

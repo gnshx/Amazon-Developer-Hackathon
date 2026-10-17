@@ -1,0 +1,14 @@
+Date,Day,Step,Category,Task,Artifact / Command,Verification / Success Criteria,Status,Notes
+2026-10-17,Today,Step 1,Risk Removal,Run Bedrock live check & Converse test,"npm run check:bedrock-models && npm run test:bedrock",Converse API verified or graceful deterministic fallback active,DONE,Nova Pro lifecycle logged in findings.md
+2026-10-17,Today,Step 2,Risk Removal,Confirm MCP version negotiation,"packages/warrant-gateway/src/mcp/server.test.ts",Negotiates protocolVersion: "2025-11-25" on GET /mcp and POST /mcp initialize,DONE,Spec 2025-11-25 contract verified
+2026-10-17,Today,Step 3,Risk Removal,Check UI sets the grant in client,"packages/alexa-client/src/app/page.tsx",Screen 5 interactive budget/threshold/expiry chips update Console meter,DONE,Out-of-band admin channel visually interactive
+2026-10-17,Today,Step 4,Risk Removal,Push siege harness to standalone repo,"https://github.com/gnshx/warrant-siege.git",Clone alone and execute against remote/local gateway URL (10/10 green),DONE,Standalone siege package live
+2026-10-17,Today,Step 5,Risk Removal,Clone main repo fresh from GitHub,"/tmp/fresh-clone-eval",npm run verify:evidence && npm run test:siege run cleanly in <16s,DONE,Remote GitHub main branch verified
+2026-10-18,Oct 18,Step 6,Evaluation,Add JUDGES.md disclosures threat matrix & test summary,"JUDGES.md, README.md, docs/SUBMISSION.md",npm run verify:evidence runs in 60s without server setup (100% green),DONE,Completed early
+2026-10-18,Oct 18,Step 7,Evaluation,Rewrite product feedback & friction log,"docs/SUBMISSION.md, docs/FRICTION_LOG.md",5 authentic friction log entries with code examples,DONE,Completed early
+2026-10-18,Oct 18,Step 8,Evaluation,Draft feature requests for Alexa team,"docs/SUBMISSION.md",FR-1 to FR-4 with urgency ratings (Critical to Nice-to-have),DONE,Completed early
+2026-10-19,Oct 19,Step 9,User Testing,Test demo path on a blind user,"packages/alexa-client/",User speaks prompt and successfully completes approval; fix microcopy only,READY,Core path frozen; no passkeys
+2026-10-20,Oct 20,Step 10,Submission,Build Devpost entry draft,"Devpost UI, docs/SUBMISSION.md",All fields tags canvas screenshots and public links populated and tested,READY,Copy-paste ready in SUBMISSION.md
+2026-10-21,Oct 21,Step 11,Recording,Record demo video with retakes & captions,"docs/DEMO_SCRIPT.md, docs/RECORDING_CHECKLIST.md",Runtime 2:45; separate voice tracks; burned captions; mutation moment,SCHEDULED,Target under 3:00 hard cutoff
+2026-10-22,Oct 22,Step 12,Submission,Submit Devpost entry 24h early,"Devpost, GitHub, YouTube",Entry submitted; public links re-tested in incognito; fresh clone re-run,SCHEDULED,Target: Oct 22 @ 20:00 IST
+2026-10-23,Oct 23,Step 13,Buffer,Strict freeze & buffer window,"docs/EXECUTION_CHECKLIST.md",Zero new features or refactoring; emergency fixes only before deadline,SCHEDULED,Deadline: Oct 24 @ 12:30 AM IST (Oct 23 @ 19:00 UTC)

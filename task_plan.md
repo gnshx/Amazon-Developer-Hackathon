@@ -4,21 +4,27 @@
 Build and deliver Warrant (a provably safe trust gateway for voice agents over MCP Streamable HTTP, with saga rollback, cryptographic approval binding, and adversarial siege test harness) for the Amazon Developer Hackathon (Alexa+ Track) by 23 October 2026.
 
 ## Current Phase
-Phase 7: Precision Hardening & High-Impact Extensions (Workstream F)
+Phase 7: Hardening, Evaluation Readiness & Video Production (Oct 17 – Oct 23)
 
-## Feature Triage & Gate Plan (Oct 17 – Oct 23)
+See detailed daily checklist: [`docs/EXECUTION_CHECKLIST.md`](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/docs/EXECUTION_CHECKLIST.md) and spreadsheet export [`docs/hackathon_checklist.csv`](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/docs/hackathon_checklist.csv).
 
-| Feature | Effort | Demo Impact | Risk | Verdict | Target Date |
+## Master 13-Step Gate Schedule (Oct 17 – Oct 23)
+
+| Step | Date | Phase | Task | Status | Primary Verification |
 |---|---|---|---|---|---|
-| Mutation Test Script (`npm run test:mutation`) | ~0.5d | High (proves red scorecard on defect) | Low | **DONE** | Oct 17 |
-| Fictional Provider Names (Coastal Rail / Harbor Inn) | ~0.2d | High (zero trademark risk) | Low | **DONE** | Oct 17 |
-| Turnkey Siege Runner (Auto-spawn ephemeral gateway) | ~0.2d | High (clean machine execution) | Low | **DONE** | Oct 17 |
-| Signed Action Receipts + CLI Verify + UI Inspector | ~1d | High (independent 3rd-party proof) | Low | **DONE** | Oct 18 |
-| Undo Window (Grace countdown before settlement + S10) | ~1d | High (visual and intuitive) | Med | **DONE** | Oct 19 |
-| Reusable CI GitHub Action + Pass/Fail Badge | ~0.5d | Med (ecosystem adoption) | Low | **DONE** | Oct 20 |
-| Merkle Checkpoints on Audit Chain | ~1d | Med | Med | **DONE** | Oct 21 |
-| Passkey (WebAuthn) Approvals | 1-2d | High | High | **ROADMAP** | Post-Hackathon |
-| Capability Tokens (Macaroons) / Policy as Code | 2+d | High on paper | High | **ROADMAP** | Post-Hackathon |
+| **Step 1** | Oct 17 | Risk Removal | Run Bedrock live check & Converse test | **DONE** | `npm run check:bedrock-models` & `npm run test:bedrock` |
+| **Step 2** | Oct 17 | Risk Removal | Confirm MCP 2025-11-25 version negotiation | **DONE** | `packages/warrant-gateway/src/mcp/server.test.ts` |
+| **Step 3** | Oct 17 | Risk Removal | Check UI sets the grant (interactive limits) | **DONE** | Screen 5 interactive limits UI + budget bar link |
+| **Step 4** | Oct 17 | Risk Removal | Push siege harness to standalone public repo | **DONE** | Cloned & verified `gnshx/warrant-siege` (10/10) |
+| **Step 5** | Oct 17 | Risk Removal | Clone main repo fresh from GitHub | **DONE** | `/tmp/fresh-clone-eval` 100% green in <16s |
+| **Step 6** | Oct 18 | Evaluation | Add `JUDGES.md`, disclosures, threat matrix | **DONE** *(Early)* | `npm run verify:evidence` (60s offline verifier) |
+| **Step 7** | Oct 18 | Evaluation | Rewrite product feedback & friction log | **DONE** *(Early)* | 5 entries in `docs/SUBMISSION.md` & `FRICTION_LOG.md` |
+| **Step 8** | Oct 18 | Evaluation | Draft feature requests for Alexa team | **DONE** *(Early)* | FR-1 to FR-4 with urgency ratings in `SUBMISSION.md` |
+| **Step 9** | Oct 19 | User Testing | Test demo path on a blind user | **READY** | Walkthrough console + phone approval; freeze core path |
+| **Step 10** | Oct 20 | Submission | Build Devpost entry draft | **READY** | Form fields, canvas screens & links in `SUBMISSION.md` |
+| **Step 11** | Oct 21 | Recording | Record video demo with retakes & captions | **SCHEDULED** | 2:45 runtime, separate audio tracks, mutation shot |
+| **Step 12** | Oct 22 | Submission | Submit Devpost entry 24h early | **SCHEDULED** | Devpost form submitted; incognito link verification |
+| **Step 13** | Oct 23 | Buffer | Strict freeze & buffer window | **SCHEDULED** | Emergency fixes only before 12:30 AM IST deadline |
 
 ---
 
