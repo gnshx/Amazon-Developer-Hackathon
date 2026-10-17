@@ -22,28 +22,29 @@
 - **On-Screen Display:** Split screen or title overlay with persistent badge:  
   `[On-Screen: "Simulated Alexa+ Assistant Interface — Warrant Gateway MCP"]`
 - **Voiceover:**
-  > "Voice assistants are starting to book and buy for us, with no screen to check first. Warrant makes every action limited, approved, and undoable."
+  > "Voice assistants are starting to book and buy for us, with no screen to check first. Operating over Model Context Protocol Streamable HTTP, Warrant makes every action limited, approved, and undoable."
 
 ---
 
 ### Scene 2: The Happy Path & Approval Binding (0:12 – 1:00)
 - **Duration:** 48 seconds
-- **Word Count:** 82 words (102 WPM — relaxed & natural)
-- **Visual:** Simulated Alexa+ Client UI (dark mode, glassmorphism). User speaks or types:  
+- **Word Count:** 89 words (111 WPM — relaxed & natural)
+- **Visual:** Simulated Alexa+ Client UI. User sets limits on Screen 5, then asks:  
   *“Book me a weekend trip from Portland to Seattle with a hotel under $200.”*
 - **Screen Action:**
-  1. Live MCP trace shows Bedrock agent discovering tools and calling `propose_plan`.
-  2. Policy engine flags Coastal Rail as reversible write ($T_1$) and Harbor Inn Hotel as high-value commitment ($T_2$).
-  3. Phone approval card slides in showing:
+  1. User sets household limits on phone ($500 cap, $200 approval threshold).
+  2. Live MCP trace shows Bedrock agent discovering tools over Streamable HTTP and calling `propose_plan`.
+  3. Policy engine flags Coastal Rail as reversible write ($T_1$) and Harbor Inn Hotel as high-value commitment ($T_2$).
+  4. Phone approval card slides in showing:
      - Exact hotel parameters: Harbor Inn, 2 nights, \$120.00.
      - Parameter Hash: `SHA-256: ba39...395c` (derived from canonical JSON).
-  4. User taps **Approve**. Single-use approval token is minted.
-  5. Gateway validates token and parameter hash, commits booking, and Alexa speaks natural summary:  
+  5. User taps **Approve**. Single-use approval token is minted.
+  6. Gateway validates token and parameter hash, commits booking, and Alexa speaks natural summary:  
      *“Your train and hotel in Seattle are booked for $165.00 total.”*
-  6. Click **View Signed Receipt**: shows detached Ed25519 signature verified offline.
-  7. 8-second undo grace hold countdown animates silently on screen while Alexa speaks.
+  7. Click **View Signed Receipt**: shows detached Ed25519 signature verified offline.
+  8. 8-second undo grace hold countdown animates silently on screen while Alexa speaks.
 - **Voiceover:**
-  > "When Alexa proposes the trip, Warrant evaluates risk before anything touches a provider. The train is a reversible step, but the hotel is a high-value commitment. On the phone, the approval card locks to the exact parameters with an RFC 8785 canonical hash. With the user’s tap, Warrant mints a single-use token, commits the booking, and produces an Ed25519 signed action receipt verified offline. Alexa confirms: Seattle train and hotel confirmed for $165."
+  > "You configure your household budget and approval rules directly on your phone. When Alexa proposes the trip over Model Context Protocol Streamable HTTP, Warrant evaluates risk before anything touches a provider. The train is auto-approved, but the hotel requires confirmation. On the phone, the approval card locks to the exact parameters with an RFC 8785 canonical hash. With the user’s tap, Warrant commits the booking and produces an Ed25519 signed receipt verified offline. Alexa confirms: Seattle trip booked for $165."
 
 ---
 

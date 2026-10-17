@@ -75,6 +75,14 @@ export default function WarrantApplication() {
     scopes: ["hotels", "trains"]
   });
 
+  // Interactive Limit Customization State
+  const [customBudget, setCustomBudget] = useState(500);
+  const [customThreshold, setCustomThreshold] = useState(200);
+  const [customScopes, setCustomScopes] = useState<string[]>(["hotels", "trains"]);
+  const [customExpiry, setCustomExpiry] = useState("In 2 hours");
+  const [customUndo, setCustomUndo] = useState(8);
+  const [limitsSavedToast, setLimitsSavedToast] = useState(false);
+
   // Current Plan State
   const [planState, setPlanState] = useState<{
     status: "idle" | "proposed" | "approved" | "failed_rolled_back" | "cancelled";
@@ -597,11 +605,19 @@ export default function WarrantApplication() {
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px", fontSize: "15px" }}>
                   <span style={{ color: "var(--text-main)" }}>Budget if approved</span>
                   <span style={{ color: "var(--text-main)" }}>
-                    <strong style={{ fontWeight: "700" }}>${planState.hotelStatus === "cancelled" ? "0" : "450"}</strong> of $500
+                    <strong style={{ fontWeight: "700" }}>${planState.hotelStatus === "cancelled" ? "0" : (planState.totalMinor / 100).toFixed(0)}</strong> of ${(grant.budgetMinor / 100).toFixed(0)}
                   </span>
                 </div>
                 <div style={{ height: "8px", width: "100%", background: "#e5e0d8", borderRadius: "9999px", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: planState.hotelStatus === "cancelled" ? "0%" : "90%", background: "var(--accent-teal)", borderRadius: "9999px", transition: "width 0.4s ease" }} />
+                  <div
+                    style={{
+                      height: "100%",
+                      width: planState.hotelStatus === "cancelled" ? "0%" : `${Math.min(100, Math.round((planState.totalMinor / grant.budgetMinor) * 100))}%`,
+                      background: "var(--accent-teal)",
+                      borderRadius: "9999px",
+                      transition: "width 0.4s ease"
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -850,8 +866,21 @@ export default function WarrantApplication() {
                   You set these on your phone. The assistant can read them but can never change them.
                 </p>
               </div>
-              <span className="pill-badge">Sample data</span>
+              <span className="pill-badge pill-badge-teal">Live Household Policy</span>
             </div>
+
+            {/* Notification Toast if Saved */}
+            {limitsSavedToast && (
+              <div style={{ background: "var(--bg-teal-light)", border: "1px solid var(--border-teal)", borderRadius: "14px", padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", color: "var(--text-teal)", fontWeight: "600", fontSize: "14.5px" }}>
+                <span>✅ Limits saved to gateway: ${customBudget} total cap, ${customThreshold} approval threshold, {customUndo}s undo window active.</span>
+                <button
+                  onClick={() => setActiveScreen("console")}
+                  style={{ background: "var(--accent-teal)", color: "#ffffff", border: "none", borderRadius: "8px", padding: "6px 14px", fontSize: "13px", fontWeight: "600", cursor: "pointer" }}
+                >
+                  View in Console
+                </button>
+              </div>
+            )}
 
             {/* White Limits Configuration Card */}
             <div className="warrant-card" style={{ padding: "8px 28px" }}>
@@ -860,8 +889,28 @@ export default function WarrantApplication() {
                 <div>
                   <h3 style={{ fontSize: "17px", fontWeight: "600", color: "var(--text-main)", marginBottom: "3px" }}>Total budget</h3>
                   <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>The most it can spend in total</p>
+                  <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+                    {[300, 450, 500, 600, 800].map((amt) => (
+                      <button
+                        key={amt}
+                        onClick={() => setCustomBudget(amt)}
+                        style={{
+                          fontSize: "12px",
+                          padding: "4px 10px",
+                          borderRadius: "9999px",
+                          border: customBudget === amt ? "1.5px solid var(--accent-teal)" : "1px solid var(--border-subtle)",
+                          background: customBudget === amt ? "var(--bg-teal-light)" : "var(--bg-card)",
+                          color: customBudget === amt ? "var(--text-teal)" : "var(--text-muted)",
+                          fontWeight: customBudget === amt ? "700" : "500",
+                          cursor: "pointer"
+                        }}
+                      >
+                        ${amt}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <span style={{ fontSize: "28px", fontWeight: "700", color: "var(--text-main)" }}>$500</span>
+                <span style={{ fontSize: "28px", fontWeight: "700", color: "var(--text-main)" }}>${customBudget}</span>
               </div>
 
               {/* Ask Me Above */}
@@ -869,17 +918,63 @@ export default function WarrantApplication() {
                 <div>
                   <h3 style={{ fontSize: "17px", fontWeight: "600", color: "var(--text-main)", marginBottom: "3px" }}>Ask me above</h3>
                   <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>Anything bigger needs your approval</p>
+                  <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+                    {[100, 150, 200, 250].map((amt) => (
+                      <button
+                        key={amt}
+                        onClick={() => setCustomThreshold(amt)}
+                        style={{
+                          fontSize: "12px",
+                          padding: "4px 10px",
+                          borderRadius: "9999px",
+                          border: customThreshold === amt ? "1.5px solid var(--accent-teal)" : "1px solid var(--border-subtle)",
+                          background: customThreshold === amt ? "var(--bg-teal-light)" : "var(--bg-card)",
+                          color: customThreshold === amt ? "var(--text-teal)" : "var(--text-muted)",
+                          fontWeight: customThreshold === amt ? "700" : "500",
+                          cursor: "pointer"
+                        }}
+                      >
+                        ${amt}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <span style={{ fontSize: "28px", fontWeight: "700", color: "var(--text-main)" }}>$200</span>
+                <span style={{ fontSize: "28px", fontWeight: "700", color: "var(--text-main)" }}>${customThreshold}</span>
               </div>
 
               {/* Allowed Actions */}
               <div style={{ padding: "18px 0", borderBottom: "1px solid var(--border-divider)" }}>
                 <h3 style={{ fontSize: "17px", fontWeight: "600", color: "var(--text-main)", marginBottom: "10px" }}>Allowed actions</h3>
                 <div style={{ display: "flex", gap: "8px" }}>
-                  <span className="pill-badge pill-badge-teal">Hotels</span>
-                  <span className="pill-badge pill-badge-teal">Trains</span>
-                  <span className="pill-badge" style={{ color: "var(--text-muted)" }}>Restaurants (off)</span>
+                  {[
+                    { id: "hotels", label: "Hotels" },
+                    { id: "trains", label: "Trains" },
+                    { id: "restaurants", label: "Restaurants" }
+                  ].map((act) => {
+                    const isEnabled = customScopes.includes(act.id);
+                    return (
+                      <button
+                        key={act.id}
+                        onClick={() => {
+                          if (isEnabled) {
+                            setCustomScopes(customScopes.filter((s) => s !== act.id));
+                          } else {
+                            setCustomScopes([...customScopes, act.id]);
+                          }
+                        }}
+                        className={`pill-badge ${isEnabled ? "pill-badge-teal" : ""}`}
+                        style={{
+                          cursor: "pointer",
+                          color: isEnabled ? "var(--text-teal)" : "var(--text-muted)",
+                          background: isEnabled ? "var(--bg-teal-light)" : "#f0ede6",
+                          border: isEnabled ? "1px solid var(--border-teal)" : "1px solid var(--border-subtle)",
+                          fontWeight: isEnabled ? "700" : "500"
+                        }}
+                      >
+                        {act.label} {isEnabled ? "" : "(off)"}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -888,8 +983,28 @@ export default function WarrantApplication() {
                 <div>
                   <h3 style={{ fontSize: "17px", fontWeight: "600", color: "var(--text-main)", marginBottom: "3px" }}>Expires</h3>
                   <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>Access ends on its own</p>
+                  <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+                    {["In 1 hour", "In 2 hours", "In 24 hours"].map((exp) => (
+                      <button
+                        key={exp}
+                        onClick={() => setCustomExpiry(exp)}
+                        style={{
+                          fontSize: "12px",
+                          padding: "4px 10px",
+                          borderRadius: "9999px",
+                          border: customExpiry === exp ? "1.5px solid var(--accent-teal)" : "1px solid var(--border-subtle)",
+                          background: customExpiry === exp ? "var(--bg-teal-light)" : "var(--bg-card)",
+                          color: customExpiry === exp ? "var(--text-teal)" : "var(--text-muted)",
+                          fontWeight: customExpiry === exp ? "700" : "500",
+                          cursor: "pointer"
+                        }}
+                      >
+                        {exp}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <span style={{ fontSize: "19px", fontWeight: "700", color: "var(--text-main)" }}>In 2 hours</span>
+                <span style={{ fontSize: "19px", fontWeight: "700", color: "var(--text-main)" }}>{customExpiry}</span>
               </div>
 
               {/* Undo Window */}
@@ -897,8 +1012,28 @@ export default function WarrantApplication() {
                 <div>
                   <h3 style={{ fontSize: "17px", fontWeight: "600", color: "var(--text-main)", marginBottom: "3px" }}>Undo window</h3>
                   <p style={{ fontSize: "14px", color: "var(--text-muted)" }}>Time to cancel before it is final</p>
+                  <div style={{ display: "flex", gap: "6px", marginTop: "8px" }}>
+                    {[5, 8, 15].map((sec) => (
+                      <button
+                        key={sec}
+                        onClick={() => setCustomUndo(sec)}
+                        style={{
+                          fontSize: "12px",
+                          padding: "4px 10px",
+                          borderRadius: "9999px",
+                          border: customUndo === sec ? "1.5px solid var(--accent-teal)" : "1px solid var(--border-subtle)",
+                          background: customUndo === sec ? "var(--bg-teal-light)" : "var(--bg-card)",
+                          color: customUndo === sec ? "var(--text-teal)" : "var(--text-muted)",
+                          fontWeight: customUndo === sec ? "700" : "500",
+                          cursor: "pointer"
+                        }}
+                      >
+                        {sec}s
+                      </button>
+                    ))}
+                  </div>
                 </div>
-                <span style={{ fontSize: "19px", fontWeight: "700", color: "var(--text-main)" }}>8 seconds</span>
+                <span style={{ fontSize: "19px", fontWeight: "700", color: "var(--text-main)" }}>{customUndo} seconds</span>
               </div>
             </div>
 
@@ -909,7 +1044,17 @@ export default function WarrantApplication() {
 
             {/* Save Limits Button */}
             <button
-              onClick={() => setActiveScreen("console")}
+              onClick={() => {
+                setGrant({
+                  ...grant,
+                  budgetMinor: customBudget * 100,
+                  approvalThresholdMinor: customThreshold * 100,
+                  scopes: customScopes,
+                  expiresText: customExpiry,
+                  undoWindowSeconds: customUndo
+                });
+                setLimitsSavedToast(true);
+              }}
               className="btn-teal"
               style={{ width: "100%", padding: "16px", fontSize: "16px" }}
             >

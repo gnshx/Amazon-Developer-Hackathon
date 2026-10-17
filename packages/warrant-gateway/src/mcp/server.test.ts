@@ -62,6 +62,25 @@ describe("Warrant Gateway MCP Streamable HTTP & Admin API Integration", () => {
     expect(body.name).toBe("warrant-gateway");
   });
 
+  it("POST /mcp handles JSON-RPC initialize handshake negotiating protocolVersion 2025-11-25", async () => {
+    const res = await mcpPost({
+      jsonrpc: "2.0",
+      id: "init_handshake_01",
+      method: "initialize",
+      params: {
+        protocolVersion: "2025-11-25",
+        capabilities: {},
+        clientInfo: { name: "alexa-client", version: "1.0.0" }
+      }
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.json.result.protocolVersion).toBe("2025-11-25");
+    expect(res.json.result.serverInfo.name).toBe("warrant-gateway");
+    expect(res.json.result.serverInfo.version).toBe("1.0.0");
+    expect(res.json.result.capabilities.tools).toBeDefined();
+  });
+
   it("POST /mcp requires valid Bearer Token (401 on missing or invalid)", async () => {
     // Missing header
     const res1 = await mcpPost({ jsonrpc: "2.0", id: 1, method: "tools/list" }, "");

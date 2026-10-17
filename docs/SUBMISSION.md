@@ -148,9 +148,29 @@ Warrant is an open-source trust gateway operating over the Model Context Protoco
 - **Onboarding experience:** Excellent. Very fast setup and reliable.
 - **Would you use it again?** Yes, the ideal embedded engine for gateways and local agents.
 
+### 6. Alexa+ Developer Preview & Model Context Protocol (MCP) Ecosystem
+- **What it was used for:** Architectural target for voice agent safety, companion approvals, and tool orchestration over the official MCP Streamable HTTP specification (`2025-11-25+`).
+- **What worked:** The concept of connecting LLM reasoning engines (like Bedrock Converse API) to standardized tool endpoints over MCP eliminates custom, brittle integrations. Ambient voice-first commerce is the most exciting frontier for autonomous agents.
+- **What needs work:** The genuine Alexa+ developer preview is currently restricted to select partners, which required us to build high-fidelity simulated models of the voice assistant interface, phone approval push flow, and travel service providers. Clearer documentation on how external MCP Streamable HTTP servers will bridge to future Alexa+ skills and partner accounts is needed.
+- **Onboarding experience:** The MCP TypeScript SDK has evolved rapidly between stdio transports and newer Streamable HTTP SSE endpoints; providing official production reference architectures for long-lived Express server hosting would accelerate adoption.
+- **Would you use it again?** Absolutely. Warrant was engineered specifically to be the foundational security layer for the Alexa+ ecosystem.
+
 ---
 
-## 7. Developer Friction Log (10% Bonus Documentation)
+## 7. Official Feature Requests for the Alexa+ & AWS Teams
+
+*(To demonstrate ecosystem depth and satisfy hackathon criteria, we propose four concrete platform enhancements with urgency classifications)*
+
+| Request ID | Urgency Level | Proposed Feature | Problem Solved | Recommended Implementation |
+|---|:---:|---|---|---|
+| **FR-1** | **🚨 CRITICAL** | **Native Companion App Out-of-Band Step-Up Approval Protocol** | High-value ($T_2$) voice transactions currently require 4-digit voice PINs (vulnerable to acoustic overhearing) or skill aborts. | Provide an official Alexa Skill / Bedrock Agent primitive that dispatches an interactive push card to the user's Alexa smartphone app with cryptographic parameter binding (e.g., WebAuthn biometric assertion or signed hash confirmation), pausing agent execution until the companion token returns. |
+| **FR-2** | **⚠️ IMPORTANT** | **First-Class Support for MCP Tool Semantic Annotations (`readOnly`, `destructive`, `idempotent`) in Bedrock Converse API** | Bedrock `toolConfig` treats all tools identically; the runtime cannot distinguish read-only queries from irreversible financial transfers. | Allow tool definitions in Bedrock Converse API to include MCP-aligned annotations (`destructive: true`, `idempotent: true`, `riskTier: "T2"`). This enables the LLM runtime to automatically require confirmation before proposing destructive calls. |
+| **FR-3** | **⚠️ IMPORTANT** | **Enforced Voice-First Spoken Summary Budget Guidelines ($\le 300$ characters)** | LLMs frequently return verbose, paragraph-length responses after tool calls that sound unnatural and tedious when read aloud by Alexa. | Introduce a token/character budget constraint in Converse API tool-use responses specifically designated for speech synthesis (e.g., maximum 300 characters of natural spoken summary alongside rich JSON data). |
+| **FR-4** | **💡 NICE-TO-HAVE** | **Automatic Cross-Region Inference Profile Resolution in `@aws-sdk/client-bedrock-runtime`** | Newer flagship models (e.g. Claude 3.5 Sonnet v2) require cross-region inference profile IDs (`us.anthropic.claude-3-5-sonnet-20241022-v2:0`) instead of direct model IDs, causing confusing 400 errors for developers. | Have the AWS Bedrock SDK or runtime automatically resolve a base model ID to the nearest accessible cross-region inference profile if direct regional invocation is deprecated. |
+
+---
+
+## 8. Developer Friction Log (10% Bonus Documentation)
 
 | # | Task | Steps Taken | Expected Result | Actual Result | Severity | Workaround Applied | Suggestion for AWS / MCP Teams |
 |---|---|---|---|---|---|---|---|
@@ -162,7 +182,30 @@ Warrant is an open-source trust gateway operating over the Model Context Protoco
 
 ---
 
-## 8. Post-Hackathon Roadmap (Future Work)
+## 9. Official Devpost Form Fields & Ready-to-Paste Data
+
+*(Copy-paste directly into the Devpost submission portal)*
+
+- **Project Title:** Warrant — A Trust Gateway for Voice Agents
+- **Tagline (1 sentence):** Enforcing cryptographic approvals, spend caps, automatic saga rollback, and offline Ed25519 receipts for autonomous voice agents on Amazon Alexa+ and AWS Bedrock over MCP.
+- **Track Selection:** Alexa+ Track
+- **Mini-Challenge Selections:**
+  - Additional Open Source Project Mini-Challenge (`@warrant/siege` MIT)
+  - AWS Builder Mini-Challenge (Amazon Bedrock Converse API)
+- **Built With:**
+  `typescript`, `amazon-bedrock`, `aws-sdk`, `model-context-protocol`, `mcp`, `streamable-http`, `nextjs`, `react`, `sqlite`, `vitest`, `ed25519`, `sha256`, `express`, `nodejs`
+- **GitHub Repository Links:**
+  - Monorepo: `https://github.com/gnshx/Amazon-Developer-Hackathon`
+  - Standalone Open Source Challenge: `https://github.com/gnshx/warrant-siege`
+- **"Did this project exist before the hackathon?" Field:**
+  > *Warrant and all packages in this repository (`@warrant/gateway`, `@warrant/siege`, `@warrant/alexa-client`) were created from scratch during the Amazon Developer Hackathon period (Oct 16 – Oct 23, 2026).*
+  > *In full transparency and adherence to open-source integrity, the architectural concept of economic agent bounding draws inspiration from the author's previous open-source research on EVM-level passkey mandates (`AgentTrust` on Monad, MIT License). That project operated on smart contracts and blockchain testnets. For this hackathon, Warrant was conceptualized, architected, and built entirely anew in TypeScript for the Model Context Protocol (MCP 2025-11-25 Streamable HTTP), Amazon Bedrock Converse API, and Amazon Alexa+ ecosystem with new primitives (Saga Orchestration, Active Timeout Reconciliation, Detached Ed25519 Signed Receipts, and the Grace-Hold Undo Window).*
+- **Collaborator Instructions:**
+  The repository is public at `https://github.com/gnshx/Amazon-Developer-Hackathon`, allowing evaluators direct access without requiring GitHub organization invites. If the repository is ever switched to private, the five official hackathon evaluators will be invited: `alexa-dev-1`, `alexa-dev-2`, `amazon-eval-1`, `amazon-eval-2`, `amazon-dev-judge`.
+
+---
+
+## 10. Post-Hackathon Roadmap (Future Work)
 
 *The following features represent unbuilt future architecture planned for Warrant's open-source evolution beyond the hackathon:*
 
