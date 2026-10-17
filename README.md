@@ -349,7 +349,13 @@ Executes 3 adversarial scenarios (duplicate storm, mid-plan failure, spend cap o
 npm run test:compare
 ```
 
-### 9. Start Full Stack Locally
+### 9. Run Agent Skill Boundary Evaluation
+Evaluates model obedience to `warrant-safe-actions` across prompt injection, timeout recovery, and budget boundaries. Executes live against Amazon Bedrock Converse API (`amazon.nova-pro-v1:0`) when AWS credentials are set, or deterministically against the offline agent stub:
+```bash
+npm run test:skill
+```
+
+### 10. Start Full Stack Locally
 Spins up Warrant Gateway on `http://localhost:8000` and the Simulated Alexa+ Client on `http://localhost:3000`:
 ```bash
 npm run dev

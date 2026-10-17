@@ -48,7 +48,9 @@ npm run verify:evidence
 
 ## 🎯 Scoring Against the Official Hackathon Criteria
 
-### 1. Technological Implementation (25%)
+## 🎯 Alignment with Official Hackathon Criteria
+
+### 1. Technological Implementation
 - **Conforms to MCP Streamable HTTP Spec (`2025-11-25`):** Standard JSON-RPC over Streamable HTTP transport, compatible with Anthropic Claude Desktop, Cursor, and AWS Bedrock Agent MCP bridges.
 - **RFC 9728 OAuth Protected Resource Metadata:** Live `GET /.well-known/oauth-protected-resource` endpoint and RFC 6750/9728 401 challenges with `WWW-Authenticate: Bearer resource_metadata="..."`.
 - **User Identity Binding:** Grants and authorizations are bound to authenticated user identity (`userId` / OAuth `sub` claim), not ephemeral client session tokens.
@@ -62,7 +64,7 @@ npm run verify:evidence
 - **Zero Floating-Point Financial Math:** All currency is denominated strictly in non-negative integer minor units (cents/pence: \$150.00 is `15000`).
 - **Amazon Bedrock Converse API Loop:** Autonomous voice agent tool-calling loop with Amazon Nova Pro (`amazon.nova-pro-v1:0`) and deterministic zero-credential fallback stub for CI.
 
-### 2. Design (25%)
+### 2. Design
 - **The Voice Dilemma Solved:** Voice assistants cannot present full checkout screens before execution. Warrant solves this by enforcing an out-of-band companion phone approval flow for actions exceeding the household threshold (\$200), with voice-first spoken summaries ($\le 300$ characters).
 - **Repositioning Around Alexa Voice Checkout:** Alexa handles voice PIN, payment instrument selection, and purchase confirmation. Warrant handles the complex multi-step operational transactional safety underneath: ensuring multi-step itineraries stay within cumulative limits and unwind cleanly if step 2 fails.
 - **5-View Companion Experience (Next.js 14):** Pixel-accurate console implementing 5 human-designed views:
@@ -74,17 +76,17 @@ npm run verify:evidence
 - **Pre-Settlement Undo Countdown Bar:** Real-time 8-second grace countdown with one-click reversible cancellation ($I_{10}$).
 - **Receipt Verification Inspector:** Cryptographic modal displaying detached Ed25519 signature and canonical payload verification.
 
-### 3. Potential Impact (25%)
+### 3. Potential Impact
 - **Unlocking High-Stakes Autonomous Voice Commerce:** Solves the core existential friction preventing users and brands from trusting voice assistants with real money: the fear of runaway spend, double-charges, and abandoned mid-plan state.
 - **Universal Ecosystem Testing via `@warrant/siege`:** Reusable CLI and GitHub Action that evaluates any third-party MCP tool server for transactional safety before exposing it to Alexa+ users.
 - **Complementary to AWS AgentCore Policy (GA March 3, 2026):** AWS AgentCore Policy evaluates individual tool calls outside the agent's reasoning loop (per-call authorization). Warrant provides the runtime transactional layer (cumulative minor-unit budgets, saga rollback, signed receipts, active timeout reconciliation). AWS customers can run Warrant directly with AgentCore.
 - **Bridges to Emerging Protocols (Google AP2):** Bridges payment intent/cart mandates into a distributed systems execution environment with automatic compensation and idempotency.
 
-### 4. Quality of the Idea (25%)
+### 4. Quality of the Idea
 - **Novel Synthesis of Distributed Systems & Agent Safety:** Unifies Saga orchestration, RFC 8785 canonical hashing, detached Ed25519 signatures, and active timeout reconciliation into an elegant gateway architecture.
 - **Propose-then-Execute Structural Containment (CaMeL Research):** Immunizes against indirect prompt injection at the tool boundary ($I_5$) by physically isolating the data plane from administrative grant widening.
 - **Falsifiable Security Proof:** Instead of claiming safety hypothetically, Warrant proves it with 10 attack scenarios in `warrant-siege` and an automated mutation test (`npm run test:mutation`) that breaks protections to prove the scorecard turns RED.
-- **Portable Agent Skill (`skills/warrant-safe-actions/SKILL.md`):** Defense-in-depth pairing: a cooperative prompt skill that guides conversational agent behavior, enforced by a mathematical gateway boundary that catches any deviation.
+- **Portable Agent Skill (`skills/warrant-safe-actions/SKILL.md`):** Defense-in-depth pairing: a cooperative prompt skill that guides conversational agent behavior, enforced by a mathematical gateway boundary that catches any deviation. Evaluated via `npm run test:skill` (executing live against Bedrock when AWS credentials exist, or deterministically labeled as an offline contract stub otherwise).
 
 ---
 

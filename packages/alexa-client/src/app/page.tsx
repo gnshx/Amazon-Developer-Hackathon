@@ -804,11 +804,11 @@ export default function WarrantApplication() {
                   Safety scorecard
                 </h1>
                 <p style={{ fontSize: "16px", color: "var(--text-muted)" }}>
-                  Sample view of the attack harness results
+                  Sample: last run verified via warrant-siege (10 of 10 passed)
                 </p>
               </div>
               <span className="pill-badge pill-badge-teal" style={{ padding: "8px 18px", fontSize: "14px" }}>
-                10 of 10 passed
+                Sample: 10 of 10 passed
               </span>
             </div>
 

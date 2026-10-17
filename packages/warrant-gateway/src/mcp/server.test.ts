@@ -284,4 +284,27 @@ describe("Warrant Gateway MCP Streamable HTTP & Admin API Integration", () => {
     expect(verifyData.valid).toBe(true);
     expect(verifyData.eventCount).toBeGreaterThan(0);
   });
+
+  it("Saving limits in Admin API updates grant and is returned by GET /admin/grants/:id", async () => {
+    const updateRes = await fetch(`${baseUrl}/admin/grants`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: "grant_custom_limits_test",
+        scopes: ["hotels", "trains", "dining"],
+        spendCapMinor: 75000, // $750.00
+        expiresAt: new Date(Date.now() + 4 * 3600 * 1000).toISOString(),
+        userId: "user_household_primary"
+      })
+    });
+    expect(updateRes.status).toBe(201);
+    const updateJson = await updateRes.json();
+    expect(updateJson.grant.spendCapMinor).toBe(75000);
+
+    const getRes = await fetch(`${baseUrl}/admin/grants/grant_custom_limits_test`);
+    expect(getRes.status).toBe(200);
+    const getJson = await getRes.json();
+    expect(getJson.grant.spendCapMinor).toBe(75000);
+    expect(getJson.grant.scopes).toContain("dining");
+  });
 });
