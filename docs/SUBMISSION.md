@@ -9,7 +9,7 @@
 ## 1. Project Title & Taglines
 
 - **Project Title:** Warrant — A Trust Gateway for Voice Agents
-- **Elevator Pitch (1 sentence):** An open-source MCP trust gateway that makes voice agent actions safe and auditable through scoped grants, cryptographic approval binding, automatic saga rollback, detached Ed25519 receipts, and an adversarial attack scorecard.
+- **Elevator Pitch (1 sentence):** An open-source MCP trust gateway and portable Agent Skill that makes voice agent actions safe and auditable through scoped grants, cryptographic approval binding, automatic saga rollback, detached Ed25519 receipts, and an adversarial attack scorecard.
 - **Track Selection:** Alexa+ Track
 - **Mini-Challenge Selections:**
   1. **Additional Open Source Project Mini-Challenge:** `@warrant/siege` is a modular, standalone open-source testing CLI (Apache 2.0 / MIT) that attacks any MCP server with 10 standard adversarial scenarios and generates an automated safety scorecard.
@@ -102,6 +102,7 @@ Warrant is an open-source trust gateway operating over the Model Context Protoco
 10. **Adversarial Siege Test Suite (`@warrant/siege`):** A standalone modular CLI attacking the gateway across 10 attack scenarios, generating verified HTML and JSON scorecards and SVG badges.
 
 ### How We Built It
+- **Agent Skill (`warrant-safe-actions`):** Formal Agent Skill definition (`skills/warrant-safe-actions/SKILL.md`) instructing conversational models on cooperative action-taking, prompt injection immunity, one idempotency key per user intent, and $\le 300$ character spoken summaries.
 - **Gateway Core:** TypeScript MCP server conforming to Streamable HTTP spec `2025-11-25+`, with an SQLite WAL repository layer, pure deterministic policy engine, Ed25519 receipt signer, and Merkle tree audit prover.
 - **Client & Voice Agent:** Next.js 14 dark-mode glassmorphic UI integrated with the **Amazon Bedrock Converse API** (`@aws-sdk/client-bedrock-runtime`) for autonomous tool dispatch, featuring receipt inspection, undo countdown, and offline deterministic fallback.
 - **Mock Services:** Autonomous Hotel, Train, and Restaurant providers (Harbor Inn Hotel, Coastal Rail Express) with control endpoints for simulating timeouts, declines, and lost connections.
@@ -154,6 +155,13 @@ Warrant is an open-source trust gateway operating over the Model Context Protoco
 - **What needs work:** The genuine Alexa+ developer preview is currently restricted to select partners, which required us to build high-fidelity simulated models of the voice assistant interface, phone approval push flow, and travel service providers. Clearer documentation on how external MCP Streamable HTTP servers will bridge to future Alexa+ skills and partner accounts is needed.
 - **Onboarding experience:** The MCP TypeScript SDK has evolved rapidly between stdio transports and newer Streamable HTTP SSE endpoints; providing official production reference architectures for long-lived Express server hosting would accelerate adoption.
 - **Would you use it again?** Absolutely. Warrant was engineered specifically to be the foundational security layer for the Alexa+ ecosystem.
+
+### 7. Agent Skills Specification (`skills/warrant-safe-actions/SKILL.md`)
+- **What it was used for:** Authoring the portable `warrant-safe-actions` agent skill, guiding conversational models (Amazon Bedrock Nova Pro, Claude Code, Alexa+) on safe action sequencing, out-of-band approval expectations, idempotency key persistence, provider prompt injection immunity, and concise spoken summaries.
+- **What worked:** Clean Markdown frontmatter with clear behavioral rules, failure case handling, and voice-first spoken guidelines. Easy to load directly into the Bedrock Converse API `system` prompt array or pass into autonomous agent frameworks.
+- **What needs work:** Currently, Agent Skills rely on model compliance rather than cryptographic enforcement at runtime. Warrant solves this by combining the Agent Skill with an MCP trust gateway that mathematically validates every parameter, approval token, and spend cap.
+- **Onboarding experience:** Simple and expressive.
+- **Would you use it again?** Yes. Pairing an MCP server with an Agent Skill creates defense-in-depth: the skill guides the agent's cooperative intent, and the gateway enforces the hard security boundary.
 
 ---
 

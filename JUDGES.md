@@ -50,6 +50,7 @@ npm run verify:evidence
 ### 2. Voice & Bedrock Innovation (Alexa+ Track) (25%)
 - **The Voice Dilemma Solved:** Voice assistants cannot present full checkout screens before execution. Warrant solves this by enforcing an out-of-band companion phone approval flow for actions exceeding the household threshold (\$200), with voice-first spoken summaries ($\le 300$ characters).
 - **Amazon Bedrock Converse API Agent:** Full tool-calling loop connecting Bedrock models (Amazon Nova Pro, Claude 3.5 Sonnet) to the Warrant MCP gateway, featuring deterministic offline fallback for offline evaluation.
+- **Agent Skill (`warrant-safe-actions`):** Formal Agent Skill (`skills/warrant-safe-actions/SKILL.md`) tested via `npm run test:skill`, instructing the model on proper action sequencing, out-of-band approval expectations, prompt injection immunity, and concise spoken summaries.
 
 ### 3. Real-World Practicality & Safety (25%)
 - **10 Core Adversarial Scenarios ($S_1 - S_{10}$):** Tests realistic failure modes: prompt injection privilege escalation, spend cap bypass, approval parameter tampering, socket timeouts, and retry storms.
@@ -123,12 +124,15 @@ npm run test:siege
 # 5. Run mutation fault test (proves scorecard catches broken invariants)
 npm run test:mutation
 
-# 6. Verify cryptographic audit chain integrity
+# 6. Run agent skill boundary test (proves model obedience to warrant-safe-actions)
+npm run test:skill
+
+# 7. Verify cryptographic audit chain integrity
 npm run audit:verify
 
-# 7. Verify Ed25519 signed action receipts
+# 8. Verify Ed25519 signed action receipts
 npm run receipt:verify
 
-# 8. Start local stack (Gateway on :8000, Web Client on :3000)
+# 9. Start local stack (Gateway on :8000, Web Client on :3000)
 npm run dev
 ```

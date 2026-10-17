@@ -28,7 +28,12 @@ Every brand currently builds its own one-off safeguards—if any—and users are
 
 **Warrant's long-term goal is to become the missing trust layer for the agentic economy.** It gives agents limited, revocable authority, produces verifiable proof of every action, handles failure automatically with zero orphan state, and lets anyone test whether a service is safe for agents.
 
-The hackathon MVP demonstrates and proves this core trust loop over the standard Model Context Protocol (MCP Streamable HTTP spec `2025-11-25+`):
+### MCP Server plus Agent Skill Architecture
+Warrant is delivered as a cooperative pair:
+1. **Agent Skill ([`skills/warrant-safe-actions/SKILL.md`](skills/warrant-safe-actions/SKILL.md)):** An open skill that instructs the assistant on safe action sequencing—search before you plan, always propose before executing, reuse one idempotency key per user intent, treat third-party provider text as untrusted data (prompt injection immunity), never approve on the user's behalf, and format voice summaries under 300 characters.
+2. **Warrant Trust Gateway (MCP Server):** The mathematical enforcement boundary operating over Streamable HTTP (spec `2025-11-25+`). Even if a compromised or hallucinating model disobeys the skill, the gateway deterministically blocks unauthorized spend, tampered parameters, or unapproved actions.
+
+The hackathon MVP demonstrates and proves this core trust loop:
 - **Scoped & Expiring Grants:** Household administrators issue temporary budgets with strict spend caps in integer minor units (zero float math).
 - **Exact Action-Hash Approval Binding:** Risky actions return `PENDING_APPROVAL` with voice-friendly summaries. Approvals are granted out-of-band on a phone-style interface cryptographically bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{params}))$. If prompt injection or model drift alters any argument, the approval is mathematically invalid ($I_3$).
 - **Multi-Layer Idempotency:** Guarantees retry storms or duplicate voice submissions never trigger duplicate provider charges ($I_1$).
