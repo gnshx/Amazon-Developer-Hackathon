@@ -22,6 +22,7 @@
 To satisfy all requirements for the Additional Open Source Project Mini-Challenge:
 - **Repository URL:** `https://github.com/gnshx/Amazon-Developer-Hackathon`
 - **Open Source Contribution URL:** `https://github.com/gnshx/Amazon-Developer-Hackathon/tree/main/packages/warrant-siege`
+- **Standalone Subtree Branch:** `https://github.com/gnshx/Amazon-Developer-Hackathon/tree/siege-standalone`
 - **GitHub Username:** `gnshx`
 - **Short Description:** `@warrant/siege` is an independent, reusable security and adversarial test harness for Model Context Protocol (MCP) servers. It executes 10 attack scenarios (concurrency storms, parameter tampering, spend cap exhaustion, prompt injection, expired tokens, ambiguous timeouts, receipt fraud, and cancellation races) over Streamable HTTP and generates interactive HTML and JSON scorecards.
 - **Pre-Hackathon Non-Existence Confirmation:**  
@@ -33,10 +34,10 @@ To satisfy all requirements for the Additional Open Source Project Mini-Challeng
 
 > **Mandatory Transparency Disclosure for Hackathon Judges:**  
 > The genuine Alexa+ developer environment is restricted to select preview partners. In full alignment with hackathon scope-honesty guidelines, this submission uses:
-> 1. **Simulated Alexa+ Client:** A Next.js 14 web application simulating voice interaction, speech synthesis summaries, approval cards, and live MCP tool traces.
+> 1. **Simulated Alexa+ Client:** A Next.js 14 web application simulating voice interaction, Web Speech synthesis of natural summaries, approval cards, and live MCP tool traces.
 > 2. **Simulated Mock Providers:** Standalone Hotel, Train, and Restaurant mock services (Harbor Inn Hotel, Coastal Rail Express) with control endpoints for simulating faults (`TIMEOUT`, `DECLINE`, `DISCONNECT`).
 > 3. **Environment Constraints:** Docker Compose configuration is provided, but is currently **untested on this specific host** due to the absence of a local Docker daemon. The primary verified setup and test path is a clean clone running `npm install && npm run test && npm run dev`.
-> 4. **Bedrock Loop:** Integrates with `@aws-sdk/client-bedrock-runtime` using the Converse API with default model `anthropic.claude-3-haiku-20240307-v1:0` (overrideable via `BEDROCK_MODEL_ID`), and includes an offline deterministic stub fallback for environments without active AWS credentials.
+> 4. **Bedrock Loop:** Integrates with `@aws-sdk/client-bedrock-runtime` using the Converse API with default model `amazon.nova-pro-v1:0` (overrideable via `BEDROCK_MODEL_ID` or cross-region inference profiles), and includes an offline deterministic stub fallback for environments without active AWS credentials.
 > 
 > Both the client and mock providers are explicitly labeled as simulated in code, documentation, UI badges, and the demo video. The MCP gateway (`@warrant/gateway`) and adversarial test harness (`@warrant/siege`) communicate over actual standard network protocols (Streamable HTTP, JSON-RPC 2.0).
 
@@ -89,13 +90,13 @@ Warrant is an open-source trust gateway operating over the Model Context Protoco
 
 ### 1. Amazon Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`)
 - **What it was used for:** Driving the multi-turn conversational voice agent loop, translating natural language user trip requests into structured MCP tool calls (`propose_plan`, `execute_plan`), and generating natural spoken summaries.
-- **What worked:** The unified Converse API interface (`converseCommand`) dramatically simplified message history formatting compared to model-specific invoke schemas. Tool configuration (`toolConfig`) with JSON schema definitions is clean, and tool-use blocks were returned reliably.
-- **What needs work:** Error messages during credential or quota issues can be opaque. Furthermore, model ID syntax varies across regions (e.g. standard model ID vs cross-region inference profile IDs like `us.anthropic...`). A client-side helper to resolve model IDs based on active region would prevent silent deployment failures.
-- **Onboarding experience:** Getting started was fast once IAM permissions were granted, though finding the exact TypeScript type definitions for `ToolResultBlock` required navigating deep SDK exports.
+- **What worked:** The unified Converse API interface (`ConverseCommand`) dramatically simplifies message history formatting compared to model-specific invoke schemas. Tool configuration (`toolConfig`) with JSON schema definitions is clean, and tool-use blocks return reliably.
+- **What needs work:** Foundation model lifecycles and regional routing require careful diligence. Older model IDs (such as Claude 3 Haiku `anthropic.claude-3-haiku-20240307-v1:0`) have entered legacy or retired states across regions, while newer models (such as Claude 3.5 Sonnet v2) require cross-region inference profile IDs (`us.anthropic...`) rather than raw model IDs. Clearer error messaging and an automated model lifecycle verification helper in the SDK would streamline adoption.
+- **Onboarding experience:** Model access must be explicitly requested in the AWS Bedrock Console before API keys will function. The offline deterministic fallback mode was essential for CI/CD and automated testing without incurring cloud fees or failing when credentials are absent.
 - **Would you use it again?** Yes. For agentic tool calling in AWS environments, Converse API is the best multi-model abstraction available.
 
 ### 2. AWS SDK for JavaScript v3 (`@aws-sdk/*`)
-- **What it was used for:** Client communication with AWS services, specifically `@aws-sdk/client-bedrock-runtime`.
+- **What it was used for:** Client communication with AWS services, specifically `@aws-sdk/client-bedrock-runtime` and `@aws-sdk/client-bedrock`.
 - **What worked:** Modular v3 package structure keeps bundle sizes small. TypeScript types are first-class, and modern Promise-based command dispatch (`client.send(new ConverseCommand({...}))`) is predictable.
 - **What needs work:** Deeply nested command response types often require cumbersome optional chaining (`response.output?.message?.content?.[0]?.toolUse`).
 - **Onboarding experience:** Straightforward with `npm install @aws-sdk/client-bedrock-runtime`.
@@ -110,7 +111,7 @@ Warrant is an open-source trust gateway operating over the Model Context Protoco
 
 ### 4. Next.js 14 App Router
 - **What it was used for:** Front-end simulated Alexa+ assistant interface, phone approval card view, live tool trace telemetry, and audit trail visualization.
-- **What worked:** React Server Components combined with client components provided high performance. Fast refresh and built-in CSS styling enabled rapid iteration on glassmorphic design.
+- **What worked:** React Server Components combined with client components provided high performance. Fast refresh and built-in CSS styling enabled rapid iteration on glassmorphic design. Web Speech API integration provides natural voice playback without external audio services.
 - **What needs work:** Hydration mismatches can occur when rendering timestamps or client-side crypto keys if not carefully guarded with `mounted` state checks.
 - **Onboarding experience:** Flawless. Standard `npx create-next-app` provides an immediate working dev environment.
 - **Would you use it again?** Absolutely.
@@ -118,7 +119,7 @@ Warrant is an open-source trust gateway operating over the Model Context Protoco
 ### 5. SQLite with `better-sqlite3`
 - **What it was used for:** In-process ACID transactional storage for grants, active plans, idempotency locks, approvals, Ed25519 action receipts, and SHA-256 audit events.
 - **What worked:** Synchronous execution model in WAL mode makes atomic database transactions trivial without async race conditions. Zero external service dependencies makes local evaluation instantaneous.
-- **What needs work:** C++ native compilation can require `build-essential` on some minimal Linux environments.
+- **What needs work:** C++ native compilation can require `build-essential` on some minimal Linux environments, and rebuilding native addons when Node versions change (`npm rebuild better-sqlite3`).
 - **Onboarding experience:** Excellent. Very fast setup and reliable.
 - **Would you use it again?** Yes, the ideal embedded engine for gateways and local agents.
 
@@ -130,7 +131,7 @@ Warrant is an open-source trust gateway operating over the Model Context Protoco
 |---|---|---|---|---|---|---|---|
 | **FL-1** | Streamable HTTP Session Token Passing | Tried passing grant session token via standard MCP tool parameters. | Agent should pass token to identify caller. | Agent hallucinated or stripped session tokens; tool params cannot be trusted for identity. | **High** | Extracted caller identity strictly from HTTP `Authorization: Bearer <token>` header, ignoring tool arguments. | Formalize HTTP authorization header handling in MCP Streamable HTTP specification. |
 | **FL-2** | Cross-Platform Parameter Hash Mismatch | Evaluated JSON hashes of tool arguments between client and gateway. | `JSON.stringify(args)` should produce identical hashes. | Key order divergence (e.g. `{a:1, b:2}` vs `{b:2, a:1}`) caused approval verification to fail. | **Critical** | Enforced RFC 8785 Canonical JSON serialization with lexicographical key sorting. | Provide an official canonical hashing utility inside the core MCP SDK. |
-| **FL-3** | Bedrock Converse API Regional Model IDs | Dispatched tool call to Claude 3.5 Sonnet using standard model ID in `us-east-1`. | Bedrock should execute tool calling inference. | Returned `ValidationException` requiring inference profile prefix (`us.anthropic...`). | **Medium** | Defaulted to universally supported `anthropic.claude-3-haiku-20240307-v1:0` with fallback. | Provide automatic inference profile resolution in `@aws-sdk/client-bedrock-runtime`. |
+| **FL-3** | Bedrock Model Deprecation & Regional Routing | Tested Bedrock Converse API against older tutorial model IDs (`anthropic.claude-3-haiku-20240307-v1:0`) and Claude 3.5 Sonnet. | Bedrock should execute tool calling inference directly. | Legacy models returned deprecation/sunset errors, and Sonnet v2 failed without cross-region inference profile IDs (`us.anthropic...`). | **Medium** | Migrated default model to Amazon's flagship `amazon.nova-pro-v1:0` with support for cross-region inference profiles and built a model lifecycle audit script (`npm run check:bedrock-models`). | Provide automatic cross-region inference profile resolution in `@aws-sdk/client-bedrock-runtime`. |
 | **FL-4** | Non-Integer Currency Floating Point Drift | Calculated split-booking prices in floating-point dollars. | 0.1 + 0.2 equals 0.3. | 0.30000000000000004 breached strict spend cap checks. | **High** | Mandated integer minor currency units (`cents`, integer minor units) across all types and APIs. | Include monetary calculation guidelines in agent developer documentation. |
 | **FL-5** | Ambiguous Network Timeouts During Booking | Injected 10-second network drop on train booking request. | Gateway should know if booking succeeded or failed. | Blind retry created a duplicate booking on mock provider. | **High** | Implemented active provider reconciliation: query provider truth by idempotency key prior to retry. | Add active reconciliation pattern guidance to distributed agent tool architectures. |
 

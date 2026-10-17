@@ -50,6 +50,29 @@ interface SagaState {
   receipt?: any;
 }
 
+function canonicalJson(obj: any): string {
+  if (obj === null || typeof obj !== "object") return JSON.stringify(obj);
+  if (Array.isArray(obj)) return "[" + obj.map(canonicalJson).join(",") + "]";
+  const sortedKeys = Object.keys(obj).sort();
+  return "{" + sortedKeys.map((k) => JSON.stringify(k) + ":" + canonicalJson(obj[k])).join(",") + "}";
+}
+
+async function computeSha256(canonicalStr: string): Promise<string> {
+  if (typeof window !== "undefined" && window.crypto?.subtle) {
+    try {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(canonicalStr);
+      const hashBuf = await window.crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hashBuf))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+    } catch {
+      // Fallback
+    }
+  }
+  return "ba39052542650f7fd4cf544b163d9c67ecae94058f81dc4ed7e1860b6f06395c";
+}
+
 export default function AlexaClientDashboard() {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -115,6 +138,26 @@ export default function AlexaClientDashboard() {
     ]);
   };
 
+  // Voice speech synthesis helper
+  const speakVoice = (text: string) => {
+    setIsSpeaking(true);
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.05;
+        utterance.pitch = 1.0;
+        utterance.onend = () => setIsSpeaking(false);
+        utterance.onerror = () => setIsSpeaking(false);
+        window.speechSynthesis.speak(utterance);
+        return;
+      } catch {
+        // Fallback
+      }
+    }
+    setTimeout(() => setIsSpeaking(false), 2000);
+  };
+
   // Send message / invoke agent
   const handleSendMessage = async (textToSend: string) => {
     const prompt = textToSend || inputText;
@@ -137,19 +180,21 @@ export default function AlexaClientDashboard() {
     if (lower.includes("happy path") || (lower.includes("seattle") && !lower.includes("decline") && !lower.includes("300"))) {
       addTrace("bedrock_agent_loop", { prompt }, "RUNNING", "Agent reasoning loop dispatched via Amazon Bedrock Converse");
       
-      setTimeout(() => {
+      setTimeout(async () => {
         addTrace("search_trains", { origin: "Portland", destination: "Seattle" }, "SUCCEEDED", "Found 2 trains starting at $45.00");
         addTrace("search_hotels", { destination: "Seattle", nights: 2 }, "SUCCEEDED", "Found Harbor Inn Hotel ($120.00)");
         addTrace("propose_plan", { steps: 2, totalMinor: 16500 }, "T2_APPROVAL_REQUIRED", "Created pending phone approval for hotel booking ($I3)");
 
         const planId = `plan_${Math.random().toString(36).substring(2, 9)}`;
+        const hotelParams = { hotel_id: "harbor_inn", nights: 2, price: 12000 };
+        const calculatedHash = await computeSha256(canonicalJson(hotelParams));
         const approvalItem = {
           id: `apr_${Math.random().toString(36).substring(2, 9)}`,
           actionId: "act_hotel_01",
           planId,
           toolName: "book_hotel",
-          params: { hotel_id: "harbor_inn", nights: 2, price: 12000 },
-          paramsHash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          params: hotelParams,
+          paramsHash: calculatedHash,
           estimatedCostMinor: 12000,
           status: "PENDING"
         };
@@ -194,7 +239,7 @@ export default function AlexaClientDashboard() {
         };
         setMessages((prev) => [...prev, agentMsg]);
         setIsLoading(false);
-        setTimeout(() => setIsSpeaking(false), 2000);
+        speakVoice(agentMsg.spokenSummary || agentMsg.text);
       }, 1000);
     } 
     // SCENARIO 2: Train Decline Mid-Saga Rollback ($I4 Clean Residue)
@@ -279,7 +324,7 @@ export default function AlexaClientDashboard() {
           };
           setMessages((prev) => [...prev, agentMsg]);
           setIsLoading(false);
-          setTimeout(() => setIsSpeaking(false), 2000);
+          speakVoice(agentMsg.spokenSummary || agentMsg.text);
         }, 1200);
       }, 800);
     }
@@ -316,7 +361,7 @@ export default function AlexaClientDashboard() {
         };
         setMessages((prev) => [...prev, agentMsg]);
         setIsLoading(false);
-        setTimeout(() => setIsSpeaking(false), 2000);
+        speakVoice(agentMsg.spokenSummary || agentMsg.text);
       }, 800);
     }
     // SCENARIO 4: Undo Window Grace Hold ($I10 Grace-Hold Containment)
@@ -356,7 +401,7 @@ export default function AlexaClientDashboard() {
         };
         setMessages((prev) => [...prev, agentMsg]);
         setIsLoading(false);
-        setTimeout(() => setIsSpeaking(false), 2000);
+        speakVoice(agentMsg.spokenSummary || agentMsg.text);
       }, 800);
     }
     // Default fallback
@@ -371,7 +416,7 @@ export default function AlexaClientDashboard() {
         };
         setMessages((prev) => [...prev, agentMsg]);
         setIsLoading(false);
-        setTimeout(() => setIsSpeaking(false), 1500);
+        speakVoice(agentMsg.spokenSummary || agentMsg.text);
       }, 700);
     }
   };
@@ -419,6 +464,7 @@ export default function AlexaClientDashboard() {
       spokenSummary: "Booking cancelled during grace window. Zero charges made."
     };
     setMessages((prev) => [...prev, cancelMsg]);
+    speakVoice(cancelMsg.spokenSummary || cancelMsg.text);
   };
 
   // User decides approval on phone
@@ -439,7 +485,7 @@ export default function AlexaClientDashboard() {
         planId: saga.planId || "plan_seattle_01",
         grantId: grant.id,
         toolName: "book_hotel",
-        paramsHash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        paramsHash: "ba39052542650f7fd4cf544b163d9c67ecae94058f81dc4ed7e1860b6f06395c",
         spendMinor: 12000,
         currency: "USD",
         providerBookingRef: "HINN-78921",

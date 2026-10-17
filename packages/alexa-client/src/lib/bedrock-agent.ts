@@ -22,7 +22,7 @@ export class BedrockVoiceAgent {
   private mcpClient: WarrantMcpClient;
   private modelId: string;
 
-  constructor(mcpClient: WarrantMcpClient, modelId: string = "anthropic.claude-3-haiku-20240307-v1:0") {
+  constructor(mcpClient: WarrantMcpClient, modelId: string = "amazon.nova-pro-v1:0") {
     this.mcpClient = mcpClient;
     this.modelId = process.env.BEDROCK_MODEL_ID || modelId;
 

@@ -14,9 +14,11 @@
   - JSON-RPC 2.0 messages exchanged over Streamable HTTP with Server-Sent Events (SSE) or chunked responses.
   - Session auth via HTTP `Authorization: Bearer <session_token>`.
 - **Bedrock Integration & Model ID Findings:**
-  - Amazon Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`).
-  - Targeted default model: `anthropic.claude-3-haiku-20240307-v1:0` (broadest regional availability and immediate access in `us-east-1` without cross-region routing).
-  - Claude 3.5 Sonnet: Note that `anthropic.claude-3-5-sonnet-20240620-v1:0` (v1) is legacy; newer accounts require `anthropic.claude-3-5-sonnet-20241022-v2:0` (v2) or cross-region inference profiles (`us.anthropic.claude-3-5-sonnet-20241022-v2:0`). Model ID is configurable via `BEDROCK_MODEL_ID`.
+  - Amazon Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`, `@aws-sdk/client-bedrock`).
+  - Targeted default model: `amazon.nova-pro-v1:0` (Amazon's first-party flagship foundation model with native Converse API and structured tool calling).
+  - Legacy models: `anthropic.claude-3-haiku-20240307-v1:0` is legacy/sunset in 2026 and should not be relied upon across regions.
+  - Cross-region inference profiles: Newer Claude models require US cross-region profile IDs (e.g. `us.anthropic.claude-3-5-haiku-20241022-v1:0` or `us.anthropic.claude-3-5-sonnet-20241022-v2:0`). Model ID is configurable via `BEDROCK_MODEL_ID`.
+  - Built-in audit CLI: `npm run check:bedrock-models` checks exact model lifecycle status (`ACTIVE` vs `LEGACY`) against any live AWS account.
   - Fallback stub mode implemented for offline testing and automated CI without live AWS credentials.
 - **Docker Environment Status:**
   - The local development host lacks a running Docker daemon.

@@ -28,7 +28,7 @@
 
 ### Scene 2: The Happy Path & Approval Binding (0:12 – 1:00)
 - **Duration:** 48 seconds
-- **Word Count:** 105 words (131 WPM)
+- **Word Count:** 82 words (102 WPM — relaxed & natural)
 - **Visual:** Simulated Alexa+ Client UI (dark mode, glassmorphism). User speaks or types:  
   *“Book me a weekend trip from Portland to Seattle with a hotel under $200.”*
 - **Screen Action:**
@@ -36,14 +36,14 @@
   2. Policy engine flags Coastal Rail as reversible write ($T_1$) and Harbor Inn Hotel as high-value commitment ($T_2$).
   3. Phone approval card slides in showing:
      - Exact hotel parameters: Harbor Inn, 2 nights, \$120.00.
-     - Parameter Hash: `SHA-256: a7f9...4c21`.
+     - Parameter Hash: `SHA-256: ba39...395c` (derived from canonical JSON).
   4. User taps **Approve**. Single-use approval token is minted.
   5. Gateway validates token and parameter hash, commits booking, and Alexa speaks natural summary:  
      *“Your train and hotel in Seattle are booked for $165.00 total.”*
   6. Click **View Signed Receipt**: shows detached Ed25519 signature verified offline.
-  7. Show **Undo Window** badge with 8-second grace hold countdown.
+  7. 8-second undo grace hold countdown animates silently on screen while Alexa speaks.
 - **Voiceover:**
-  > "When Alexa proposes the trip, Warrant evaluates risk before anything touches a provider. The train is a reversible step, but the hotel is a high-value commitment. On the phone, the approval card locks to the exact parameters with an RFC 8785 canonical hash. If anything changes after approval, it stops. With the user’s tap, Warrant mints a single-use token, executes the booking, and Alexa gives a concise spoken summary: Seattle train and hotel confirmed for $165. We can inspect the Ed25519 signed action receipt right in the client, and even test the 8-second grace hold undo window."
+  > "When Alexa proposes the trip, Warrant evaluates risk before anything touches a provider. The train is a reversible step, but the hotel is a high-value commitment. On the phone, the approval card locks to the exact parameters with an RFC 8785 canonical hash. With the user’s tap, Warrant mints a single-use token, commits the booking, and produces an Ed25519 signed action receipt verified offline. Alexa confirms: Seattle train and hotel confirmed for $165."
 
 ---
 

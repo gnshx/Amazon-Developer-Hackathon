@@ -35,21 +35,19 @@
 
 ---
 
-### Scene 2: The Happy Path & Bound Approvals (0:12 – 1:00 | 48s | 105 Words)
+### Scene 2: The Happy Path & Bound Approvals (0:12 – 1:00 | 48s | 82 Words)
 - **Framing:** Split screen — Left: Voice Assistant chat & tool trace; Right: Household Phone card.
 - **Screen Actions:**
   1. **0:12 – 0:22:** Click prompt or speak: *"Book me a weekend trip from Portland to Seattle with a hotel under $200."*  
      Live trace immediately displays `search_trains`, `search_hotels`, and `propose_plan`.
   2. **0:22 – 0:34:** Phone Approval Card slides in:
      - Harbor Inn Hotel: 2 nights, \$120.00.
-     - **Canonical Hash:** `a7f9...4c21` displayed in monospace.
-  3. **0:34 – 0:42:** Tap **Approve**. Booking commits. Alexa speaks spoken summary:  
+     - **Canonical Hash:** `ba39...395c` displayed in monospace (computed from real canonical JSON parameters).
+  3. **0:34 – 0:42:** Tap **Approve**. Booking commits. Alexa announces summary via Web Speech audio & wave:  
      *“Your train and hotel in Seattle are booked for $165.00 total.”*
-  4. **0:42 – 0:48:** Quick visual showcase:
-     - Click **View Signed Receipt**: Show detached Ed25519 signature verified offline.
-     - Point to **Undo Window**: Show 8-second grace hold countdown timer.
-- **Voiceover (131 WPM):**
-  > *"When Alexa proposes the trip, Warrant evaluates risk before anything touches a provider. The train is a reversible step, but the hotel is a high-value commitment. On the phone, the approval card locks to the exact parameters with an RFC 8785 canonical hash. If anything changes after approval, it stops. With the user’s tap, Warrant mints a single-use token, executes the booking, and Alexa gives a concise spoken summary: Seattle train and hotel confirmed for $165. We can inspect the Ed25519 signed action receipt right in the client, and even test the 8-second grace hold undo window."*
+  4. **0:42 – 1:00:** Click **View Signed Receipt** to reveal detached Ed25519 signature verified offline. Meanwhile, the 8-second undo grace hold countdown animates silently on screen.
+- **Voiceover (102 WPM — relaxed & crisp):**
+  > *"When Alexa proposes the trip, Warrant evaluates risk before anything touches a provider. The train is a reversible step, but the hotel is a high-value commitment. On the phone, the approval card locks to the exact parameters with an RFC 8785 canonical hash. With the user’s tap, Warrant mints a single-use token, commits the booking, and produces an Ed25519 signed action receipt verified offline. Alexa confirms: Seattle train and hotel confirmed for $165."*
 
 ---
 

@@ -10,7 +10,7 @@ async function main() {
   const secretKey = process.env.AWS_SECRET_ACCESS_KEY;
   const sessionToken = process.env.AWS_SESSION_TOKEN;
   const region = process.env.AWS_REGION || "us-east-1";
-  const modelId = process.env.BEDROCK_MODEL_ID || "anthropic.claude-3-haiku-20240307-v1:0";
+  const modelId = process.env.BEDROCK_MODEL_ID || "amazon.nova-pro-v1:0";
 
   if (!accessKey || !secretKey) {
     console.log("ℹ️  No live AWS credentials detected in environment.");
@@ -19,7 +19,7 @@ async function main() {
     console.log('   export AWS_ACCESS_KEY_ID="your_access_key"');
     console.log('   export AWS_SECRET_ACCESS_KEY="your_secret_key"');
     console.log(`   export AWS_REGION="${region}"`);
-    console.log(`   export BEDROCK_MODEL_ID="${modelId}"  # or amazon.nova-pro-v1:0`);
+    console.log(`   export BEDROCK_MODEL_ID="${modelId}"  # or us.anthropic.claude-3-5-haiku-20241022-v1:0`);
     console.log("   npm run test:bedrock\n");
     console.log("   Warrant will continue using its deterministic offline stub fallback");
     console.log("   which simulates complete agent conversation and tool execution.\n");
