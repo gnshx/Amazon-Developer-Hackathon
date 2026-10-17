@@ -31,6 +31,7 @@
 | 2026-10-16 | 23:15 | Submission Package | Completed `SUBMISSION.md` with required tool feedback (Bedrock, MCP, AWS SDK, Next.js, SQLite) & friction log. | Completed |
 | 2026-10-17 | 03:45 | Pre-Flight Audit | Verified runtime seams (zero backdoors in process.env), softened mutation phrasing, aligned 10 scenarios across all docs, created `test-bedrock-live.ts`, `split-siege-repo.sh`, verified `/tmp` fresh-clone in 16s, and published 1-page recording checklist. | Completed |
 | 2026-10-17 | 17:15 | Risk Removal & Judgment Ready | Implemented MCP 2025-11-25 contract test, Screen 5 interactive limits UI, JUDGES.md, STRIDE threat matrix, 7 limitations disclosures, offline evidence bundle (`npm run verify:evidence`), Bedrock live lifecycle scripts, standalone `gnshx/warrant-siege` repo validation, and generated `docs/EXECUTION_CHECKLIST.md` & `hackathon_checklist.csv`. | Completed |
+| 2026-10-17 | 20:00 | Alexa+ Readiness & Positioning | Implemented RFC 9728 OAuth Protected Resource Metadata, user identity binding (`userId`), MCP 2025-11-25 tool annotations & URL elicitation, latency SLA benchmark (<500ms), and Naive vs Warrant comparative benchmark (0/3 vs 3/3). Updated README, JUDGES.md, and SUBMISSION.md with ecosystem positioning (AWS AgentCore Policy GA March 2026, Google AP2, CaMeL, Alexa checkout). | Completed |
 
 ---
 

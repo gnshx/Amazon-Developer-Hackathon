@@ -12,6 +12,7 @@ export type GrantStatus = "ACTIVE" | "REVOKED" | "EXPIRED";
 export interface Grant {
   id: string;
   sessionToken: string;
+  userId?: string; // Authenticated User Identity (e.g. OAuth Subject 'sub' / Alexa Account ID)
   scopes: string[]; // e.g., ["hotel:*", "train:*", "dining:*"]
   spendCapMinor: MinorUnits;
   spentMinor: MinorUnits;

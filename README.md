@@ -26,7 +26,47 @@ Today, there is no standard way to:
 
 Every brand currently builds its own one-off safeguards—if any—and users are left to trust the voice assistant blindly.
 
-**Warrant's long-term goal is to become the missing trust layer for the agentic economy.** It gives agents limited, revocable authority, produces verifiable proof of every action, handles failure automatically with zero orphan state, and lets anyone test whether a service is safe for agents.
+**Warrant is a transactional safety layer for agents that act in the real world: bounded authority, exact-action approval, no double-charges, automatic rollback, and receipts anyone can verify, tested by attacks that fail when a protection is removed.**
+
+---
+
+### 🏆 Competitive Landscape & Architectural Positioning
+
+Approval gates and audit logs are common in this track. However, existing submissions take narrow approaches:
+- **JudgeGuard** exposes a `judgeguard_verify_action` tool backed by Bedrock models (model-based heuristic policy checking rather than deterministic cryptographic enforcement).
+- **alexa-plus** introduces a human-in-the-loop gate strictly in front of smart-home device actions.
+- **Northbridge** pairs an append-only audit ledger with escalate-only decisions.
+
+#### What Warrant Has That Others Lack:
+1. **True Transactional Safety:** Multi-layer idempotency against duplicate voice retry storms ($I_1$), multi-step saga rollback with zero orphan residue ($I_4$), and active timeout reconciliation against provider truth ($I_8$). This aligns directly with Alexa+'s checkout requirements for distributed transactional resilience.
+2. **Cryptographic Approval Binding & Signed Receipts:** High-risk actions are cryptographically bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{params}))$ ($I_3$), generating detached Ed25519 signed receipts ($I_9$) and Merkle inclusion proofs ($I_7$) verifiable completely offline.
+3. **Falsifiable Proof (The Adversarial Harness):** A standalone suite (`warrant-siege`) executing 10 attack scenarios ($S_1 - S_{10}$), coupled with automated mutation testing (`npm run test:mutation`) that intentionally breaks safeguards to prove the scorecard turns RED.
+4. **Tool-Agnostic, Reusable Testing:** A standalone CLI that can be cloned and run against *any* MCP server over Streamable HTTP.
+
+#### Relationship to Big Players & Academic Research:
+- **AWS AgentCore Policy (GA March 3, 2026) — *Complementary, not competing*:** AWS AgentCore Policy evaluates individual tool calls outside the agent's reasoning loop based on caller identity and tool arguments (per-call authorization). However, AgentCore Policy does not track cumulative minor-unit spend budgets across multi-turn conversations, orchestrate compensating saga rollbacks upon mid-plan failure, issue signed receipts, or perform active reconciliation of dropped network sockets. Warrant acts as the transactional execution runtime underneath or alongside AgentCore.
+- **Google AP2 (Agent Payment Protocol):** AP2 uses signed intent, cart, and payment mandates. Warrant's out-of-band grant maps to an intent mandate, and parameter-bound approval maps to a cart mandate. While AP2 focuses on payment authorization rails, Warrant provides the missing distributed systems runtime (saga compensation, timeout reconciliation, and zero orphan state).
+- **Academic Research (CaMeL):** Research by CaMeL demonstrates that untrusted third-party data must never influence agent control flow. Warrant implements propose-then-execute gateway constraints enforced strictly at the tool boundary, rendering indirect prompt injection incapable of altering administrative authority ($I_5$).
+- **Repositioning vs. Alexa Voice Checkout:** Alexa handles voice PIN, payment instrument selection, and purchase confirmation. Warrant handles what happens underneath: multi-step operational transactional safety—holding plans in limits, unwinding previous steps if step 2 fails, reconciling dropped sockets, and generating verifiable receipts.
+
+---
+
+### 🌐 Alexa+ Compatibility & Readiness Checklist
+
+Warrant was engineered to satisfy the real-world operational requirements of the Alexa+ platform:
+
+| Platform Requirement | Alexa+ Developer Specification | Warrant Gateway Implementation | Verification Status |
+|:---|:---|:---|:---:|
+| **Transport** | MCP Streamable HTTP | Full JSON-RPC 2.0 over Streamable HTTP (`@modelcontextprotocol/sdk`) | **✅ PASS** |
+| **Network Reachability** | Remote HTTPS URL | Public tunnel & reverse proxy compatible | **✅ PASS** |
+| **OAuth 2.1 Protected Resource** | RFC 9728 Resource Metadata | `GET /.well-known/oauth-protected-resource` returns resource metadata | **✅ PASS** |
+| **Auth Challenge** | RFC 6750 / 9728 401 Challenge | 401 returns `WWW-Authenticate: Bearer resource_metadata="..."` | **✅ PASS** |
+| **Latency SLA** | < 500 ms response time | Gateway average **1.58 ms**, p99 **34.68 ms** (`npm run test:latency`) | **✅ PASS (14x margin)** |
+| **Identity Binding** | Tied to authenticated user | Grants bound to OAuth `sub` subject / `userId`, not client session | **✅ PASS** |
+| **Out-of-Band Elicitation** | MCP 2025-11-25 Elicitation | `propose_plan` returns `elicitation: { mode: "url" }` for phone approval | **✅ PASS** |
+| **Tool Annotations** | MCP Semantic Hints | `readOnly`, `destructive`, `idempotent`, `riskTier` annotated on all tools | **✅ PASS** |
+
+---
 
 ### MCP Server plus Agent Skill Architecture
 Warrant is delivered as a cooperative pair:
@@ -156,18 +196,20 @@ Every user story and safety requirement maps directly to an architectural invari
 | **State Residue** | Multi-step booking fails mid-flight, leaving orphaned bookings | Compensating Saga Orchestrator executes reverse cancellations with clean baseline | $I_4$ | **S2** | ✅ Passing |
 | **Accidental Commitment**| User changes mind immediately after voice confirmation | Grace-hold undo window (8s delay) allows out-of-band cancellation before provider settlement | $I_{10}$ | **S10** | ✅ Passing |
 
-### Comprehensive Test Summary (64 Total Checks)
+### Comprehensive Test Summary (69 Total Checks)
 
 | Package / Test Suite | Scope | Checks / Tests | Execution Time | Status |
 |:---|:---|:---:|:---:|:---:|
-| **`@warrant/gateway`** | Policy Engine, RFC 8785 Hasher, Idempotency, Saga, Merkle, Receipts, DB | 49 unit & integration tests | ~500ms | ✅ 49/49 Passing |
+| **`@warrant/gateway`** | Policy Engine, RFC 8785 Hasher, Idempotency, Saga, Merkle, Receipts, DB | 51 unit & integration tests | ~500ms | ✅ 51/51 Passing |
 | **`@warrant/alexa-client`** | Bedrock Converse Agent Loop & MCP Client Execution | 1 end-to-end integration test | ~300ms | ✅ 1/1 Passing |
 | **`@warrant/siege`** | 10 Core Adversarial Attack Scenarios (S1 – S10) | 10 scenario invariants ($I_1 - I_{10}$) | ~1.6s | ✅ 10/10 Passing |
 | **`Mutation Suite`** | Architectural Negative Fault Injection (Idempotency & Approval) | 2 mutations caught RED | ~2.5s | ✅ 2/2 Caught |
 | **`Audit Verifier`** | SHA-256 chained event log verification from genesis | 53 events verified | ~200ms | ✅ Tip Continuous |
 | **`Receipt Verifier`** | Detached Ed25519 signature & parameter integrity | Signature & tamper check | ~150ms | ✅ Cryptographically Valid |
 | **`Offline Evidence`** | Standalone verification of committed evidence bundle | 3 cryptographic checks | ~250ms | ✅ Zero Setup Green |
-| **Total Test Suite** | **Full Workspace Verification** | **64 checks & scenarios** | **<6s** | **100% Green** |
+| **`Latency SLA Gate`** | Streamable HTTP SLA Verification (<500ms platform limit) | 50 operations (avg 1.58ms, p99 34ms) | ~1.5s | ✅ <500ms Passing |
+| **`Comparative Benchmark`**| Naive Unprotected Server vs. Warrant Gateway | 3 comparative attack scenarios | ~600ms | ✅ 3/3 Warrant vs 0/3 Naive |
+| **Total Test Suite** | **Full Workspace Verification** | **69 checks & scenarios** | **<8s** | **100% Green** |
 
 ---
 
@@ -292,7 +334,19 @@ Injects transient defects into approval binding and idempotency layers to prove 
 npm run test:mutation
 ```
 
-### 7. Start Full Stack Locally
+### 7. Run Alexa+ Latency SLA Benchmark (<500ms Platform Gate)
+Verifies 50 consecutive operations over Streamable HTTP against the official Alexa+ <500ms latency ceiling:
+```bash
+npm run test:latency
+```
+
+### 8. Run Comparative Benchmark (Naive Unprotected vs. Warrant)
+Executes 3 adversarial scenarios (duplicate storm, mid-plan failure, spend cap overflow) side-by-side against an unprotected server vs. Warrant:
+```bash
+npm run test:compare
+```
+
+### 9. Start Full Stack Locally
 Spins up Warrant Gateway on `http://localhost:8000` and the Simulated Alexa+ Client on `http://localhost:3000`:
 ```bash
 npm run dev

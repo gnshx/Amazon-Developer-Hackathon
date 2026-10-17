@@ -18,6 +18,8 @@
     "receipt:verify": "tsx packages/warrant-gateway/scripts/verify-receipt.ts",
     "verify:evidence": "tsx scripts/verify-evidence.ts",
     "test:skill": "tsx scripts/test-agent-skill.ts",
+    "test:latency": "tsx scripts/test-latency.ts",
+    "test:compare": "tsx scripts/test-naive-comparison.ts",
     "dev": "npm run --workspaces --parallel --if-present dev",
     "lint": "npm run --workspaces --if-present lint"
   },

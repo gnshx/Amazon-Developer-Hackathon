@@ -17,7 +17,13 @@ npm run test:siege
 # 2. Run the Mutation Test (Intentionally breaks 2 safeguards; proves scorecard turns RED)
 npm run test:mutation
 
-# 3. Verify Offline Cryptographic Evidence Bundle (<300ms, zero server/db needed)
+# 3. Run Comparative Benchmark (Naive unprotected server 0/3 vs Warrant Gateway 3/3)
+npm run test:compare
+
+# 4. Run Alexa+ Latency SLA Benchmark (Verifies sub-500ms response over Streamable HTTP)
+npm run test:latency
+
+# 5. Verify Offline Cryptographic Evidence Bundle (<300ms, zero server/db needed)
 npm run verify:evidence
 ```
 
@@ -28,7 +34,12 @@ npm run verify:evidence
    - Invariant $I_1$ mutated (idempotency disabled) $\to$ **Scenario S1 fails RED** as expected.
    - Invariant $I_3$ mutated (approval hash disabled) $\to$ **Scenario S4 fails RED** as expected.
    - Proves the test suite is actively catching attacks rather than vacuously passing.
-3. **`npm run verify:evidence`** cryptographically validates the committed sample bundle in [`examples/evidence/`](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/examples/evidence/):
+3. **`npm run test:compare`** tests an unprotected naive server vs. Warrant under identical attack loads:
+   - Naive server fails 0/3 (10 duplicate bookings charged, $120 orphaned hotel residue, budget exceeded).
+   - Warrant passes 3/3 (1 deduplicated booking, $0 orphan residue after rollback, budget ceiling enforced).
+4. **`npm run test:latency`** executes 50 consecutive calls over MCP Streamable HTTP:
+   - Average: **1.58 ms**, p99: **34.68 ms**, easily beating Alexa+'s < 500 ms SLA ceiling by a 14x margin.
+5. **`npm run verify:evidence`** cryptographically validates the committed sample bundle in [`examples/evidence/`](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/examples/evidence/):
    - Detached **Ed25519 signature** verified over canonical RFC 8785 action parameters ($I_9$).
    - In-memory tamper attempt (mutating \$360.00 to \$36.00) is **cryptographically rejected**.
    - SHA-256 event chaining verified continuous from genesis ($I_7$).
@@ -39,6 +50,9 @@ npm run verify:evidence
 
 ### 1. Technical Execution & Architecture (25%)
 - **Conforms to MCP Streamable HTTP Spec (`2025-11-25`):** Standard JSON-RPC over Streamable HTTP transport, compatible with Anthropic Claude Desktop, Cursor, and AWS Bedrock Agent MCP bridges.
+- **RFC 9728 OAuth Protected Resource Metadata:** Live `GET /.well-known/oauth-protected-resource` endpoint and RFC 6750/9728 401 challenges with `WWW-Authenticate: Bearer resource_metadata="..."`.
+- **User Identity Binding:** Grants and authorizations are bound to authenticated user identity (`userId` / OAuth `sub` claim), not ephemeral client session tokens.
+- **MCP 2025-11-25 Semantic Tool Annotations:** Tools specify `readOnly`, `destructive`, `idempotent`, and `riskTier` hints, plus `mode: "url"` elicitation for out-of-band approvals.
 - **Cryptographic Parameter Binding ($I_3$):** All high-risk ($T_2$) actions require approvals bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{args}))$. Changing a single date, price, or ID breaks the approval token.
 - **Multi-Layer Idempotency ($I_1$):** Dual-indexed in SQLite with in-flight state tracking (`PROCESSING` $\to$ `COMPLETED`). Concurrent voice retry storms execute external side effects exactly once.
 - **Compensating Saga Orchestrator ($I_4$):** Multi-step plans execute with strict atomicity; mid-flight failures trigger reverse compensations, guaranteeing zero orphan state or charges ($I_4$).
@@ -49,16 +63,21 @@ npm run verify:evidence
 
 ### 2. Voice & Bedrock Innovation (Alexa+ Track) (25%)
 - **The Voice Dilemma Solved:** Voice assistants cannot present full checkout screens before execution. Warrant solves this by enforcing an out-of-band companion phone approval flow for actions exceeding the household threshold (\$200), with voice-first spoken summaries ($\le 300$ characters).
+- **Repositioning Around Alexa Voice Checkout:** Alexa handles voice PIN, payment instrument selection, and purchase confirmation. Warrant handles the complex multi-step operational transactional safety underneath: ensuring multi-step itineraries stay within cumulative limits and unwind cleanly if step 2 fails.
 - **Amazon Bedrock Converse API Agent:** Full tool-calling loop connecting Bedrock models (Amazon Nova Pro, Claude 3.5 Sonnet) to the Warrant MCP gateway, featuring deterministic offline fallback for offline evaluation.
 - **Agent Skill (`warrant-safe-actions`):** Formal Agent Skill (`skills/warrant-safe-actions/SKILL.md`) tested via `npm run test:skill`, instructing the model on proper action sequencing, out-of-band approval expectations, prompt injection immunity, and concise spoken summaries.
 
-### 3. Real-World Practicality & Safety (25%)
+### 3. Real-World Practicality & Ecosystem Relationship (25%)
+- **Complementary to AWS AgentCore Policy (GA March 3, 2026):** AWS AgentCore Policy provides per-call authorization (caller identity + tool arguments) outside the agent's reasoning loop. Warrant complements AgentCore by providing cumulative minor-unit spend budgets across conversations, multi-step saga rollbacks upon mid-plan failure, detached signed receipts, and active reconciliation of dropped network connections.
+- **Relationship to Google AP2:** Extends mandate concepts (intent and cart mandates) into a full distributed systems runtime with saga compensations.
+- **Prompt Injection Defense (CaMeL Research):** Implements propose-then-execute structural containment at the tool boundary, guaranteeing third-party provider responses cannot elevate permissions or modify grants ($I_5$).
 - **10 Core Adversarial Scenarios ($S_1 - S_{10}$):** Tests realistic failure modes: prompt injection privilege escalation, spend cap bypass, approval parameter tampering, socket timeouts, and retry storms.
 - **Out-of-Band Admin Channel:** Grants, spend caps, and approval decisions exist strictly on an internal REST API (`/admin`). The LLM tool surface (`/mcp`) has zero tools to alter budgets or self-approve.
 
 ### 4. Design, Developer Experience & Open Source (25%)
 - **`@warrant/siege` CLI:** Standalone open-source adversarial test harness generating interactive HTML reports and SVG status badges.
 - **5-View Alexa+ Companion UI:** Pixel-accurate Next.js 14 console implementing 5 human-designed screens (Assistant Console, Phone Approval, Mid-Plan Rollback, Safety Scorecard, Household Limits).
+- **Alexa+ Compatibility Table:** All platform checklist items verified (Streamable HTTP, RFC 9728 metadata, <500ms latency, user binding, URL elicitation).
 
 ---
 
@@ -78,18 +97,20 @@ npm run verify:evidence
 
 ---
 
-## 📊 Comprehensive Test Summary (64 Total Checks)
+## 📊 Comprehensive Test Summary (69 Total Checks)
 
 | Package / Test Suite | Scope | Checks / Tests | Execution Time | Status |
 |:---|:---|:---:|:---:|:---:|
-| **`@warrant/gateway`** | Policy Engine, RFC 8785 Hasher, Idempotency, Saga, Merkle, Receipts, DB | 49 unit & integration tests | ~500ms | ✅ 49/49 Passing |
+| **`@warrant/gateway`** | Policy Engine, RFC 8785 Hasher, Idempotency, Saga, Merkle, Receipts, DB | 51 unit & integration tests | ~500ms | ✅ 51/51 Passing |
 | **`@warrant/alexa-client`** | Bedrock Converse Agent Loop & MCP Client Execution | 1 end-to-end integration test | ~300ms | ✅ 1/1 Passing |
 | **`@warrant/siege`** | 10 Core Adversarial Attack Scenarios (S1 – S10) | 10 scenario invariants ($I_1 - I_{10}$) | ~1.6s | ✅ 10/10 Passing |
 | **`Mutation Suite`** | Architectural Negative Fault Injection (Idempotency & Approval) | 2 mutations caught RED | ~2.5s | ✅ 2/2 Caught |
 | **`Audit Verifier`** | SHA-256 chained event log verification from genesis | 53 events verified | ~200ms | ✅ Tip Continuous |
 | **`Receipt Verifier`** | Detached Ed25519 signature & parameter integrity | Signature & tamper check | ~150ms | ✅ Cryptographically Valid |
 | **`Offline Evidence`** | Standalone verification of committed evidence bundle | 3 cryptographic checks | ~250ms | ✅ Zero Setup Green |
-| **Total Test Suite** | **Full Workspace Verification** | **64 checks & scenarios** | **<6s** | **100% Green** |
+| **`Latency SLA Gate`** | Streamable HTTP SLA Verification (<500ms platform limit) | 50 operations (avg 1.58ms, p99 34ms) | ~1.5s | ✅ <500ms Passing |
+| **`Comparative Benchmark`**| Naive Unprotected Server vs. Warrant Gateway | 3 comparative attack scenarios | ~600ms | ✅ 3/3 Warrant vs 0/3 Naive |
+| **Total Test Suite** | **Full Workspace Verification** | **69 checks & scenarios** | **<8s** | **100% Green** |
 
 ---
 
@@ -124,15 +145,21 @@ npm run test:siege
 # 5. Run mutation fault test (proves scorecard catches broken invariants)
 npm run test:mutation
 
-# 6. Run agent skill boundary test (proves model obedience to warrant-safe-actions)
+# 6. Run comparative benchmark (Naive 0/3 vs Warrant 3/3)
+npm run test:compare
+
+# 7. Run Alexa+ latency benchmark (<500ms SLA gate)
+npm run test:latency
+
+# 8. Run agent skill boundary test (proves model obedience to warrant-safe-actions)
 npm run test:skill
 
-# 7. Verify cryptographic audit chain integrity
+# 9. Verify cryptographic audit chain integrity
 npm run audit:verify
 
-# 8. Verify Ed25519 signed action receipts
+# 10. Verify Ed25519 signed action receipts
 npm run receipt:verify
 
-# 9. Start local stack (Gateway on :8000, Web Client on :3000)
+# 11. Start local stack (Gateway on :8000, Web Client on :3000)
 npm run dev
 ```

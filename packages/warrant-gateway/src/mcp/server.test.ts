@@ -81,15 +81,55 @@ describe("Warrant Gateway MCP Streamable HTTP & Admin API Integration", () => {
     expect(res.json.result.capabilities.tools).toBeDefined();
   });
 
-  it("POST /mcp requires valid Bearer Token (401 on missing or invalid)", async () => {
+  it("GET /.well-known/oauth-protected-resource returns RFC 9728 Protected Resource Metadata", async () => {
+    const res = await fetch(`${baseUrl}/.well-known/oauth-protected-resource`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.resource).toContain("/mcp");
+    expect(body.authorization_servers).toContain("https://auth.amazon.com/oauth2/v2");
+    expect(body.bearer_methods_supported).toContain("header");
+    expect(body.scopes_supported).toBeDefined();
+  });
+
+  it("POST /mcp requires valid Bearer Token (401 with WWW-Authenticate header)", async () => {
     // Missing header
-    const res1 = await mcpPost({ jsonrpc: "2.0", id: 1, method: "tools/list" }, "");
+    const res1 = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" })
+    });
     expect(res1.status).toBe(401);
-    expect(res1.json.error.code).toBe(-32001);
+    expect(res1.headers.get("www-authenticate")).toContain("oauth-protected-resource");
+    const json1 = await res1.json();
+    expect(json1.error.code).toBe(-32001);
 
     // Invalid token
-    const res2 = await mcpPost({ jsonrpc: "2.0", id: 2, method: "tools/list" }, "unknown_token");
+    const res2 = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer unknown_token_999"
+      },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/list" })
+    });
     expect(res2.status).toBe(401);
+    expect(res2.headers.get("www-authenticate")).toContain("oauth-protected-resource");
+  });
+
+  it("tools/list returns available MCP tools with 2025-11-25 annotations", async () => {
+    const res = await mcpPost({ jsonrpc: "2.0", id: 5, method: "tools/list" });
+    expect(res.status).toBe(200);
+    const tools = res.json.result.tools;
+    expect(tools.length).toBeGreaterThanOrEqual(5);
+
+    const searchTool = tools.find((t: any) => t.name === "search_hotels");
+    expect(searchTool.annotations.readOnly).toBe(true);
+    expect(searchTool.annotations.destructive).toBe(false);
+    expect(searchTool.annotations.riskTier).toBe("T0");
+
+    const execTool = tools.find((t: any) => t.name === "execute_plan");
+    expect(execTool.annotations.destructive).toBe(true);
+    expect(execTool.annotations.riskTier).toBe("T2");
   });
 
   it("POST /mcp rejects calls on expired or revoked grants (Invariant I6)", async () => {
@@ -112,17 +152,6 @@ describe("Warrant Gateway MCP Streamable HTTP & Admin API Integration", () => {
     const resExpired = await mcpPost({ jsonrpc: "2.0", id: 4, method: "tools/list" }, "tok_exp");
     expect(resExpired.status).toBe(403);
     expect(resExpired.json.error.code).toBe(-32003);
-  });
-
-  it("tools/list returns available MCP tools", async () => {
-    const res = await mcpPost({ jsonrpc: "2.0", id: 5, method: "tools/list" });
-    expect(res.status).toBe(200);
-    const tools = res.json.result.tools;
-    expect(tools.length).toBeGreaterThanOrEqual(5);
-    const toolNames = tools.map((t: any) => t.name);
-    expect(toolNames).toContain("search_hotels");
-    expect(toolNames).toContain("propose_plan");
-    expect(toolNames).toContain("execute_plan");
   });
 
   it("tools/call: search_hotels returns options and natural spoken_summary (<= 300 chars)", async () => {

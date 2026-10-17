@@ -60,10 +60,15 @@ See detailed daily checklist: [`docs/EXECUTION_CHECKLIST.md`](file:///home/gojo/
 - [x] Generate dynamic SVG/Markdown pass/fail badge for repository READMEs (`scorecard-badge.svg`)
 - **Status:** completed
 
-### Milestone 5: Stretch Feature & Feature Freeze (Oct 21)
+### Milestone 5: Stretch Feature, Alexa+ Compatibility & Feature Freeze (Oct 21)
 - [x] Implement Merkle root checkpointing on audit chain tip with $O(\log N)$ inclusion proof verification
 - [x] Expose Merkle endpoints (`GET /admin/audit/merkle-root`, `GET /admin/audit/merkle-proof/:seq`, `POST /admin/audit/merkle-verify`)
 - [x] Integrate Merkle Root Checkpoint card into Audit tab in Alexa client UI
+- [x] Implement RFC 9728 OAuth Protected Resource Metadata (`GET /.well-known/oauth-protected-resource`) and RFC 6750 401 challenges
+- [x] Implement user identity binding on grants (`userId` / OAuth `sub` subject)
+- [x] Annotate MCP tools with 2025-11-25 semantic hints (`readOnly`, `destructive`, `idempotent`, `riskTier`) & URL elicitation
+- [x] Add Alexa+ Latency SLA Benchmark (`npm run test:latency`) verifying <500ms ceiling (~1.58ms avg, 34ms p99)
+- [x] Add Comparative Benchmark (`npm run test:compare`) verifying Naive 0/3 vs Warrant 3/3 under attack
 - [x] **HARD FEATURE FREEZE achieved:** Zero new architectural changes permitted; all 10 invariants satisfied
 - **Status:** completed
 

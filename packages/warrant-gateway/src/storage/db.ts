@@ -37,6 +37,7 @@ export class WarrantRepository {
       CREATE TABLE IF NOT EXISTS grants (
         id TEXT PRIMARY KEY,
         session_token TEXT UNIQUE NOT NULL,
+        user_id TEXT,
         scopes TEXT NOT NULL,
         spend_cap_minor INTEGER NOT NULL,
         spent_minor INTEGER NOT NULL DEFAULT 0,
@@ -128,6 +129,9 @@ export class WarrantRepository {
 
     // Safe migrations for newly added columns on existing sqlite databases
     try {
+      this.db.exec("ALTER TABLE grants ADD COLUMN user_id TEXT;");
+    } catch {}
+    try {
       this.db.exec("ALTER TABLE plans ADD COLUMN undo_window_seconds INTEGER;");
     } catch {}
     try {
@@ -145,13 +149,14 @@ export class WarrantRepository {
     };
 
     const stmt = this.db.prepare(`
-      INSERT INTO grants (id, session_token, scopes, spend_cap_minor, spent_minor, expires_at, status, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO grants (id, session_token, user_id, scopes, spend_cap_minor, spent_minor, expires_at, status, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
       fullGrant.id,
       fullGrant.sessionToken,
+      fullGrant.userId ?? null,
       JSON.stringify(fullGrant.scopes),
       fullGrant.spendCapMinor,
       fullGrant.spentMinor,
@@ -456,6 +461,7 @@ export class WarrantRepository {
     return {
       id: row.id,
       sessionToken: row.session_token,
+      userId: row.user_id ?? undefined,
       scopes: JSON.parse(row.scopes),
       spendCapMinor: row.spend_cap_minor,
       spentMinor: row.spent_minor,

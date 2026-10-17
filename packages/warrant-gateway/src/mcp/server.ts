@@ -114,10 +114,25 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
     return res.json(result);
   });
 
+  // RFC 9728 OAuth 2.0 / 2.1 Protected Resource Metadata
+  app.get("/.well-known/oauth-protected-resource", (req: Request, res: Response) => {
+    const host = req.get("host") || "localhost:8000";
+    const protocol = req.protocol;
+    res.setHeader("Content-Type", "application/json");
+    res.json({
+      resource: `${protocol}://${host}/mcp`,
+      authorization_servers: ["https://auth.amazon.com/oauth2/v2"],
+      scopes_supported: ["hotel:search", "hotel:book", "train:search", "train:book", "dining:search", "dining:book"],
+      bearer_methods_supported: ["header"],
+      resource_documentation: "https://github.com/gnshx/Amazon-Developer-Hackathon"
+    });
+  });
+
   // Bearer Token Authentication Middleware for /mcp
   const requireGrantAuth = (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      res.setHeader("WWW-Authenticate", 'Bearer resource_metadata="/.well-known/oauth-protected-resource", error="invalid_token"');
       return res.status(401).json({
         jsonrpc: "2.0",
         id: req.body?.id ?? null,
@@ -132,6 +147,7 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
     const grant = repo.getGrantBySessionToken(token);
 
     if (!grant) {
+      res.setHeader("WWW-Authenticate", 'Bearer resource_metadata="/.well-known/oauth-protected-resource", error="invalid_token"');
       return res.status(401).json({
         jsonrpc: "2.0",
         id: req.body?.id ?? null,
@@ -210,6 +226,12 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         {
           name: "search_hotels",
           description: "Search for hotels in a destination city. Risk tier T0 (read-only).",
+          annotations: {
+            readOnly: true,
+            destructive: false,
+            idempotent: true,
+            riskTier: "T0"
+          },
           inputSchema: {
             type: "object",
             properties: {
@@ -222,6 +244,12 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         {
           name: "search_trains",
           description: "Search for train connections between origin and destination. Risk tier T0 (read-only).",
+          annotations: {
+            readOnly: true,
+            destructive: false,
+            idempotent: true,
+            riskTier: "T0"
+          },
           inputSchema: {
             type: "object",
             properties: {
@@ -234,6 +262,12 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         {
           name: "search_restaurants",
           description: "Search dining and table availability in a city. Risk tier T0 (read-only).",
+          annotations: {
+            readOnly: true,
+            destructive: false,
+            idempotent: true,
+            riskTier: "T0"
+          },
           inputSchema: {
             type: "object",
             properties: {
@@ -246,6 +280,12 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         {
           name: "propose_plan",
           description: "Propose a multi-step travel or transaction plan. Evaluates spend caps and creates approvals for T2 steps.",
+          annotations: {
+            readOnly: false,
+            destructive: false,
+            idempotent: true,
+            riskTier: "T1"
+          },
           inputSchema: {
             type: "object",
             properties: {
@@ -270,6 +310,12 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         {
           name: "execute_plan",
           description: "Execute an approved plan. Enforces idempotency, spend cap, cryptographic approval parameter binding, and optional undo grace window.",
+          annotations: {
+            readOnly: false,
+            destructive: true,
+            idempotent: true,
+            riskTier: "T2"
+          },
           inputSchema: {
             type: "object",
             properties: {
@@ -290,6 +336,12 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         {
           name: "undo_plan",
           description: "Cancel a booking or plan that is currently held in an undo grace window.",
+          annotations: {
+            readOnly: false,
+            destructive: true,
+            idempotent: true,
+            riskTier: "T2"
+          },
           inputSchema: {
             type: "object",
             properties: {
@@ -301,6 +353,12 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         {
           name: "get_plan_status",
           description: "Retrieve plan execution status, remaining spend, and step compensation states.",
+          annotations: {
+            readOnly: true,
+            destructive: false,
+            idempotent: true,
+            riskTier: "T0"
+          },
           inputSchema: {
             type: "object",
             properties: { planId: { type: "string" } },
@@ -310,6 +368,12 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         {
           name: "request_cancellation",
           description: "Compensating action to cancel an existing booking idempotently.",
+          annotations: {
+            readOnly: false,
+            destructive: true,
+            idempotent: true,
+            riskTier: "T2"
+          },
           inputSchema: {
             type: "object",
             properties: {
@@ -471,7 +535,12 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
                 params: action.params,
                 paramsHash: action.paramsHash,
                 approvalId: approval.id,
-                status: "PENDING"
+                status: "PENDING",
+                elicitation: {
+                  mode: "url",
+                  url: `http://localhost:3000/approval?actionId=${action.id}&hash=${action.paramsHash}`,
+                  description: "Approve this high-risk action out-of-band on your mobile device"
+                }
               });
             }
           }
