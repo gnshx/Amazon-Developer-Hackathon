@@ -2,7 +2,6 @@
 import { Command } from "commander";
 import { SiegeRunner } from "./runner.js";
 import { generateScorecardHtml, generateScorecardJson, generateScorecardBadgeSvg } from "./reporter.js";
-import { createGatewayApp, WarrantRepository } from "@warrant/gateway";
 import * as path from "node:path";
 import * as http from "node:http";
 
@@ -28,7 +27,7 @@ program
     console.log("--------------------------------------------------------\n");
 
     let serverToClose: http.Server | null = null;
-    let repoToClose: WarrantRepository | null = null;
+    let repoToClose: any = null;
     let targetMcp = options.target;
     let targetAdmin = options.admin;
 
@@ -43,16 +42,34 @@ program
       }
 
       if (!isLive) {
-        console.log("ℹ️  No external gateway running at target. Starting ephemeral in-memory gateway instance on port 8199...");
-        const PORT = 8199;
-        repoToClose = new WarrantRepository(":memory:");
-        const { app } = createGatewayApp({ repo: repoToClose, port: PORT });
-        await new Promise<void>((resolve) => {
-          serverToClose = app.listen(PORT, () => resolve());
-        });
-        targetMcp = `http://127.0.0.1:${PORT}/mcp`;
-        targetAdmin = `http://127.0.0.1:${PORT}/admin`;
-        console.log(`   Connected to ephemeral gateway at ${targetMcp}\n`);
+        // Attempt dynamic load of @warrant/gateway if present in monorepo
+        let gatewayModule: any = null;
+        try {
+          // Dynamic import allows standalone siege execution without packaging gateway source
+          // @ts-ignore
+          gatewayModule = await import("@warrant/gateway");
+        } catch {
+          gatewayModule = null;
+        }
+
+        if (gatewayModule && typeof gatewayModule.createGatewayApp === "function") {
+          console.log("ℹ️  No external gateway running at target. Starting ephemeral in-memory gateway instance on port 8199...");
+          const PORT = 8199;
+          repoToClose = new gatewayModule.WarrantRepository(":memory:");
+          const { app } = gatewayModule.createGatewayApp({ repo: repoToClose, port: PORT });
+          await new Promise<void>((resolve) => {
+            serverToClose = app.listen(PORT, () => resolve());
+          });
+          targetMcp = `http://127.0.0.1:${PORT}/mcp`;
+          targetAdmin = `http://127.0.0.1:${PORT}/admin`;
+          console.log(`   Connected to ephemeral gateway at ${targetMcp}\n`);
+        } else {
+          console.error(`❌ Target gateway not reachable at ${options.target}.`);
+          console.error("   When running warrant-siege standalone against a remote or local gateway,");
+          console.error("   ensure the gateway is running and specify target endpoints:");
+          console.error("   warrant-siege --target <mcp-url> --admin <admin-url>\n");
+          process.exit(1);
+        }
       }
 
       const runner = new SiegeRunner(targetMcp, targetAdmin);
@@ -94,7 +111,7 @@ program
         await new Promise<void>((resolve) => (serverToClose as http.Server).close(() => resolve()));
       }
       if (repoToClose) {
-        (repoToClose as WarrantRepository).close();
+        repoToClose.close();
       }
 
       if (scorecard.allInvariantsSatisfied) {
@@ -109,7 +126,7 @@ program
         await new Promise<void>((resolve) => (serverToClose as http.Server).close(() => resolve()));
       }
       if (repoToClose) {
-        (repoToClose as WarrantRepository).close();
+        repoToClose.close();
       }
       console.error("\n❌ Siege Execution Error:", err.message);
       process.exit(1);

@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.0",
-    "@warrant/gateway": "*",
     "commander": "^12.1.0",
     "dotenv": "^16.4.7",
     "yaml": "^2.7.0"
@@ -23,5 +22,5 @@
     "typescript": "^5.7.3",
     "vitest": "^3.0.7"
   },
-  "license": "MIT"
+  "license": "Apache-2.0"
 }
