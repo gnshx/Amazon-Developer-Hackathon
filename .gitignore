@@ -19,9 +19,9 @@ build/
 
 # Test coverage & reports
 coverage/
-scorecard.json
-*.scorecard.json
-scorecard.html
+packages/*/scorecard.json
+packages/*/scorecard.html
+!examples/evidence/scorecard.json
 
 # Environment variables
 .env
