@@ -17,10 +17,10 @@ npm run test:siege
 # 2. Run the Mutation Test (Intentionally breaks 3 safeguards; proves scorecard turns RED)
 npm run test:mutation
 
-# 3. Run Comparative Benchmark (Naive unprotected server 0/3 vs Warrant Gateway 3/3)
+# 3. Run Comparative Benchmark (Example unprotected server 0/3 vs Warrant Gateway 3/3)
 npm run test:compare
 
-# 4. Run Alexa+ Latency SLA Benchmark (Verifies sub-500ms response over Streamable HTTP)
+# 4. Run Gateway Processing Latency Benchmark (50 calls/tool on localhost)
 npm run test:latency
 
 # 5. Verify Offline Cryptographic Evidence Bundle (<300ms, zero server/db needed)
@@ -35,11 +35,11 @@ npm run verify:evidence
    - Invariant $I_3$ mutated (approval hash disabled) $\to$ **Scenario S4 fails RED** as expected.
    - Invariant $I_6$ mutated (user isolation disabled) $\to$ **Scenario S11 fails RED** as expected.
    - Proves the test suite is actively catching attacks rather than vacuously passing.
-3. **`npm run test:compare`** tests an unprotected naive server vs. Warrant under identical attack loads:
-   - Naive server fails 0/3 (10 duplicate bookings charged, $120 orphaned hotel residue, budget exceeded).
+3. **`npm run test:compare`** tests an intentionally unprotected example server we wrote vs. Warrant under identical attack loads:
+   - Unprotected example server fails 0/3 (10 duplicate bookings charged, $120 orphaned hotel residue, budget exceeded).
    - Warrant passes 3/3 (1 deduplicated booking, $0 orphan residue after rollback, budget ceiling enforced).
-4. **`npm run test:latency`** executes 50 consecutive calls over MCP Streamable HTTP:
-   - Average: **1.58 ms**, p99: **34.68 ms**, easily beating Alexa+'s < 500 ms SLA ceiling by a 14x margin.
+4. **`npm run test:latency`** measures gateway processing time on localhost across 50 calls per tool:
+   - Measured on localhost (12th Gen Intel i7, no network/TLS overhead): search p95 **2.71 ms**, propose p95 **1.16 ms**, execute p95 **1.12 ms**.
 5. **`npm run verify:evidence`** cryptographically validates the committed sample bundle in [`examples/evidence/`](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/examples/evidence/):
    - Detached **Ed25519 signature** verified over canonical RFC 8785 action parameters ($I_9$).
    - In-memory tamper attempt (mutating \$360.00 to \$36.00) is **cryptographically rejected**.
@@ -49,13 +49,11 @@ npm run verify:evidence
 
 ## 🎯 Scoring Against the Official Hackathon Criteria
 
-## 🎯 Alignment with Official Hackathon Criteria
-
 ### 1. Technological Implementation
 - **Conforms to MCP Streamable HTTP Spec (`2025-11-25`):** Standard JSON-RPC over Streamable HTTP transport, compatible with Anthropic Claude Desktop, Cursor, and AWS Bedrock Agent MCP bridges.
 - **RFC 9728 OAuth Protected Resource Metadata:** Live `GET /.well-known/oauth-protected-resource` endpoint and RFC 6750/9728 401 challenges with `WWW-Authenticate: Bearer resource_metadata="..."`.
 - **User Identity Binding:** Grants and authorizations are bound to authenticated user identity (`userId` / OAuth `sub` claim), not ephemeral client session tokens.
-- **Sub-500ms Latency SLA Gate:** 50 consecutive operations over Streamable HTTP average **1.58 ms** with p99 of **34.68 ms**, beating the Alexa+ 500 ms SLA ceiling by a 14x margin (`npm run test:latency`).
+- **Local Gateway Processing Latency:** 50 consecutive calls on localhost measure search p95 **2.71 ms**, propose p95 **1.16 ms**, execute p95 **1.12 ms** (12th Gen Intel i7, no network/TLS overhead; `npm run test:latency`).
 - **MCP 2025-11-25 Semantic Tool Annotations:** Tools specify `readOnly`, `destructive`, `idempotent`, and `riskTier` hints, plus `mode: "url"` elicitation for out-of-band approvals.
 - **Cryptographic Parameter Binding ($I_3$):** All high-risk ($T_2$) actions require approvals bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{args}))$. Changing a single date, price, or ID breaks the approval token.
 - **Multi-Layer Idempotency ($I_1$):** Dual-indexed in SQLite with in-flight state tracking (`PROCESSING` $\to$ `COMPLETED`). Concurrent voice retry storms execute external side effects exactly once.
@@ -87,7 +85,7 @@ npm run verify:evidence
 - **Novel Synthesis of Distributed Systems & Agent Safety:** Unifies Saga orchestration, RFC 8785 canonical hashing, detached Ed25519 signatures, and active timeout reconciliation into an elegant gateway architecture.
 - **Propose-then-Execute Structural Containment (CaMeL Research):** Immunizes against indirect prompt injection at the tool boundary ($I_5$) by physically isolating the data plane from administrative grant widening.
 - **Falsifiable Security Proof:** Instead of claiming safety hypothetically, Warrant proves it with 11 attack scenarios in `warrant-siege` and an automated mutation test (`npm run test:mutation`) that breaks 3 distinct safeguards to prove the scorecard turns RED.
-- **Portable Agent Skill (`skills/warrant-safe-actions/SKILL.md`):** Defense-in-depth pairing: a cooperative prompt skill that guides conversational agent behavior, enforced by a mathematical gateway boundary that catches any deviation. Evaluated via `npm run test:skill` (executing live against Bedrock when AWS credentials exist, or deterministically labeled as an offline contract stub otherwise).
+- **Portable Agent Skill (`skills/warrant-safe-actions/SKILL.md`):** Defense-in-depth pairing: a cooperative prompt skill that guides conversational agent behavior, enforced by a deterministic gateway boundary that catches any deviation. Evaluated via `npm run test:skill` (executing live against Bedrock when AWS credentials exist, or deterministically labeled as an offline contract stub otherwise).
 
 ---
 
@@ -121,8 +119,8 @@ npm run verify:evidence
 | **`warrant-siege` (CLI)** | Standalone Adversarial Suite | 11 attack scenarios ($S_1 - S_{11}$) | ~1.6s | ✅ 11/11 Passing |
 | **`Mutation Suite`** | Architectural Negative Testing | 3 mutations caught RED | ~2.5s | ✅ 3/3 Caught |
 | **`Agent Skill Suite`** | Skill Boundary Evaluation | 3 rule boundary checks | ~200ms | ✅ 3/3 Passing |
-| **`Latency SLA Gate`** | Streamable HTTP SLA Benchmark | 50 operations/tool (search p95 2.66ms, propose 1.16ms, exec 1.24ms) | ~1.5s | ✅ <500ms Passing (160x margin) |
-| **`Comparative Benchmark`**| Naive vs. Warrant Attack Run | 3 comparative attack scenarios | ~600ms | ✅ 3/3 Warrant vs 0/3 Naive |
+| **`Gateway Latency Benchmark`** | Local Processing Benchmark | 50 operations/tool (search p95 2.71ms, propose 1.16ms, exec 1.12ms) | ~1.5s | ✅ Local Processing Time Recorded |
+| **`Comparative Benchmark`**| Example Unprotected Server vs. Warrant | 3 comparative attack scenarios | ~600ms | ✅ 3/3 Warrant vs 0/3 Unprotected Example |
 | **`Audit Chain Verifier`** | SHA-256 Ledger Verification | Genesis-to-tip hash continuity | ~200ms | ✅ Cryptographically Continuous |
 | **`Receipt Verifier`** | Ed25519 Offline Validation | Detached signature & tamper check | ~150ms | ✅ Cryptographically Valid |
 
@@ -133,7 +131,7 @@ npm run verify:evidence
 To preserve uncompromising engineering honesty, the following constraints are explicitly documented:
 1. **Simulated Providers & Client:** The official Alexa+ developer preview is currently restricted to select partners. The Alexa+ companion web console is a high-fidelity Next.js simulator, and the hotel/train/restaurant providers are in-memory mock services with controllable fault endpoints (`TIMEOUT`, `DECLINE`, `SUCCEEDED_BUT_DISCONNECTED`).
 2. **No Real Financial Settlement:** All transactions are denominated in integer minor units (cents) and settled within mock booking stores; no actual credit card or bank rails are charged.
-3. **Model Plan Generation vs. Gateway Damage Limitation:** LLMs can still hallucinate or generate inefficient plans; Warrant's role is not to guarantee LLM conversational brilliance, but to mathematically guarantee that no action executes outside policy bounds, spend caps, or unapproved parameters.
+3. **Model Plan Generation vs. Gateway Damage Limitation:** LLMs can still hallucinate or generate inefficient plans; Warrant's role is not to guarantee LLM conversational brilliance, but to deterministically guarantee that no action executes outside policy bounds, spend caps, or unapproved parameters.
 4. **Structural Defense vs. Text Heuristics:** Warrant defends against prompt injection structurally (by separating data plane from out-of-band control plane and validating canonical parameter hashes), rather than relying on brittle regex or heuristic sentiment/prompt-guard classifiers.
 5. **Storage Architecture:** Uses SQLite in WAL mode with a repository interface pattern; while ideal for single-node / edge deployment, distributed production environments would swap the repository implementation for PostgreSQL or Amazon DynamoDB.
 6. **No External Third-Party Audit:** While verified against 11 automated attack scenarios, property tests, and mutation tests, Warrant has not undergone a formal third-party commercial pen-test.
@@ -159,10 +157,10 @@ npm run test:siege
 # 5. Run mutation fault test (proves scorecard catches broken invariants)
 npm run test:mutation
 
-# 6. Run comparative benchmark (Naive 0/3 vs Warrant 3/3)
+# 6. Run comparative benchmark (Example unprotected 0/3 vs Warrant 3/3)
 npm run test:compare
 
-# 7. Run Alexa+ latency benchmark (<500ms SLA gate)
+# 7. Run gateway latency benchmark (50 calls/tool on localhost)
 npm run test:latency
 
 # 8. Run agent skill boundary test (proves model obedience to warrant-safe-actions)
