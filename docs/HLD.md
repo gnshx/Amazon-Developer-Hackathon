@@ -50,7 +50,7 @@
 
 ### Architectural Axioms
 1. **Out-of-Band Channel Separation (ADR-1):** Grant management and approval decisions travel strictly over an administrative API inaccessible to the agent. The agent connects only to the standard MCP tool interface. The agent cannot grant itself scopes, widen spend limits, or approve its own pending plans.
-2. **Deterministic Gateway around Probabilistic LLM (ADR-3):** Safety guarantees never depend on LLM adherence to instructions or system prompts. The gateway enforces mathematical invariants irrespective of the prompt or output.
+2. **Deterministic Gateway around Probabilistic LLM (ADR-3):** Safety guarantees never depend on LLM adherence to instructions or system prompts. The gateway enforces architectural invariants irrespective of the prompt or output.
 3. **Structural Defense against Prompt Injection (ADR-2):** Untrusted text from downstream provider responses is structurally sequestered in flagged fields. Downstream text is never piped into administrative or execution contexts.
 4. **RFC 8785 Parameter Canonicalization:** Approvals are cryptographically bound to `SHA-256(canonical_json(action_parameters))`. Any mutation in parameter keys, order, whitespace, or values instantly invalidates the approval token.
 
@@ -292,7 +292,7 @@ CREATE TABLE audit_events (
 | **Parameter Tampering after Approval** | User approves hotel at \$150. Agent submits modified payload with \$1500 suite or altered dates. | RFC 8785 Canonical JSON hashing. Token binds strictly to $\text{SHA-256}(\text{Canonical}(\text{original\_args}))$. Modified args yield a different hash; approval verification fails ($I_3$). |
 | **Confused Deputy / Agent Overreach** | Agent tries to call `widen_grant` or `issue_approval` via MCP. | Out-of-band architecture. Administrative endpoints are exposed on a distinct local REST API not exposed over MCP. |
 | **Replay & Retry Storms** | Network stutter causes agent or client to dispatch 10 concurrent requests for the same booking. | Idempotency registry on `(grant_id, tool, idempotency_key)`. Concurrent calls lock and return the single external execution result ($I_1$). |
-| **Action Receipt Tampering / Forgery** | Attacker or provider mutates spend or parameters on confirmed receipt to falsely claim lower charge. | Detached Ed25519 signature over canonical RFC 8785 JSON. Signature mathematically fails offline if any field is altered ($I_9$). |
+| **Action Receipt Tampering / Forgery** | Attacker or provider mutates spend or parameters on confirmed receipt to falsely claim lower charge. | Detached Ed25519 signature over canonical RFC 8785 JSON. Signature deterministically fails offline verification if any field is altered ($I_9$). |
 | **Instant Settlement Regret** | High-value irreversible action dispatched without time for user to reconsider. | Grace-hold undo window (`undoWindowSeconds`). Plan stays pre-settled in memory/database; out-of-band cancellation aborts with 0 provider calls and 0 charge ($I_{10}$). |
 | **Audit Ledger Tampering** | Rogue actor or compromised provider attempts to alter transaction history in database. | Tamper-evident hash chain: $\text{hash}_n = \text{SHA-256}(\text{prev\_hash} \parallel \dots)$. Merkle tree checkpointing allows $O(\log N)$ inclusion verification ($I_7$). |
 | **Approval Flooding** | Attacker floods user with 1,000 pending approval notifications. | Per-grant pending approval rate limit (maximum 3 concurrent pending approvals per active grant). |
@@ -313,7 +313,7 @@ To support multi-agent hierarchies (e.g., an executive voice agent delegating tr
 - Authority is represented as an attenuated capability token.
 - A parent token can be *attenuated* (adding caveats such as stricter spend limits, tighter time windows, or restricted tool subsets) using HMAC chaining:
   $$T_{\text{child}} = \text{HMAC}(T_{\text{parent}}, \text{Caveat}(\text{spend} \le \$50 \land \text{tool} = \text{"book\_train"}))$$
-- **Monotonic Attenuation Guarantee:** A sub-agent cannot remove caveats or grant itself greater authority than its delegator possessed, mathematically solving the confused deputy problem across agent networks.
+- **Monotonic Attenuation Guarantee:** A sub-agent cannot remove caveats or grant itself greater authority than its delegator possessed, architecturally solving the confused deputy problem across agent networks.
 
 ### 6.3 Policy-as-Code Engine (AWS Cedar / OPA)
 - Migration from pure TypeScript policy functions to formal declarative authorization models (AWS Cedar or Rego).

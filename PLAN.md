@@ -61,7 +61,7 @@ Every requirement and user story is tied to an automated invariant test in the a
 - [x] **A.4 RFC 8785 Canonical Hasher & Approval Engine:**
   - Canonical JSON serialization algorithm ensuring deterministic hashing regardless of key order or whitespace.
   - Out-of-band Admin REST API for phone client (`POST /admin/grants`, `POST /admin/approvals/:id/decide`).
-  - Approval token generation and mathematical binding verification.
+  - Approval token generation and cryptographic binding verification.
 - [x] **A.5 Idempotency Registry:**
   - Multi-layer idempotency on `(grant_id, tool_name, idempotency_key)`.
   - Conflict detection for identical key with divergent parameter hash ($409 \text{ Conflict}$).
@@ -96,7 +96,7 @@ Every requirement and user story is tied to an automated invariant test in the a
 - [x] **C.3 Mobile Out-of-Band Approval Portal:**
   - Phone-friendly card view displaying exact action parameters, computed canonical hash, and Approve/Reject controls.
 - [x] **C.4 Visual Cryptographic Audit Timeline:**
-  - Interactive blockchain-style ledger visualization with a 1-click "Verify Chain" button and Merkle tree root checkpoints displaying proven green status.
+  - Interactive blockchain-style ledger visualization with a 1-click "Verify Chain" button and Merkle tree root checkpoints displaying verified green status.
 - [x] **C.5 Amazon Bedrock Agent Loop:**
   - Integration with AWS Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`).
   - Real MCP client communicating with the Warrant Gateway over Streamable HTTP.
@@ -246,6 +246,6 @@ Follows `docs/DEMO_SCRIPT.md` strictly under 3:00 minutes with natural ~138 WPM 
 
 ### Core Strategic Differentiators
 1. **Signed receipts with transparency logs:** Provable non-repudiation for agent actions.
-2. **Attenuated capability tokens:** Mathematically bounds agent-to-agent delegation authority.
+2. **Attenuated capability tokens:** Cryptographically bounds agent-to-agent delegation authority.
 3. **Automated ecosystem certification:** Positions `warrant-siege` as the safety benchmark for all agent tools.
 

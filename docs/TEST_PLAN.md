@@ -8,7 +8,7 @@
 
 ## 1. Safety Invariants
 
-Every architectural claim made by Warrant is formalized as an immutable mathematical invariant ($I_1 - I_{10}$):
+Every architectural claim made by Warrant is formalized as an immutable architectural invariant ($I_1 - I_{10}$):
 
 - **$I_1$ (No Duplicate External Effect):** No state-changing external provider effect occurs more than once for the same `(grant_id, tool_name, idempotency_key)`.
 - **$I_2$ (Absolute Spend Cap):** Total confirmed expenditure under any grant never exceeds `grant.spend_cap_minor`, regardless of agent instructions or concurrency.

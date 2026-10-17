@@ -204,7 +204,7 @@ Warrant is engineered around four core architectural pillars:
 ### 7. Agent Skills Specification (`skills/warrant-safe-actions/SKILL.md`)
 - **What it was used for:** Authoring the portable `warrant-safe-actions` agent skill, guiding conversational models (Amazon Bedrock Nova Pro, Claude Code, Alexa+) on safe action sequencing, out-of-band approval expectations, idempotency key persistence, provider prompt injection immunity, and concise spoken summaries.
 - **What worked:** Clean Markdown frontmatter with clear behavioral rules, failure case handling, and voice-first spoken guidelines. Easy to load directly into the Bedrock Converse API `system` prompt array or pass into autonomous agent frameworks.
-- **What needs work:** Currently, Agent Skills rely on model compliance rather than cryptographic enforcement at runtime. Warrant solves this by combining the Agent Skill with an MCP trust gateway that mathematically validates every parameter, approval token, and spend cap.
+- **What needs work:** Currently, Agent Skills rely on model compliance rather than cryptographic enforcement at runtime. Warrant solves this by combining the Agent Skill with an MCP trust gateway that deterministically validates every parameter, approval token, and spend cap.
 - **Onboarding experience:** Simple and expressive.
 - **Would you use it again?** Yes. Pairing an MCP server with an Agent Skill creates defense-in-depth: the skill guides the agent's cooperative intent, and the gateway enforces the hard security boundary.
 

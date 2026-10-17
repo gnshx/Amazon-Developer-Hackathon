@@ -35,7 +35,7 @@ export class ApprovalService {
   }
 
   /**
-   * Verifies that the approval token is valid and mathematically bound to the incoming parameters (Invariant I3).
+   * Verifies that the approval token is valid and cryptographically bound to the incoming parameters (Invariant I3).
    */
   public verifyApprovalToken(
     token: string,

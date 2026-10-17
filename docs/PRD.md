@@ -94,7 +94,7 @@ The genuine Alexa+ developer environment is restricted to select partners. To ad
 - **FR-2 Read Tools (T0):** `search_hotels`, `search_trains`, `search_restaurants` returning structured data and `spoken_summary`.
 - **FR-3 Plan Tools:** `propose_plan` (cost aggregation, tier assignment, approval generation), `execute_plan` (policy check, approval verification, saga dispatch), `get_plan_status`, `request_cancellation`.
 - **FR-4 Policy Engine:** Pure deterministic evaluation of scopes, spend caps (minor units), expiry, revocation, and risk tiers (T0-T3).
-- **FR-5 Approval Binding:** Approval token mathematically bound to the SHA-256 hash of the RFC 8785 canonical JSON representation of action parameters.
+- **FR-5 Approval Binding:** Approval token cryptographically bound to the SHA-256 hash of the RFC 8785 canonical JSON representation of action parameters.
 - **FR-6 Idempotency Layer:** Multi-layer idempotency on `(grant_id, tool, idempotency_key)` preventing duplicate external effects.
 - **FR-7 Saga Orchestration:** Sequential action execution with automated reverse compensation upon failure, and active reconciliation of network timeouts.
 - **FR-8 Output Sanitization:** External provider payload schema validation; truncation of free text; structural segregation of untrusted output.
@@ -132,7 +132,7 @@ The hackathon MVP demonstrates and proves the core trust loop. The roadmap below
 ### Phase 3: Stronger Trust Guarantees
 *(Notice: Signed Action Receipts [FR-14] and Grace-Hold Undo Windows [FR-15] have shipped in the hackathon release. The roadmap items below represent future architecture:)*
 - **Public Transparency Log:** Anchor the audit hash chain into an append-only Merkle tree (RFC 6962 / Sigstore model) publishing signed tree heads (STHs) so that historical records cannot be silently rewritten even by the server operator.
-- **Capability Tokens (Macaroons / Biscuit Architecture):** Attenuated authority tokens that can only shrink in scope when passed along. Establishes the mathematical foundation for multi-agent delegation: a primary agent delegating tasks to a sub-agent can never grant more authority than it holds.
+- **Capability Tokens (Macaroons / Biscuit Architecture):** Attenuated authority tokens that can only shrink in scope when passed along. Establishes the cryptographic foundation for multi-agent delegation: a primary agent delegating tasks to a sub-agent can never grant more authority than it holds.
 - **Policy as Code (Cedar / OPA):** Express complex household policies in formal languages (e.g. AWS Cedar or Open Policy Agent), accompanied by historical simulators demonstrating how policy revisions would have affected past decisions.
 - **Multi-Cloud Trust Anchors:** Distribute Merkle audit checkpoints across independent cloud providers for Byzantine fault tolerance.
 
@@ -155,7 +155,7 @@ The hackathon MVP demonstrates and proves the core trust loop. The roadmap below
 
 ### Strategic Differentiators (Core Highlights)
 The three most defensible and foundational innovations in Warrant are:
-1. **Signed Action Receipts with Transparency Logs:** Providing mathematical non-repudiation that transforms Warrant from an execution proxy into an auditable trust anchor.
+1. **Signed Action Receipts with Transparency Logs:** Providing cryptographic non-repudiation that transforms Warrant from an execution proxy into an auditable trust anchor.
 2. **Attenuated Capability Tokens for Agent-to-Agent Delegation:** Solving the cascading authority problem when autonomous agents hire sub-agents.
 3. **Automated Ecosystem Certification:** Leveraging `warrant-siege` as an objective safety standard for the entire MCP developer ecosystem.
 

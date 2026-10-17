@@ -80,7 +80,7 @@ Warrant is engineered and tested strictly against the official Alexa+ Model Cont
 ### MCP Server plus Agent Skill Architecture
 Warrant is delivered as a cooperative pair:
 1. **Agent Skill ([`skills/warrant-safe-actions/SKILL.md`](skills/warrant-safe-actions/SKILL.md)):** An open skill that instructs the assistant on safe action sequencing—search before you plan, always propose before executing, reuse one idempotency key per user intent, treat third-party provider text as untrusted data (prompt injection immunity), never approve on the user's behalf, and format voice summaries under 300 characters.
-2. **Warrant Trust Gateway (MCP Server):** The mathematical enforcement boundary operating over Streamable HTTP (spec `2025-11-25+`). Even if a compromised or hallucinating model disobeys the skill, the gateway deterministically blocks unauthorized spend, tampered parameters, or unapproved actions.
+2. **Warrant Trust Gateway (MCP Server):** The deterministic enforcement boundary operating over Streamable HTTP (spec `2025-11-25+`). Even if a compromised or hallucinating model disobeys the skill, the gateway deterministically blocks unauthorized spend, tampered parameters, or unapproved actions.
 
 The hackathon MVP demonstrates and proves this core trust loop:
 - **Scoped & Expiring Grants:** Household administrators issue temporary budgets with strict spend caps in integer minor units (zero float math).
@@ -390,7 +390,7 @@ Open `http://localhost:3000` in your browser to experience the simulated Alexa+ 
 
 ### Phase 3: Stronger Trust Guarantees
 - **Public Transparency Log:** Anchor the audit chain and action receipts into an append-only Merkle tree (RFC 6962 / Sigstore) publishing signed tree heads, guaranteeing historical records cannot be silently rewritten by any party.
-- **Capability Tokens (Macaroons / Biscuit Architecture):** Attenuated authority tokens that can only shrink when passed along. Establishes the mathematical foundation for multi-agent delegation: a sub-agent can never hold more power than its parent.
+- **Capability Tokens (Macaroons / Biscuit Architecture):** Attenuated authority tokens that can only shrink when passed along. Establishes the cryptographic foundation for multi-agent delegation: a sub-agent can never hold more power than its parent.
 - **Policy as Code (Cedar / OPA):** Express household policies in formal languages (AWS Cedar or Rego) with a shadow simulator testing policy changes against historical audit events.
 - **Multi-Cloud Trust Anchors:** Distribute Merkle audit checkpoints across independent cloud providers for Byzantine fault tolerance.
 
@@ -413,7 +413,7 @@ Open `http://localhost:3000` in your browser to experience the simulated Alexa+ 
 
 ### 🌟 Core Architectural Differentiators
 The three most defensible and foundational ideas in Warrant are:
-1. **Signed Receipts with a Transparency Log:** Provides mathematically non-repudiable audit proofs that make Warrant an objective trust anchor.
+1. **Signed Receipts with a Transparency Log:** Provides cryptographically non-repudiable audit proofs that make Warrant an objective trust anchor.
 2. **Capability Tokens for Agent-to-Agent Delegation:** Solves the cascading authority problem when autonomous agents hire sub-agents.
 3. **Certification Built on the Harness:** Transforms `warrant-siege` into an open testing standard for the entire MCP ecosystem.
 
