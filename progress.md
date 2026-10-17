@@ -33,6 +33,8 @@
 | 2026-10-17 | 17:15 | Risk Removal & Judgment Ready | Implemented MCP 2025-11-25 contract test, Screen 5 interactive limits UI, JUDGES.md, STRIDE threat matrix, 7 limitations disclosures, offline evidence bundle (`npm run verify:evidence`), Bedrock live lifecycle scripts, standalone `gnshx/warrant-siege` repo validation, and generated `docs/EXECUTION_CHECKLIST.md` & `hackathon_checklist.csv`. | Completed |
 | 2026-10-17 | 20:00 | Alexa+ Readiness & Positioning | Implemented RFC 9728 OAuth Protected Resource Metadata, user identity binding (`userId`), MCP 2025-11-25 tool annotations & URL elicitation, latency SLA benchmark (<500ms), and Naive vs Warrant comparative benchmark (0/3 vs 3/3). Updated README, JUDGES.md, and SUBMISSION.md with ecosystem positioning (AWS AgentCore Policy GA March 2026, Google AP2, CaMeL, Alexa checkout). | Completed |
 | 2026-10-17 | 23:25 | Alexa+ Readiness & 11 Scenarios | Fully verified T1-T7 readiness tasks: RFC 9728 PRM, demo OAuth PKCE, user identity binding, scenario S11 cross-user isolation (11/11 passed), 3/3 mutations caught, 50-call latency SLA benchmark (<2.8ms p95), 21-row Alexa+ checklist, and rendered 11/11 visual canvas scorecard boards. | Completed |
+| 2026-10-18 | 02:45 | Submission & README Polish | Streamlined README.md opening with 5 screens, 1-minute verification commands, honest disclosures, and updated docs/SUBMISSION.md Section 5 with clean ~500-word Devpost story with verified test counts (66 tests, 11 scenarios) and latency figures. | Completed |
+
 
 ---
 
