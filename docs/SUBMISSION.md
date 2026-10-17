@@ -83,75 +83,47 @@ To satisfy all requirements for the Additional Open Source Project Mini-Challeng
 
 ---
 
-## 5. Official Devpost Story Text
+## 5. Official Devpost Story Text (~500 Words)
 
-### Inspiration & Problem Statement
-AI agents are transitioning from answering trivia to executing high-stakes real-world commitments: booking trips, purchasing tickets, and negotiating reservations. Voice interfaces make this fundamentally perilous because there is no persistent screen to review fine-grained details before money is debited. 
+### Warrant: a safety layer for voice agents that spend money
 
-Today, there is no standard way to define how much authority an agent holds, to cryptographically prove what action occurred, to automatically undo side effects when a multi-step plan fails halfway, or to evaluate whether a tool is safe to expose to voice assistants. Every brand builds its own fragile, one-off safeguards—if any—forcing users to trust their assistant blindly. We built **Warrant** to be the missing trust layer for the agentic economy.
+Voice assistants are starting to book and buy for us, with no screen to check first. A wrong guess, a retry, or one malicious line in a hotel description can turn into a real charge.
 
-### What It Does
-**Warrant is a transactional safety layer for agents that act in the real world: bounded authority, exact-action approval, no double-charges, automatic rollback, and receipts anyone can verify, tested by attacks that fail when a protection is removed.**
+#### What it does
+You set limits on your phone: a total budget, the amount above which the assistant must ask you, which actions are allowed, and when access expires. The assistant can read these limits but can never change them.
 
-It operates as an open-source trust gateway over the Model Context Protocol (MCP Streamable HTTP), intercepting every agent tool call and enforcing 10 safety invariants tested by 11 adversarial scenarios:
-1. **Scoped & Expiring Authority ($I_6$):** Household administrators configure spend caps (in integer minor units) and time-limited scopes out-of-band. Grants are bound to the authenticated user's identity (`userId` / OAuth `sub` subject).
-2. **Exact Action-Hash Approval Binding ($I_3$):** High-risk ($T_2$) actions return `PENDING_APPROVAL` with voice-friendly summaries ($\le 300$ chars). Approvals are granted on a mobile phone interface cryptographically bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{params}))$. If prompt injection or model drift alters any argument, the approval is invalid.
-3. **Multi-Layer Idempotency ($I_1$):** Prevents retry storms or duplicate voice requests from double-charging.
-4. **Automatic Saga Rollback ($I_4$):** If step 2 of a multi-step booking fails, completed step 1 is automatically cancelled in reverse order, leaving zero orphan state.
-5. **Structural Output Containment ($I_5$):** Prevents third-party provider descriptions or injected strings from escalating grant authority (CaMeL research).
-6. **Active Timeout Reconciliation ($I_8$):** Dropped connections actively query provider truth by idempotency key rather than blindly retrying.
-7. **Detached Ed25519 Action Receipts ($I_9$):** Every confirmed action produces a digitally signed receipt verifiable completely offline without trusting the server.
-8. **Grace-Hold Undo Window ($I_{10}$):** Configurable countdown hold before irreversible provider dispatch; cancellation leaves zero provider bookings and zero charges.
-9. **Cryptographic Audit Continuity & Merkle Roots ($I_7$):** Append-only SHA-256 event chain verifiable from genesis, with binary Merkle tree root checkpoints allowing $O(\log N)$ inclusion verification.
-10. **Adversarial Siege Test Suite (`@warrant/siege`):** A standalone modular CLI attacking the gateway across 11 attack scenarios ($S_1 - S_{11}$), generating verified HTML and JSON scorecards and SVG badges.
+When it plans a trip, anything above your threshold needs your approval on your phone. That approval is tied to the exact details, so if anything changes afterwards, it stops working. If the second step fails, the first is undone automatically. A retry never books twice. After each action you get a signed receipt you can verify offline, and a short window to undo.
 
-### Foundational Architectural Pillars
+For brands, Warrant is an MCP server over Streamable HTTP (spec 2025-11-25) plus an Agent Skill that teaches an assistant how to use it safely. A separate open-source tool, warrant-siege, attacks any MCP server with 11 scenarios and produces a scorecard.
 
-Warrant is engineered around four core architectural pillars:
-1. **Transactional Safety:** Multi-layer idempotency, compensating saga rollback, and active timeout reconciliation. Alexa+'s checkout documentation specifically emphasizes idempotency to prevent duplicate charges.
-2. **Exact-Parameter Approval & Signed Receipts:** Cryptographic binding to canonical parameter hashes, detached Ed25519 receipts, and Merkle tree inclusion proofs.
-3. **Falsifiable Verification:** 11 adversarial attack scenarios ($S_1 - S_{11}$) and an automated mutation test (`npm run test:mutation`) that intentionally disables safeguards to verify that the scorecard turns RED across 3 distinct mutations.
-4. **Tool-Agnostic Open-Source Harness:** A standalone CLI (`@warrant/siege`) and CI template that evaluates any MCP server over Streamable HTTP.
+#### How we built it
+• A TypeScript MCP gateway with a deterministic policy engine, SQLite storage, and money held as integer cents  
+• Approvals bound to a SHA-256 hash of the exact action, using RFC 8785 canonical JSON  
+• Ed25519 signed receipts, and a hash-chained audit log with Merkle checkpoints  
+• A multi-step saga orchestrator that compensates in reverse order, plus reconciliation of unknown outcomes by idempotency key  
+• A simulated Alexa+ client in Next.js, driven by the Amazon Bedrock Converse API (`amazon.nova-pro-v1:0`)  
+• Mock hotel, train and restaurant services with fault injection  
 
-### Relationship to AWS AgentCore Policy, Google AP2 & Academic Research
-- **AWS AgentCore Policy (GA March 3, 2026) — *Complementary, not competing*:** AgentCore Policy provides per-call authorization. Warrant targets a different layer (multi-step limits, rollback, receipts) and could sit alongside it. We have not integrated or tested with AgentCore.
-- **Google AP2 (Agent Payment Protocol):** AP2 introduces signed intent, cart, and payment mandates. Warrant's out-of-band grant maps to an intent mandate, and its parameter-bound approval maps to a cart mandate, adding the missing distributed systems runtime (saga compensation, timeout reconciliation, and zero orphan state).
-- **CaMeL Prompt-Injection Research:** Implements propose-then-execute gateway constraints enforced at the tool boundary, isolating untrusted third-party provider responses from administrative authority.
-- **Alexa Voice Checkout vs. Warrant:** Alexa handles voice PIN, payment instrument selection, and purchase confirmation, with documentation emphasizing idempotency. Warrant handles the complementary operational transactional safety layer: keeping multi-step plans within household limits and rolling them back if an intermediate step fails.
+#### How we know it works
+• 11 attack scenarios: duplicate submits, mid-plan failure, over-budget plans, tampered approvals, injected instructions, expired grants, missing approvals, ambiguous timeouts, altered receipts, undo, and cross-user access  
+• A mutation script that disables a protection and shows the matching scenario turn red (3 mutations)  
+• A comparison: an intentionally unprotected example server we wrote fails 3 of 3 scenarios, and Warrant passes them  
+• Gateway processing time of under 4 ms p95 (search 3.55 ms, propose 1.98 ms, execute 1.45 ms on localhost, 50 calls per tool)  
 
-### Alexa+ Compatibility & Readiness Checklist
+#### Alexa+ fit
+The gateway behaves the way Alexa+ MCP quickstart describes: unauthenticated calls get a 401, it serves protected resource metadata, tokens are accepted only in the Authorization header, and grants are tied to the signed-in user, not to a session. Tool annotations and 300-character spoken summaries are tested. Not yet done: a public HTTPS endpoint and a run on a real Alexa+ device.
 
-| # | Platform Requirement / Checklist Item | Category | Status | Evidence / Test File or Measured Data | Architectural Notes |
-|:---:|:---|:---|:---:|:---|:---|
-| 1 | **MCP Streamable HTTP Transport** | Transport | **Done** | [`server.test.ts`](packages/warrant-gateway/src/mcp/server.test.ts) | Full JSON-RPC 2.0 over HTTP POST `/mcp` (`@modelcontextprotocol/sdk`). |
-| 2 | **Protocol Version Negotiation (`2025-11-25`)** | Protocol | **Done** | [`server.test.ts:L397-L408`](packages/warrant-gateway/src/mcp/server.test.ts) | `initialize` negotiates spec version `2025-11-25` cleanly with client. |
-| 3 | **Protocol Header (`MCP-Protocol-Version`) Validation** | Protocol | **Done** | [`server.test.ts:L347-L395`](packages/warrant-gateway/src/mcp/server.test.ts) | Supported versions accepted with header; unsupported versions return 400. |
-| 4 | **Gateway Processing Latency (Sub-500ms Platform SLA)** | Performance | **Done** | [`latency.test.ts`](packages/warrant-gateway/src/mcp/latency.test.ts) & [`latency.json`](examples/evidence/latency.json) | Gateway processing time on localhost (50 calls per tool, 12th Gen Intel i7, no network/TLS): search p95 **2.81 ms**, propose p95 **1.64 ms**, execute p95 **1.28 ms**. |
-| 5 | **Non-Blocking Asynchronous Grace Hold** | Resilience | **Done** | [`latency.test.ts`](packages/warrant-gateway/src/mcp/latency.test.ts) | `execute_plan` with 8s undo window returns in **2.42 ms max** without blocking hold. |
-| 6 | **HTTP 401 on Unauthenticated Calls** | Auth | **Done** | [`server.test.ts:L106-L122`](packages/warrant-gateway/src/mcp/server.test.ts) | Missing or invalid Bearer token immediately returns 401 Unauthorized. |
-| 7 | **Header-Only Token Delivery** | Auth | **Done** | [`server.test.ts:L142-L153`](packages/warrant-gateway/src/mcp/server.test.ts) | Strictly requires `Authorization: Bearer <token>`; query string tokens rejected (400). |
-| 8 | **Protected Resource Metadata (RFC 9728)** | Auth | **Done** | [`server.test.ts:L91-L104`](packages/warrant-gateway/src/mcp/server.test.ts) | `GET /.well-known/oauth-protected-resource` returns canonical resource and scopes. |
-| 9 | **Demo OAuth 2.1 Server (PKCE S256)** | Auth | **Done** | [`demo-oauth.test.ts`](packages/warrant-gateway/src/auth/demo-oauth.test.ts) | 6 unit tests passing (PKCE S256 mandatory, RFC 8707 resources; labelled demo-only). |
-| 10 | **User Identity Binding (Token Subject)** | Identity | **Done** | [`scenarios.test.ts`](packages/warrant-siege/src/scenarios.test.ts) (Scenario S11) | Grants and plans keyed on `userId` (`sub`); works with new session for same user. |
-| 11 | **Multi-Session Shared Budget** | Identity | **Done** | [`scenarios.test.ts`](packages/warrant-siege/src/scenarios.test.ts) (Scenario S11) | Distinct MCP sessions for same user share one cumulative spend cap. |
-| 12 | **Cross-User Plan & Budget Isolation** | Security | **Done** | [`scenarios.test.ts`](packages/warrant-siege/src/scenarios.test.ts) (Scenario S11) | User B blocked with 403 Forbidden (code `-32008`) from reading/executing User A's plan. |
-| 13 | **DNS Rebinding & Origin Protection** | Security | **Done** | [`server.test.ts:L311-L345`](packages/warrant-gateway/src/mcp/server.test.ts) | Untrusted / malicious `Origin` headers rejected with 403 Forbidden. |
-| 14 | **MCP 2025-11-25 Semantic Tool Annotations** | Metadata | **Done** | [`server.test.ts:L410-L454`](packages/warrant-gateway/src/mcp/server.test.ts) | All tools define `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`. |
-| 15 | **Human-Readable Tool Titles** | Metadata | **Done** | [`server.test.ts:L410-L454`](packages/warrant-gateway/src/mcp/server.test.ts) | Every tool defines a descriptive `title` string per MCP naming guidelines. |
-| 16 | **Voice-Friendly Spoken Summaries ($\le 300$ chars)** | Voice UX | **Done** | [`server.test.ts:L456-L567`](packages/warrant-gateway/src/mcp/server.test.ts) | Automated test verifies all 8 tool results return natural spoken summary $\le 300$ chars. |
-| 17 | **Dynamic Client Registration (DCR)** | Auth | **Not needed** | Architectural documentation | Unsupported by Alexa+ platform; pre-registered partner credentials used. |
-| 18 | **Client ID Metadata Documents (CIMD)** | Auth | **Not needed** | Architectural documentation | Unsupported by Alexa+ platform; RFC 9728 Protected Resource Metadata used instead. |
-| 19 | **OpenID Connect (OIDC) UserInfo** | Identity | **Not needed** | Architectural documentation | Unsupported by Alexa+ platform; token subject (`sub` / `userId`) carries identity. |
-| 20 | **Mid-Stream Step-Up Authorization** | Auth | **Not needed** | Architectural documentation | Unsupported by Alexa+; Warrant routes high-risk approvals out-of-band to phone cards. |
-| 21 | **`WWW-Authenticate` Client Dependency** | Auth | **Not needed** | Architectural documentation | Alexa+ checklist notes clients must not rely on header for refresh; 401 JSON-RPC returned. |
-| 22 | **Remote HTTPS URL (Network Reachability)** | Network | **Not done** | Architectural disclosure in README | Operates on localhost (`http://127.0.0.1:8000/mcp`) for local testing/simulation; no public HTTPS endpoint is hosted. |
+#### Honest scope
+The Alexa+ client and the providers are simulated, because real Alexa+ access is limited. No real money moves. The OAuth server is a demo and is not Alexa+ certified. The model can still propose a bad plan; the gateway limits the damage it can do. There has been no external security audit. No code was reused from AgentTrust; Warrant is an entirely new codebase written from scratch for this hackathon.
 
-### How We Built It
-- **Agent Skill (`warrant-safe-actions`):** Formal Agent Skill definition (`skills/warrant-safe-actions/SKILL.md`) instructing conversational models on cooperative action-taking, prompt injection immunity, one idempotency key per user intent, and $\le 300$ character spoken summaries.
-- **Gateway Core:** TypeScript MCP server conforming to Streamable HTTP spec `2025-11-25+`, with an SQLite WAL repository layer, pure deterministic policy engine, Ed25519 receipt signer, and Merkle tree audit prover.
-- **Client & Voice Agent:** Next.js 14 dark-mode glassmorphic UI integrated with the **Amazon Bedrock Converse API** (`@aws-sdk/client-bedrock-runtime`) for autonomous tool dispatch, featuring receipt inspection, undo countdown, and offline deterministic fallback.
-- **Mock Services:** Autonomous Hotel, Train, and Restaurant providers (Harbor Inn Hotel, Coastal Rail Express) with control endpoints for simulating timeouts, declines, and lost connections.
-- **Adversarial Harness & CI Action:** Independent workspace package (`@warrant/siege`) with interactive scorecard generation and a reusable GitHub Actions workflow template.
+#### What's next
+• Passkey-signed approvals  
+• A public transparency log for receipts  
+• Delegation tokens that can only narrow authority  
+
+#### Built with
+TypeScript, Node.js, Express, Model Context Protocol, Amazon Bedrock, AWS SDK for JavaScript, Next.js, React, SQLite, Vitest
+
 
 ---
 

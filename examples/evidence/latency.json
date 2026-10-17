@@ -1,6 +1,6 @@
 {
   "benchmark": "Alexa+ Sub-500ms Latency SLA & Contract Verification",
-  "timestamp": "2026-10-17T21:08:46.586Z",
+  "timestamp": "2026-10-17T21:15:00.242Z",
   "platformSlaCeilingMs": 500,
   "machine": {
     "platform": "linux",
@@ -13,30 +13,30 @@
   "results": {
     "search_hotels": {
       "calls": 50,
-      "avgMs": 2.06,
-      "p50Ms": 1.04,
-      "p95Ms": 3.55,
-      "p99Ms": 33.45,
-      "maxMs": 33.45,
+      "avgMs": 1.72,
+      "p50Ms": 0.97,
+      "p95Ms": 3.29,
+      "p99Ms": 21.01,
+      "maxMs": 21.01,
       "status": "PASS"
     },
     "propose_plan": {
       "calls": 50,
-      "avgMs": 1.12,
-      "p50Ms": 1.03,
-      "p95Ms": 1.98,
-      "p99Ms": 2.51,
-      "maxMs": 2.51,
+      "avgMs": 1.11,
+      "p50Ms": 1,
+      "p95Ms": 1.88,
+      "p99Ms": 2.63,
+      "maxMs": 2.63,
       "status": "PASS"
     },
     "execute_plan_undo_hold": {
       "calls": 50,
       "undoWindowSeconds": 8,
-      "avgMs": 1.08,
-      "p50Ms": 0.99,
-      "p95Ms": 1.45,
-      "p99Ms": 3.44,
-      "maxMs": 3.44,
+      "avgMs": 1.07,
+      "p50Ms": 0.97,
+      "p95Ms": 1.44,
+      "p99Ms": 3.03,
+      "maxMs": 3.03,
       "status": "PASS"
     }
   },
