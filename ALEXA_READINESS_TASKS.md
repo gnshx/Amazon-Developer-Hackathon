@@ -73,6 +73,8 @@ Acceptance:
 
 ## T4. Latency and protocol contract tests (P1)
 
+Status: COMPLETED
+
 Alexa+ requires round trips under 500 ms.
 
 Do:
@@ -89,6 +91,8 @@ Acceptance:
 ---
 
 ## T5. Tool metadata (P1)
+
+Status: COMPLETED
 
 Do:
 1. Set a `title` and annotations on every tool: `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`.
@@ -107,6 +111,8 @@ Acceptance:
 
 ## T6. Alexa+ checklist table in the README (P1, after T2 to T5)
 
+Status: COMPLETED
+
 Do: add a table with one row per item in the Alexa+ MCP requirements and authentication checklist. Each row shows Done, Partly, or Not done, with the test name or file as evidence. Include the items Alexa+ says are unsupported (DCR, CIMD, OIDC, step-up authorization, `WWW-Authenticate` on 401) and say Warrant does not need them.
 
 Acceptance: every "Done" row names a passing test or a measured number. No row is ticked without evidence.
@@ -116,6 +122,9 @@ Acceptance: every "Done" row names a passing test or a measured number. No row i
 ## Optional tasks (choose at most one, only after T1 to T6 are green)
 
 ### T7. Naive vs Warrant before and after
+
+Status: COMPLETED
+
 - Add `examples/naive-server`: an intentionally unprotected booking server over the same mock providers, bound to localhost only, labelled insecure.
 - Let the siege run against any URL (`--target`) and select scenarios (`--only S1,S2,S3,S4,S5,S6,S7,S8`).
 - Generate a side-by-side scorecard: naive server (expected failures) vs Warrant (all pass).

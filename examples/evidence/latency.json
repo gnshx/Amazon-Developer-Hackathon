@@ -1,0 +1,44 @@
+{
+  "benchmark": "Alexa+ Sub-500ms Latency SLA & Contract Verification",
+  "timestamp": "2026-10-17T17:44:36.440Z",
+  "platformSlaCeilingMs": 500,
+  "machine": {
+    "platform": "linux",
+    "arch": "x64",
+    "cpuModel": "12th Gen Intel(R) Core(TM) i7-12700",
+    "cpuCores": 20,
+    "totalMemoryGb": "15.3"
+  },
+  "iterationsPerTool": 50,
+  "results": {
+    "search_hotels": {
+      "calls": 50,
+      "avgMs": 2.04,
+      "p50Ms": 1.22,
+      "p95Ms": 3.8,
+      "p99Ms": 32.52,
+      "maxMs": 32.52,
+      "status": "PASS"
+    },
+    "propose_plan": {
+      "calls": 50,
+      "avgMs": 1.1,
+      "p50Ms": 1,
+      "p95Ms": 1.96,
+      "p99Ms": 2.48,
+      "maxMs": 2.48,
+      "status": "PASS"
+    },
+    "execute_plan_undo_hold": {
+      "calls": 50,
+      "undoWindowSeconds": 8,
+      "avgMs": 1.03,
+      "p50Ms": 0.96,
+      "p95Ms": 1.17,
+      "p99Ms": 3.32,
+      "maxMs": 3.32,
+      "status": "PASS"
+    }
+  },
+  "overallStatus": "PASS"
+}

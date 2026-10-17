@@ -307,4 +307,264 @@ describe("Warrant Gateway MCP Streamable HTTP & Admin API Integration", () => {
     expect(getJson.grant.spendCapMinor).toBe(75000);
     expect(getJson.grant.scopes).toContain("dining");
   });
+
+  it("Bad Origin header returns 403 Forbidden; allowed Origin succeeds", async () => {
+    // Bad / untrusted origin
+    const badRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionToken}`,
+        Origin: "https://malicious-attacker.com"
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "bad_origin_01",
+        method: "tools/list"
+      })
+    });
+    expect(badRes.status).toBe(403);
+    const badJson = await badRes.json();
+    expect(badJson.error.code).toBe(-32009);
+    expect(badJson.error.message).toContain("Origin");
+
+    // Allowed origin (e.g. Alexa domain or localhost)
+    const goodRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionToken}`,
+        Origin: "https://alexa.amazon.com"
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "good_origin_01",
+        method: "tools/list"
+      })
+    });
+    expect(goodRes.status).toBe(200);
+  });
+
+  it("MCP-Protocol-Version header validation and negotiation", async () => {
+    // Unsupported protocol version -> 400 Bad Request
+    const unsuppRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionToken}`,
+        "MCP-Protocol-Version": "1999-01-01"
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "proto_unsupp_01",
+        method: "tools/list"
+      })
+    });
+    expect(unsuppRes.status).toBe(400);
+    const unsuppJson = await unsuppRes.json();
+    expect(unsuppJson.error.code).toBe(-32602);
+    expect(unsuppJson.error.message).toContain("Unsupported MCP-Protocol-Version");
+
+    // Supported protocol version -> 200 OK with header
+    const suppRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionToken}`,
+        "MCP-Protocol-Version": "2025-11-25"
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "proto_supp_01",
+        method: "tools/list"
+      })
+    });
+    expect(suppRes.status).toBe(200);
+    expect(suppRes.headers.get("mcp-protocol-version")).toBe("2025-11-25");
+
+    // Missing header -> succeeds and returns header
+    const defaultRes = await fetch(`${baseUrl}/mcp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sessionToken}`
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: "proto_def_01",
+        method: "tools/list"
+      })
+    });
+    expect(defaultRes.status).toBe(200);
+    expect(defaultRes.headers.get("mcp-protocol-version")).toBe("2025-11-25");
+  });
+
+  it("MCP initialize negotiates protocolVersion 2025-11-25", async () => {
+    const res = await mcpPost({
+      jsonrpc: "2.0",
+      id: "init_neg_01",
+      method: "initialize",
+      params: {
+        protocolVersion: "2024-11-05",
+        capabilities: {}
+      }
+    });
+    expect(res.status).toBe(200);
+    expect(res.json.result.protocolVersion).toBe("2025-11-25");
+    expect(res.json.result.serverInfo.name).toBe("warrant-gateway");
+  });
+
+  it("MCP tools/list includes titles and 2025-11-25 annotations on every tool", async () => {
+    const res = await mcpPost({
+      jsonrpc: "2.0",
+      id: "tools_meta_01",
+      method: "tools/list"
+    });
+    expect(res.status).toBe(200);
+    const tools: any[] = res.json.result.tools;
+    expect(tools.length).toBeGreaterThanOrEqual(8);
+
+    for (const tool of tools) {
+      expect(tool.title).toBeDefined();
+      expect(typeof tool.title).toBe("string");
+      expect(tool.title.length).toBeGreaterThan(0);
+      expect(tool.annotations).toBeDefined();
+      expect(typeof tool.annotations.readOnlyHint).toBe("boolean");
+      expect(typeof tool.annotations.destructiveHint).toBe("boolean");
+      expect(typeof tool.annotations.idempotentHint).toBe("boolean");
+      expect(typeof tool.annotations.openWorldHint).toBe("boolean");
+    }
+
+    // Explicit check on tool safety annotations per T5 spec
+    const hotel = tools.find((t) => t.name === "search_hotels");
+    expect(hotel.annotations.readOnlyHint).toBe(true);
+    expect(hotel.annotations.destructiveHint).toBe(false);
+
+    const propose = tools.find((t) => t.name === "propose_plan");
+    expect(propose.annotations.readOnlyHint).toBe(true);
+    expect(propose.annotations.destructiveHint).toBe(false);
+
+    const exec = tools.find((t) => t.name === "execute_plan");
+    expect(exec.annotations.readOnlyHint).toBe(false);
+    expect(exec.annotations.destructiveHint).toBe(true);
+    expect(exec.annotations.idempotentHint).toBe(true);
+
+    const status = tools.find((t) => t.name === "get_plan_status");
+    expect(status.annotations.readOnlyHint).toBe(true);
+    expect(status.annotations.destructiveHint).toBe(false);
+
+    const cancel = tools.find((t) => t.name === "request_cancellation");
+    expect(cancel.annotations.readOnlyHint).toBe(false);
+    expect(cancel.annotations.destructiveHint).toBe(true);
+    expect(cancel.annotations.idempotentHint).toBe(true);
+  });
+
+  it("Spoken summaries never exceed 300 characters across all tools", async () => {
+    // 1. search_hotels
+    const hotelRes = await mcpPost({
+      jsonrpc: "2.0",
+      id: "sum_hotel",
+      method: "tools/call",
+      params: { name: "search_hotels", arguments: { destination: "Seattle" } }
+    });
+    const hotelSummary = hotelRes.json.result.spoken_summary;
+    expect(hotelSummary).toBeDefined();
+    expect(hotelSummary.length).toBeLessThanOrEqual(300);
+
+    // 2. search_trains
+    const trainRes = await mcpPost({
+      jsonrpc: "2.0",
+      id: "sum_train",
+      method: "tools/call",
+      params: { name: "search_trains", arguments: { origin: "Portland", destination: "Seattle" } }
+    });
+    const trainSummary = trainRes.json.result.spoken_summary;
+    expect(trainSummary).toBeDefined();
+    expect(trainSummary.length).toBeLessThanOrEqual(300);
+
+    // 3. search_restaurants
+    const restRes = await mcpPost({
+      jsonrpc: "2.0",
+      id: "sum_rest",
+      method: "tools/call",
+      params: { name: "search_restaurants", arguments: { city: "Seattle" } }
+    });
+    const restSummary = restRes.json.result.spoken_summary;
+    expect(restSummary).toBeDefined();
+    expect(restSummary.length).toBeLessThanOrEqual(300);
+
+    // 4. propose_plan
+    const propRes = await mcpPost({
+      jsonrpc: "2.0",
+      id: "sum_prop",
+      method: "tools/call",
+      params: {
+        name: "propose_plan",
+        arguments: {
+          steps: [
+            { toolName: "book_hotel", params: { hotelId: "h1", nights: 1 }, estimatedCostMinor: 9500 }
+          ]
+        }
+      }
+    });
+    const propSummary = propRes.json.result.spoken_summary;
+    expect(propSummary).toBeDefined();
+    expect(propSummary.length).toBeLessThanOrEqual(300);
+    const planId = JSON.parse(propRes.json.result.content[0].text).planId;
+
+    // 5. execute_plan (with undoWindow)
+    const execRes = await mcpPost({
+      jsonrpc: "2.0",
+      id: "sum_exec",
+      method: "tools/call",
+      params: {
+        name: "execute_plan",
+        arguments: {
+          planId,
+          idempotencyKey: "idem_sum_01",
+          undoWindowSeconds: 10
+        }
+      }
+    });
+    const execSummary = execRes.json.result.spoken_summary;
+    expect(execSummary).toBeDefined();
+    expect(execSummary.length).toBeLessThanOrEqual(300);
+
+    // 6. get_plan_status
+    const statusRes = await mcpPost({
+      jsonrpc: "2.0",
+      id: "sum_status",
+      method: "tools/call",
+      params: { name: "get_plan_status", arguments: { planId } }
+    });
+    const statusSummary = statusRes.json.result.spoken_summary;
+    expect(statusSummary).toBeDefined();
+    expect(statusSummary.length).toBeLessThanOrEqual(300);
+
+    // 7. undo_plan
+    const undoRes = await mcpPost({
+      jsonrpc: "2.0",
+      id: "sum_undo",
+      method: "tools/call",
+      params: { name: "undo_plan", arguments: { planId } }
+    });
+    const undoSummary = undoRes.json.result.spoken_summary;
+    expect(undoSummary).toBeDefined();
+    expect(undoSummary.length).toBeLessThanOrEqual(300);
+
+    // 8. request_cancellation
+    const cancelRes = await mcpPost({
+      jsonrpc: "2.0",
+      id: "sum_cancel",
+      method: "tools/call",
+      params: {
+        name: "request_cancellation",
+        arguments: { bookingRef: "HTL-999", idempotencyKey: "idem_cancel_01" }
+      }
+    });
+    const cancelSummary = cancelRes.json.result.spoken_summary;
+    expect(cancelSummary).toBeDefined();
+    expect(cancelSummary.length).toBeLessThanOrEqual(300);
+  });
 });
+

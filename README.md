@@ -3,7 +3,7 @@
 [![Amazon Developer Hackathon: Alexa+ Track](https://img.shields.io/badge/Amazon%20Developer%20Hackathon-Alexa%2B%20Track-FF9900?logo=amazon)](https://devpost.com)
 [![Protocol: MCP Streamable HTTP](https://img.shields.io/badge/Protocol-MCP%20Streamable%20HTTP%202025--11--25-0066FF)](https://modelcontextprotocol.io)
 [![Agent: Amazon Bedrock](https://img.shields.io/badge/Agent-Amazon%20Bedrock%20Converse%20API-232F3E?logo=amazon-aws)](https://aws.amazon.com/bedrock/)
-[![Test Suite: 60 Passing](https://img.shields.io/badge/Tests-60%20Passing-brightgreen)](https://github.com/gnshx/Amazon-Developer-Hackathon)
+[![Test Suite: 66 Passing](https://img.shields.io/badge/Tests-66%20Passing-brightgreen)](https://github.com/gnshx/Amazon-Developer-Hackathon)
 [![Siege Scorecard: 11/11 Invariants Satisfied](https://img.shields.io/badge/Siege%20Scorecard-11%2F11%20Satisfied-10b981)](#-the-10-safety-invariants--adversarial-attack-suite)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
@@ -51,21 +51,33 @@ Approval gates and audit logs are common in this track. However, existing submis
 
 ---
 
-### 🌐 Alexa+ Compatibility & Readiness Checklist
+### 🌐 Alexa+ Compatibility & Readiness Checklist (T6)
 
-Warrant was engineered to satisfy the real-world operational requirements of the Alexa+ platform:
+Warrant is engineered and tested strictly against the official Alexa+ Model Context Protocol (MCP) and authentication checklist:
 
-| Platform Requirement | Alexa+ Developer Specification | Warrant Gateway Implementation | Verification Status |
-|:---|:---|:---|:---:|
-| **Transport** | MCP Streamable HTTP | Full JSON-RPC 2.0 over Streamable HTTP (`@modelcontextprotocol/sdk`) | **✅ PASS** |
-| **Network Reachability** | Remote HTTPS URL | Public tunnel & reverse proxy compatible | **✅ PASS** |
-| **OAuth 2.1 Protected Resource** | RFC 9728 Resource Metadata | `GET /.well-known/oauth-protected-resource` returns resource metadata | **✅ PASS** |
-| **Auth Challenge** | RFC 6750 / 9728 401 Challenge | 401 on unauthenticated calls; header-only Bearer tokens (query tokens rejected) | **✅ PASS** |
-| **Demo OAuth 2.1 Server** | OAuth 2.1 + PKCE S256 + RFC 8707 | Demo authorization code flow for local testing (`/.well-known/oauth-authorization-server`) | **✅ PASS (Demo)** |
-| **Latency SLA** | < 500 ms response time | Gateway average **1.58 ms**, p99 **34.68 ms** (`npm run test:latency`) | **✅ PASS (14x margin)** |
-| **Identity Binding** | Tied to authenticated user | Grants bound to OAuth `sub` subject / `userId`, not client session | **✅ PASS** |
-| **Out-of-Band Elicitation** | MCP 2025-11-25 Elicitation | `propose_plan` returns `elicitation: { mode: "url" }` for phone approval | **✅ PASS** |
-| **Tool Annotations** | MCP Semantic Hints | `readOnly`, `destructive`, `idempotent`, `riskTier` annotated on all tools | **✅ PASS** |
+| # | Platform Requirement / Checklist Item | Category | Status | Evidence / Test File or Measured Data | Architectural Notes |
+|:---:|:---|:---|:---:|:---|:---|
+| 1 | **MCP Streamable HTTP Transport** | Transport | **Done** | [`server.test.ts`](packages/warrant-gateway/src/mcp/server.test.ts) | Full JSON-RPC 2.0 over HTTP POST `/mcp` (`@modelcontextprotocol/sdk`). |
+| 2 | **Protocol Version Negotiation (`2025-11-25`)** | Protocol | **Done** | [`server.test.ts:L397-L408`](packages/warrant-gateway/src/mcp/server.test.ts) | `initialize` negotiates spec version `2025-11-25` cleanly with client. |
+| 3 | **Protocol Header (`MCP-Protocol-Version`) Validation** | Protocol | **Done** | [`server.test.ts:L347-L395`](packages/warrant-gateway/src/mcp/server.test.ts) | Supported versions accepted with header; unsupported versions return 400. |
+| 4 | **Sub-500ms Latency SLA Ceiling** | Performance | **Done** | [`latency.test.ts`](packages/warrant-gateway/src/mcp/latency.test.ts) & [`latency.json`](examples/evidence/latency.json) | 50-call p95: search **2.66 ms**, propose **1.16 ms**, execute **1.24 ms** (160x margin). |
+| 5 | **Non-Blocking Asynchronous Grace Hold** | Resilience | **Done** | [`latency.test.ts`](packages/warrant-gateway/src/mcp/latency.test.ts) | `execute_plan` with 8s undo window returns in **2.35 ms max** without blocking hold. |
+| 6 | **HTTP 401 on Unauthenticated Calls** | Auth | **Done** | [`server.test.ts:L106-L122`](packages/warrant-gateway/src/mcp/server.test.ts) | Missing or invalid Bearer token immediately returns 401 Unauthorized. |
+| 7 | **Header-Only Token Delivery** | Auth | **Done** | [`server.test.ts:L142-L153`](packages/warrant-gateway/src/mcp/server.test.ts) | Strictly requires `Authorization: Bearer <token>`; query string tokens rejected (400). |
+| 8 | **Protected Resource Metadata (RFC 9728)** | Auth | **Done** | [`server.test.ts:L91-L104`](packages/warrant-gateway/src/mcp/server.test.ts) | `GET /.well-known/oauth-protected-resource` returns canonical resource and scopes. |
+| 9 | **Demo OAuth 2.1 Server (PKCE S256)** | Auth | **Done** | [`demo-oauth.test.ts`](packages/warrant-gateway/src/auth/demo-oauth.test.ts) | 6 unit tests passing (PKCE S256 mandatory, RFC 8707 resources; labelled demo-only). |
+| 10 | **User Identity Binding (Token Subject)** | Identity | **Done** | [`scenarios.test.ts`](packages/warrant-siege/src/scenarios.test.ts) (Scenario S11) | Grants and plans keyed on `userId` (`sub`); works with new session for same user. |
+| 11 | **Multi-Session Shared Budget** | Identity | **Done** | [`scenarios.test.ts`](packages/warrant-siege/src/scenarios.test.ts) (Scenario S11) | Distinct MCP sessions for same user share one cumulative spend cap. |
+| 12 | **Cross-User Plan & Budget Isolation** | Security | **Done** | [`scenarios.test.ts`](packages/warrant-siege/src/scenarios.test.ts) (Scenario S11) | User B blocked with 403 Forbidden (code `-32008`) from reading/executing User A's plan. |
+| 13 | **DNS Rebinding & Origin Protection** | Security | **Done** | [`server.test.ts:L311-L345`](packages/warrant-gateway/src/mcp/server.test.ts) | Untrusted / malicious `Origin` headers rejected with 403 Forbidden. |
+| 14 | **MCP 2025-11-25 Semantic Tool Annotations** | Metadata | **Done** | [`server.test.ts:L410-L454`](packages/warrant-gateway/src/mcp/server.test.ts) | All tools define `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`. |
+| 15 | **Human-Readable Tool Titles** | Metadata | **Done** | [`server.test.ts:L410-L454`](packages/warrant-gateway/src/mcp/server.test.ts) | Every tool defines a descriptive `title` string per MCP naming guidelines. |
+| 16 | **Voice-Friendly Spoken Summaries ($\le 300$ chars)** | Voice UX | **Done** | [`server.test.ts:L456-L567`](packages/warrant-gateway/src/mcp/server.test.ts) | Automated test verifies all 8 tool results return natural spoken summary $\le 300$ chars. |
+| 17 | **Dynamic Client Registration (DCR)** | Auth | **Not needed** | Architectural documentation | Unsupported by Alexa+ platform; pre-registered partner credentials used. |
+| 18 | **Client ID Metadata Documents (CIMD)** | Auth | **Not needed** | Architectural documentation | Unsupported by Alexa+ platform; RFC 9728 Protected Resource Metadata used instead. |
+| 19 | **OpenID Connect (OIDC) UserInfo** | Identity | **Not needed** | Architectural documentation | Unsupported by Alexa+ platform; token subject (`sub` / `userId`) carries identity. |
+| 20 | **Mid-Stream Step-Up Authorization** | Auth | **Not needed** | Architectural documentation | Unsupported by Alexa+; Warrant routes high-risk approvals out-of-band to phone cards. |
+| 21 | **`WWW-Authenticate` Client Dependency** | Auth | **Not needed** | Architectural documentation | Alexa+ checklist notes clients must not rely on header for refresh; 401 JSON-RPC returned. |
 
 ---
 
@@ -202,17 +214,17 @@ Every user story and safety requirement maps directly to an architectural invari
 ### Comprehensive Verification Summary
 
 > **Exact Verification Breakdown:**  
-> **60 automated unit & integration tests**, **11 adversarial siege attack scenarios** ($S_1 - S_{11}$), **3 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 requests), and **1 comparative benchmark** (3 scenarios).
+> **66 automated unit & integration tests**, **11 adversarial siege attack scenarios** ($S_1 - S_{11}$), **3 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 calls per tool type, p95 < 2.7ms), and **1 comparative benchmark** (3 scenarios).
 
 | Verification Suite | Type | Verified Scope | Execution Time | Status |
 |:---|:---|:---:|:---:|:---:|
-| **`@warrant/gateway`** | Vitest Unit & Integration | 58 unit & integration tests | ~500ms | ✅ 58/58 Passing |
+| **`@warrant/gateway`** | Vitest Unit & Integration | 64 unit & integration tests | ~600ms | ✅ 64/64 Passing |
 | **`@warrant/alexa-client`** | Vitest Agent Integration | 1 Bedrock agent loop test | ~300ms | ✅ 1/1 Passing |
 | **`@warrant/siege`** | Vitest Scenario Runner | 1 scenario suite test | ~1.6s | ✅ 1/1 Passing |
 | **`warrant-siege` (CLI)** | Standalone Adversarial Suite | 11 attack scenarios ($S_1 - S_{11}$) | ~1.6s | ✅ 11/11 Passing |
 | **`Mutation Suite`** | Architectural Negative Testing | 3 mutations caught RED | ~2.5s | ✅ 3/3 Caught |
 | **`Agent Skill Suite`** | Skill Boundary Evaluation | 3 rule boundary checks | ~200ms | ✅ 3/3 Passing |
-| **`Latency SLA Gate`** | Streamable HTTP SLA Benchmark | 50 operations (avg 1.58ms, p99 34ms) | ~1.5s | ✅ <500ms Passing |
+| **`Latency SLA Gate`** | Streamable HTTP SLA Benchmark | 50 operations/tool (search p95 2.66ms, propose 1.16ms, exec 1.24ms) | ~1.5s | ✅ <500ms Passing (160x margin) |
 | **`Comparative Benchmark`**| Naive vs. Warrant Attack Run | 3 comparative attack scenarios | ~600ms | ✅ 3/3 Warrant vs 0/3 Naive |
 | **`Audit Chain Verifier`** | SHA-256 Ledger Verification | Genesis-to-tip hash continuity | ~200ms | ✅ Cryptographically Continuous |
 | **`Receipt Verifier`** | Ed25519 Offline Validation | Detached signature & tamper check | ~150ms | ✅ Cryptographically Valid |

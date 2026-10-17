@@ -304,11 +304,19 @@ export class SagaOrchestrator {
 
     const timer = setTimeout(async () => {
       this.heldTimers.delete(planId);
-      const current = this.repo.getPlanById(planId);
-      if (current && current.state === "HELD") {
-        await this.executePlan(planId, grantId, userApprovals);
+      try {
+        const current = this.repo.getPlanById(planId);
+        if (current && current.state === "HELD") {
+          await this.executePlan(planId, grantId, userApprovals);
+        }
+      } catch {
+        // Safe no-op on repository shutdown or teardown
       }
     }, undoWindowSeconds * 1000);
+
+    if (timer.unref) {
+      timer.unref();
+    }
 
     this.heldTimers.set(planId, timer);
 
@@ -423,5 +431,13 @@ export class SagaOrchestrator {
       error: `Plan in state ${plan.state} cannot be undone.`
     };
   }
+
+  public clearAllTimers(): void {
+    for (const timer of this.heldTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.heldTimers.clear();
+  }
 }
+
 

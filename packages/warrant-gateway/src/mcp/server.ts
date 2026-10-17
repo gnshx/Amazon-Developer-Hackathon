@@ -206,8 +206,65 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
     next();
   };
 
+  // Origin validation for DNS rebinding & cross-site protections (Alexa+ / MCP spec)
+  const validateOrigin = (req: Request, res: Response, next: NextFunction) => {
+    const origin = req.headers.origin;
+    if (origin) {
+      try {
+        const url = new URL(origin);
+        const host = url.hostname;
+        const isAllowed =
+          host === "localhost" ||
+          host === "127.0.0.1" ||
+          host.endsWith(".amazon.com") ||
+          host.endsWith(".alexa.amazon.com") ||
+          host.endsWith(".warrant.trust");
+        if (!isAllowed) {
+          return res.status(403).json({
+            jsonrpc: "2.0",
+            id: req.body?.id ?? null,
+            error: {
+              code: -32009,
+              message: `Forbidden: Origin '${origin}' is not authorized.`
+            }
+          });
+        }
+      } catch {
+        return res.status(403).json({
+          jsonrpc: "2.0",
+          id: req.body?.id ?? null,
+          error: {
+            code: -32009,
+            message: `Forbidden: Malformed Origin header '${origin}'.`
+          }
+        });
+      }
+    }
+    next();
+  };
+
+  // MCP-Protocol-Version header validation and negotiation
+  const validateProtocolVersion = (req: Request, res: Response, next: NextFunction) => {
+    res.setHeader("MCP-Protocol-Version", "2025-11-25");
+    const clientVersion = req.headers["mcp-protocol-version"] as string | undefined;
+    if (clientVersion) {
+      const supported = ["2025-11-25", "2024-11-05"];
+      if (!supported.includes(clientVersion)) {
+        return res.status(400).json({
+          jsonrpc: "2.0",
+          id: req.body?.id ?? null,
+          error: {
+            code: -32602,
+            message: `Unsupported MCP-Protocol-Version: '${clientVersion}'. Supported versions: ${supported.join(", ")}.`
+          }
+        });
+      }
+    }
+    next();
+  };
+
   // MCP Streamable HTTP GET handshake
-  app.get("/mcp", (req: Request, res: Response) => {
+  app.get("/mcp", validateOrigin, validateProtocolVersion, (req: Request, res: Response) => {
     if (req.query.token || req.query.access_token || req.query.bearer_token) {
       return res.status(400).json({
         error: "invalid_request",
@@ -223,7 +280,7 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
   });
 
   // MCP Streamable HTTP POST endpoint
-  app.post("/mcp", requireGrantAuth, async (req: Request, res: Response) => {
+  app.post("/mcp", validateOrigin, validateProtocolVersion, requireGrantAuth, async (req: Request, res: Response) => {
     const grant: Grant = (req as any).grant;
     const { jsonrpc, id, method, params } = req.body;
 
@@ -235,8 +292,9 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
       });
     }
 
-    // 1. MCP initialize
+    // 1. MCP initialize (spec 2025-11-25 negotiation)
     if (method === "initialize") {
+      const requestedVersion = params?.protocolVersion;
       return res.json({
         jsonrpc: "2.0",
         id,
@@ -253,8 +311,13 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
       const allTools = [
         {
           name: "search_hotels",
+          title: "Search Hotels",
           description: "Search for hotels in a destination city. Risk tier T0 (read-only).",
           annotations: {
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
             readOnly: true,
             destructive: false,
             idempotent: true,
@@ -271,8 +334,13 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         },
         {
           name: "search_trains",
+          title: "Search Trains",
           description: "Search for train connections between origin and destination. Risk tier T0 (read-only).",
           annotations: {
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
             readOnly: true,
             destructive: false,
             idempotent: true,
@@ -289,8 +357,13 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         },
         {
           name: "search_restaurants",
+          title: "Search Restaurants",
           description: "Search dining and table availability in a city. Risk tier T0 (read-only).",
           annotations: {
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
             readOnly: true,
             destructive: false,
             idempotent: true,
@@ -307,8 +380,13 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         },
         {
           name: "propose_plan",
+          title: "Propose Transaction Plan",
           description: "Propose a multi-step travel or transaction plan. Evaluates spend caps and creates approvals for T2 steps.",
           annotations: {
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
             readOnly: false,
             destructive: false,
             idempotent: true,
@@ -337,8 +415,13 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         },
         {
           name: "execute_plan",
+          title: "Execute Transaction Plan",
           description: "Execute an approved plan. Enforces idempotency, spend cap, cryptographic approval parameter binding, and optional undo grace window.",
           annotations: {
+            readOnlyHint: false,
+            destructiveHint: true,
+            idempotentHint: true,
+            openWorldHint: true,
             readOnly: false,
             destructive: true,
             idempotent: true,
@@ -363,8 +446,13 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         },
         {
           name: "undo_plan",
+          title: "Undo Plan Grace Hold",
           description: "Cancel a booking or plan that is currently held in an undo grace window.",
           annotations: {
+            readOnlyHint: false,
+            destructiveHint: true,
+            idempotentHint: true,
+            openWorldHint: false,
             readOnly: false,
             destructive: true,
             idempotent: true,
@@ -380,8 +468,13 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         },
         {
           name: "get_plan_status",
+          title: "Get Plan Status",
           description: "Retrieve plan execution status, remaining spend, and step compensation states.",
           annotations: {
+            readOnlyHint: true,
+            destructiveHint: false,
+            idempotentHint: true,
+            openWorldHint: false,
             readOnly: true,
             destructive: false,
             idempotent: true,
@@ -395,8 +488,13 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         },
         {
           name: "request_cancellation",
+          title: "Request Booking Cancellation",
           description: "Compensating action to cancel an existing booking idempotently.",
           annotations: {
+            readOnlyHint: false,
+            destructiveHint: true,
+            idempotentHint: true,
+            openWorldHint: true,
             readOnly: false,
             destructive: true,
             idempotent: true,
@@ -782,5 +880,5 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
     });
   });
 
-  return { app, repo, approvalService, idempotencyService };
+  return { app, repo, approvalService, idempotencyService, sagaOrchestrator };
 }
