@@ -17,7 +17,9 @@ import {
   Check,
   Info,
   DollarSign,
-  Activity
+  Activity,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 
 interface Message {
@@ -86,6 +88,7 @@ export default function AlexaClientDashboard() {
   const [inputText, setInputText] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [voiceAudioEnabled, setVoiceAudioEnabled] = useState(true);
 
   // Grant & Session State (Default $250.00 spend cap)
   const [grant, setGrant] = useState({
@@ -138,9 +141,14 @@ export default function AlexaClientDashboard() {
     ]);
   };
 
-  // Voice speech synthesis helper
+  // Voice speech synthesis helper (supports clean narration mode)
   const speakVoice = (text: string) => {
     setIsSpeaking(true);
+    if (!voiceAudioEnabled) {
+      // Narration Mode: Animate waveform visually on camera without conflicting audio
+      setTimeout(() => setIsSpeaking(false), 2500);
+      return;
+    }
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       try {
         window.speechSynthesis.cancel();
@@ -565,15 +573,38 @@ export default function AlexaClientDashboard() {
             </p>
           </div>
 
-          {isSpeaking && (
-            <div className="audio-visualizer">
-              <div className="audio-bar" />
-              <div className="audio-bar" />
-              <div className="audio-bar" />
-              <div className="audio-bar" />
-              <div className="audio-bar" />
-            </div>
-          )}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <button
+              onClick={() => setVoiceAudioEnabled((prev) => !prev)}
+              title={voiceAudioEnabled ? "Voice audio active (Click to mute browser speech for clean voiceover narration)" : "Voice audio muted for narration (Waveforms remain active)"}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "4px 8px",
+                borderRadius: "6px",
+                fontSize: "11px",
+                fontWeight: "500",
+                cursor: "pointer",
+                border: voiceAudioEnabled ? "1px solid rgba(16, 185, 129, 0.4)" : "1px solid rgba(245, 158, 11, 0.4)",
+                background: voiceAudioEnabled ? "rgba(16, 185, 129, 0.12)" : "rgba(245, 158, 11, 0.12)",
+                color: voiceAudioEnabled ? "#34d399" : "#fbbf24"
+              }}
+            >
+              {voiceAudioEnabled ? <Volume2 size={13} /> : <VolumeX size={13} />}
+              <span>{voiceAudioEnabled ? "Voice: ON" : "Voice: MUTED"}</span>
+            </button>
+
+            {isSpeaking && (
+              <div className="audio-visualizer">
+                <div className="audio-bar" />
+                <div className="audio-bar" />
+                <div className="audio-bar" />
+                <div className="audio-bar" />
+                <div className="audio-bar" />
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Grant Cap Banner */}

@@ -16,6 +16,7 @@
 - [ ] Browser window 1 (`http://localhost:3000`): Full 1080p width with dark mode enabled.
 - [ ] Terminal window 2: 80×24 or 120×30 characters, clean font (JetBrains Mono / Menlo), high contrast.
 - [ ] Audio input checked: No room echo, microphone gain adjusted to -6dB.
+- [ ] **Audio Narration Mode (Prevent Audio Collision):** In the Alexa+ client header, click the toggle to set `🔇 Voice: MUTED (Narration Mode)`. The visual waveform and pulsing voice orb remain fully animated on camera when Alexa speaks, but silent in browser audio so your spoken voiceover narration never collides with Web Speech playback. (Or, if you prefer audible Alexa output, record browser audio and mic on separate tracks in OBS and duck the assistant under your narration).
 
 ---
 
@@ -42,7 +43,8 @@
      Live trace immediately displays `search_trains`, `search_hotels`, and `propose_plan`.
   2. **0:22 – 0:34:** Phone Approval Card slides in:
      - Harbor Inn Hotel: 2 nights, \$120.00.
-     - **Canonical Hash:** `ba39...395c` displayed in monospace (computed from real canonical JSON parameters).
+     - **Canonical Hash:** `ba39...395c` displayed in monospace (computed dynamically via Web Crypto SHA-256 over RFC 8785 canonical JSON).
+     - *Pro-Tip for Video:* Highlight the hash on camera; notice that altering any parameter instantly alters this cryptographic fingerprint, which is why approval tampering fails in S4.
   3. **0:34 – 0:42:** Tap **Approve**. Booking commits. Alexa announces summary via Web Speech audio & wave:  
      *“Your train and hotel in Seattle are booked for $165.00 total.”*
   4. **0:42 – 1:00:** Click **View Signed Receipt** to reveal detached Ed25519 signature verified offline. Meanwhile, the 8-second undo grace hold countdown animates silently on screen.

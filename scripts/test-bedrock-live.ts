@@ -1,5 +1,7 @@
 #!/usr/bin/env tsx
 import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
+import * as fs from "fs";
+import * as path from "path";
 
 async function main() {
   console.log("\n========================================================");
@@ -78,12 +80,12 @@ async function main() {
     const response = await client.send(command);
     const duration = Date.now() - start;
 
+    const content = response.output?.message?.content || [];
+    const toolUseBlock = content.find((c: any) => c.toolUse);
+
     console.log(`\n✅ LIVE BEDROCK CONVERSE CALL SUCCEEDED! (${duration}ms)`);
     console.log(`   Model:   ${modelId}`);
     console.log(`   Status:  HTTP ${response.$metadata.httpStatusCode}`);
-
-    const content = response.output?.message?.content || [];
-    const toolUseBlock = content.find((c: any) => c.toolUse);
 
     if (toolUseBlock?.toolUse) {
       console.log(`   Tool:    Model invoked '${toolUseBlock.toolUse.name}'`);
@@ -93,11 +95,42 @@ async function main() {
       console.log(`   Text:    ${text?.substring(0, 80)}...`);
     }
 
+    const proofData = {
+      timestamp: new Date().toISOString(),
+      region,
+      modelId,
+      status: "SUCCESS",
+      httpStatusCode: response.$metadata.httpStatusCode,
+      durationMs: duration,
+      toolInvoked: toolUseBlock?.toolUse?.name || null,
+      toolArgs: toolUseBlock?.toolUse?.input || null,
+      rawContent: content
+    };
+
+    const proofPath = path.join(process.cwd(), "docs", "bedrock-live-proof.json");
+    fs.writeFileSync(proofPath, JSON.stringify(proofData, null, 2));
+
+    console.log(`\n📄 Execution proof saved to: ${proofPath}`);
     console.log("\n========================================================");
     console.log("🎉 Bedrock Converse API verified live and ready for voice agent!");
     console.log("========================================================\n");
   } catch (err: any) {
+    const duration = Date.now() - start;
     console.error(`\n❌ Bedrock Converse command failed: ${err.message}`);
+
+    const errorProof = {
+      timestamp: new Date().toISOString(),
+      region,
+      modelId,
+      status: "FAILED",
+      errorName: err.name,
+      errorMessage: err.message,
+      durationMs: duration
+    };
+    const proofPath = path.join(process.cwd(), "docs", "bedrock-live-proof.json");
+    fs.writeFileSync(proofPath, JSON.stringify(errorProof, null, 2));
+    console.log(`📄 Failure metrics saved to: ${proofPath}`);
+
     if (err.name === "ValidationException") {
       console.error("\n💡 Hint: Model ID format error. If using Claude 3.5 Sonnet in us-east-1,");
       console.error("   ensure you use 'us.anthropic.claude-3-5-sonnet-20241022-v2:0' or");

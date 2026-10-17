@@ -50,8 +50,12 @@ Both components are explicitly labeled as simulated in code, documentation, and 
 | 1. Assistant Console & Live MCP Traces | 2. Out-of-Band Phone Approval Card |
 |:---:|:---:|
 | ![Assistant Console](docs/assets/1-assistant-console.png) | ![Phone Approval](docs/assets/2-phone-approval.png) |
-| **3. Mid-Plan Failure & Saga Rollback** | **4. Adversarial Siege Safety Scorecard** |
+| **3. Mid-Plan Failure & Saga Rollback** | **4. Adversarial Siege Safety Scorecard (10/10)** |
 | ![When Something Fails](docs/assets/3-when-something-fails.png) | ![Safety Scorecard](docs/assets/4-safety-scorecard.png) |
+
+| 5. Your Assistant's Limits (Out-of-Band Household Policy) |
+|:---:|
+| ![Your Assistant's Limits](docs/assets/5-assistants-limits.png) |
 
 ---
 
@@ -308,8 +312,8 @@ The three most defensible and foundational ideas in Warrant are:
 ## 9. Hackathon Submission Highlights
 
 - **Model Context Protocol (MCP) in Actual Code:** Conforms strictly to MCP Streamable HTTP specification `2025-11-25+` via `@modelcontextprotocol/sdk`. Both the Alexa+ client and the Siege CLI communicate over real JSON-RPC 2.0 HTTP endpoints.
-- **Additional Open Source Project Mini-Challenge:** `packages/warrant-siege` is structured as an independent package under the MIT License (`packages/warrant-siege/LICENSE`), allowing any developer building MCP tools to test voice safety and generate verifiable scorecards.
-- **AWS Builder Mini-Challenge:** Uses the AWS Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`) for conversational reasoning and structured tool dispatch, featuring an offline deterministic fallback for environments without live AWS credentials.
+- **Additional Open Source Project Mini-Challenge:** `warrant-siege` is released as a standalone open-source repository at [`github.com/gnshx/warrant-siege`](https://github.com/gnshx/warrant-siege) under the MIT License (`packages/warrant-siege/LICENSE`), allowing any developer building MCP tools to test voice safety and generate verifiable scorecards.
+- **AWS Builder Mini-Challenge:** Uses the AWS Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`) with default model `amazon.nova-pro-v1:0` for conversational reasoning and structured tool dispatch, featuring an offline deterministic fallback for environments without live AWS credentials.
 - **Developer Friction Log & Product Feedback:** Comprehensive analysis of Bedrock Converse API error ergonomics, empty tool schema validation, and MCP transport authentication documented in [`docs/FRICTION_LOG.md`](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/docs/FRICTION_LOG.md) (earning up to a 10% judging bonus).
 
 ---
@@ -317,5 +321,5 @@ The three most defensible and foundational ideas in Warrant are:
 ## 10. License
 
 - Warrant Gateway & Simulated Alexa Client: [Apache License 2.0](LICENSE)
-- Warrant Siege Adversarial Test Harness: [MIT License](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/packages/warrant-siege/LICENSE)
+- Warrant Siege Standalone Harness: [MIT License (github.com/gnshx/warrant-siege)](https://github.com/gnshx/warrant-siege) / [Local License](packages/warrant-siege/LICENSE)
 
