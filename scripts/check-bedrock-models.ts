@@ -2,7 +2,7 @@
 import { BedrockClient, GetFoundationModelCommand, ListFoundationModelsCommand } from "@aws-sdk/client-bedrock";
 
 const CANDIDATE_MODELS = [
-  { id: "amazon.nova-pro-v1:0", provider: "Amazon", note: "Amazon flagship multimodal model; native Converse API & tool use" },
+  { id: "amazon.nova-pro-v1:0", provider: "Amazon", note: "Amazon Nova Pro multimodal model; native Converse API & tool use" },
   { id: "amazon.nova-lite-v1:0", provider: "Amazon", note: "Amazon low-latency lightweight model" },
   { id: "us.anthropic.claude-3-5-haiku-20241022-v1:0", provider: "Anthropic", note: "Claude 3.5 Haiku via US Cross-Region Inference Profile" },
   { id: "anthropic.claude-haiku-4-5-20251001-v1:0", provider: "Anthropic", note: "Next-gen Claude Haiku (if active in account)" },

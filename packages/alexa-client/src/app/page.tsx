@@ -804,11 +804,11 @@ export default function WarrantApplication() {
                   Safety scorecard
                 </h1>
                 <p style={{ fontSize: "16px", color: "var(--text-muted)" }}>
-                  Sample: last run verified via warrant-siege (10 of 10 passed)
+                  Sample: last run verified via warrant-siege (11 of 11 passed)
                 </p>
               </div>
               <span className="pill-badge pill-badge-teal" style={{ padding: "8px 18px", fontSize: "14px" }}>
-                Sample: 10 of 10 passed
+                Sample: 11 of 11 passed
               </span>
             </div>
 
@@ -824,7 +824,8 @@ export default function WarrantApplication() {
                 { title: "No approval: blocked", status: "Pass" },
                 { title: "Timeout: resolved, no duplicate", status: "Pass" },
                 { title: "Altered receipt: signature rejected", status: "Pass" },
-                { title: "Undo during hold: cancelled, $0 spent", status: "Pass" }
+                { title: "Undo during hold: cancelled, $0 spent", status: "Pass" },
+                { title: "Cross-user plan access: blocked, budgets isolated", status: "Pass" }
               ].map((row, idx, arr) => (
                 <div
                   key={idx}

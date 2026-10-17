@@ -39,10 +39,10 @@ Warrant addresses voice agent safety through four foundational capabilities:
 4. **Tool-Agnostic, Reusable Testing:** A standalone CLI (`@warrant/siege`) that can be cloned and run against *any* MCP server over Streamable HTTP.
 
 #### Relationship to Industry Protocols & Academic Research:
-- **AWS AgentCore Policy (GA March 3, 2026) — *Complementary, not competing*:** AWS AgentCore Policy evaluates individual tool calls outside the agent's reasoning loop based on caller identity and tool arguments (per-call authorization). However, AgentCore Policy does not track cumulative minor-unit spend budgets across multi-turn conversations, orchestrate compensating saga rollbacks upon mid-plan failure, issue signed receipts, or perform active reconciliation of dropped network sockets. Warrant acts as the transactional execution runtime underneath or alongside AgentCore.
+- **AWS AgentCore Policy (GA March 3, 2026) — *Complementary, not competing*:** AgentCore Policy provides per-call authorization. Warrant targets a different layer (multi-step limits, rollback, receipts) and could sit alongside it. We have not integrated or tested with AgentCore.
 - **Google AP2 (Agent Payment Protocol):** AP2 uses signed intent, cart, and payment mandates. Warrant's out-of-band grant maps to an intent mandate, and parameter-bound approval maps to a cart mandate. While AP2 focuses on payment authorization rails, Warrant provides the missing distributed systems runtime (saga compensation, timeout reconciliation, and zero orphan state).
-- **Academic Research (CaMeL):** Research by CaMeL demonstrates that untrusted third-party data must never influence agent control flow. Warrant implements propose-then-execute gateway constraints enforced strictly at the tool boundary, rendering indirect prompt injection incapable of altering administrative authority ($I_5$).
-- **Repositioning vs. Alexa Voice Checkout:** Alexa handles voice PIN, payment instrument selection, and purchase confirmation. Warrant handles what happens underneath: multi-step operational transactional safety—holding plans in limits, unwinding previous steps if step 2 fails, reconciling dropped sockets, and generating verifiable receipts.
+- **Academic Research (CaMeL):** Research by CaMeL demonstrates that untrusted third-party data must never influence agent control flow. Warrant implements propose-then-execute gateway constraints enforced strictly at the tool boundary, ensuring indirect prompt injection cannot change grants or approvals ($I_5$).
+- **Repositioning vs. Alexa Voice Checkout:** Alexa handles voice PIN, payment instrument selection, and purchase confirmation, with documentation emphasizing idempotency. Warrant handles the complementary operational transactional safety layer: keeping multi-step plans within household limits and rolling them back if an intermediate step fails.
 
 ---
 
@@ -55,8 +55,8 @@ Warrant is engineered and tested strictly against the official Alexa+ Model Cont
 | 1 | **MCP Streamable HTTP Transport** | Transport | **Done** | [`server.test.ts`](packages/warrant-gateway/src/mcp/server.test.ts) | Full JSON-RPC 2.0 over HTTP POST `/mcp` (`@modelcontextprotocol/sdk`). |
 | 2 | **Protocol Version Negotiation (`2025-11-25`)** | Protocol | **Done** | [`server.test.ts:L397-L408`](packages/warrant-gateway/src/mcp/server.test.ts) | `initialize` negotiates spec version `2025-11-25` cleanly with client. |
 | 3 | **Protocol Header (`MCP-Protocol-Version`) Validation** | Protocol | **Done** | [`server.test.ts:L347-L395`](packages/warrant-gateway/src/mcp/server.test.ts) | Supported versions accepted with header; unsupported versions return 400. |
-| 4 | **Gateway Processing Latency (Sub-500ms Platform SLA)** | Performance | **Done** | [`latency.test.ts`](packages/warrant-gateway/src/mcp/latency.test.ts) & [`latency.json`](examples/evidence/latency.json) | Gateway processing time on localhost (50 calls per tool, 12th Gen Intel i7, no network/TLS): search p95 **2.71 ms**, propose p95 **1.16 ms**, execute p95 **1.12 ms**. |
-| 5 | **Non-Blocking Asynchronous Grace Hold** | Resilience | **Done** | [`latency.test.ts`](packages/warrant-gateway/src/mcp/latency.test.ts) | `execute_plan` with 8s undo window returns in **2.52 ms max** without blocking hold. |
+| 4 | **Gateway Processing Latency (Sub-500ms Platform SLA)** | Performance | **Done** | [`latency.test.ts`](packages/warrant-gateway/src/mcp/latency.test.ts) & [`latency.json`](examples/evidence/latency.json) | Gateway processing time on localhost (50 calls per tool, 12th Gen Intel i7, no network/TLS): search p95 **2.81 ms**, propose p95 **1.64 ms**, execute p95 **1.28 ms**. |
+| 5 | **Non-Blocking Asynchronous Grace Hold** | Resilience | **Done** | [`latency.test.ts`](packages/warrant-gateway/src/mcp/latency.test.ts) | `execute_plan` with 8s undo window returns in **2.42 ms max** without blocking hold. |
 | 6 | **HTTP 401 on Unauthenticated Calls** | Auth | **Done** | [`server.test.ts:L106-L122`](packages/warrant-gateway/src/mcp/server.test.ts) | Missing or invalid Bearer token immediately returns 401 Unauthorized. |
 | 7 | **Header-Only Token Delivery** | Auth | **Done** | [`server.test.ts:L142-L153`](packages/warrant-gateway/src/mcp/server.test.ts) | Strictly requires `Authorization: Bearer <token>`; query string tokens rejected (400). |
 | 8 | **Protected Resource Metadata (RFC 9728)** | Auth | **Done** | [`server.test.ts:L91-L104`](packages/warrant-gateway/src/mcp/server.test.ts) | `GET /.well-known/oauth-protected-resource` returns canonical resource and scopes. |
@@ -227,26 +227,14 @@ Every user story and safety requirement maps directly to an architectural invari
 
 ---
 
-## 4. Day-by-Day Hackathon Roadmap
+## 4. Development & Build History
 
-| Day | Goal | Status |
-|---|---|---|
-| **Oct 16 (Day 1)** | Monorepo scaffolding, MIT & Apache 2.0 licenses, MCP Streamable HTTP skeleton, data model, travel booking vertical. | **✅ COMPLETED** |
-| **Oct 17 (Day 2)** | Mock providers with failure injection (timeout, decline, disconnect), tools, idempotency store, audit log. | **✅ COMPLETED** |
-| **Oct 18 (Day 3)** | Policy engine, grants, spend caps in integer minor units, approval flow with RFC 8785 canonical hash binding. | **✅ COMPLETED** |
-| **Oct 19 (Day 4)** | Saga orchestrator with reverse compensation, active timeout reconciler for ambiguous network outcomes. | **✅ COMPLETED** |
-| **Oct 20 (Day 5)** | Simulated Alexa+ Next.js 14 client, Bedrock Converse API agent loop with offline stub, live tool trace inspector. | **✅ COMPLETED** |
-| **Oct 21 (Day 6)** | Standalone `warrant-siege` attack harness & HTML/JSON scorecard generator. All 11 scenarios passing. | **✅ COMPLETED** |
-| **Oct 22 (Day 7)** | Polish, Docker Compose, fresh-clone test (<10 min), friction log, AWS product feedback, architecture docs. | **✅ COMPLETED** |
-| **Oct 23 (Day 8 - Cutoff)** | Record 3-minute demo video, complete Devpost submission package before 11:59 PM IST cutoff. | **READY FOR SUBMISSION** |
-
-### Cut Order Protocol
-If delayed at any point, non-critical features are cut in this strict order:
-1. Voice microphone STT (keep typed voice simulation with real speech synthesis).
-2. Polished approval UI animations (keep functional card view).
-3. End-to-end live agent attacks (rely on deterministic protocol-level attacks in `warrant-siege`).
-4. Cloud hosting (keep local demo via Docker Compose / `npm run dev`).
-*Must never cut: Automatic Saga Rollback ($I_4$) or Action-Hash Approval Binding ($I_3$).*
+Warrant's first commit was Oct 16, 2026. The system was designed, built, and tested from scratch during the hackathon:
+- **Core Architecture:** Monorepo scaffolding, MIT & Apache 2.0 licenses, MCP Streamable HTTP server, SQLite WAL repository, and integer-minor-unit currency models.
+- **Provider & Resilience Engine:** Mock travel providers with failure injection (timeout, decline, disconnect), compensating saga orchestrator, and active timeout reconciler.
+- **Security & Authorization Boundary:** Deterministic policy engine, out-of-band admin API, RFC 8785 canonical argument hashing, detached Ed25519 receipts, and Merkle audit prover.
+- **User Interface & Tooling:** Next.js 14 companion console with live MCP trace inspection, out-of-band phone approval cards, and offline deterministic agent stub for test execution.
+- **Adversarial Verification:** Standalone `@warrant/siege` CLI and test harness attacking the gateway across 11 adversarial scenarios ($S_1 - S_{11}$) with HTML/JSON scorecards.
 
 ---
 
@@ -257,8 +245,8 @@ If delayed at any point, non-critical features are cut in this strict order:
 | **0:00 – 0:12** | **The Hook** | *"Voice assistants are starting to book and buy for us, with no screen to check first. Warrant makes every action limited, approved, and undoable."* Displays persistent on-screen prototype caption. |
 | **0:12 – 1:00** | **Happy Path & Approval Binding** | User requests weekend trip. Live MCP trace shows Bedrock tool dispatch. Phone approval card displays exact parameters and **RFC 8785 Canonical Hash**. User approves; booking commits; Alexa speaks natural summary ($\le 300$ chars); displays detached **Ed25519 signed action receipt** and **8-second grace hold undo window**. |
 | **1:00 – 1:35** | **Mid-Plan Failure & Rollback** | Mock Train service injected with `DECLINE`. Agent attempts trip booking. Hotel books, train fails. Saga Orchestrator halts forward progress and automatically cancels hotel in reverse order. Zero residue left on providers. Audit chain validates green. |
-| **1:35 – 2:15** | **Adversarial Proof & Mutation Moment** | Run `npm run test:siege` in terminal showing all 10 adversarial attack scenarios pass green. Then run `npm run test:mutation`: intentionally disable approval hash check, watch Scenario S4 turn RED, restore protection, and return to 100% green. |
-| **2:15 – 2:35** | **Scorecard & Open Source Deliverables** | Open interactive `scorecard.html` showing 10/10 green badges, SVG badge, and cryptographic audit proof. Highlight standalone open-source repo for the mini-challenge. |
+| **1:35 – 2:15** | **Adversarial Proof & Mutation Moment** | Run `npm run test:siege` in terminal showing all 11 adversarial attack scenarios pass green. Then run `npm run test:mutation`: intentionally disable approval hash check, watch Scenario S4 turn RED, restore protection, and return to 100% green. |
+| **2:15 – 2:35** | **Scorecard & Open Source Deliverables** | Open interactive `scorecard.html` showing 11/11 green badges, SVG badge, and cryptographic audit proof. Highlight standalone open-source repo for the mini-challenge. |
 | **2:35 – 2:45** | **Roadmap Ahead (Future Work)** | Highlight 3 future post-hackathon directions: public transparency logs, attenuated capability tokens (Macaroons) for agent delegation, and hardware-secured biometric passkeys. |
 
 ---
@@ -319,7 +307,7 @@ npm install
 ```
 
 ### 2. Run All Automated Tests
-Runs unit, integration, and scenario tests across all workspace packages (55+ passing in <5s):
+Runs unit, integration, and scenario tests across all workspace packages (66 passing in <5s):
 ```bash
 npm run test
 ```
@@ -337,13 +325,13 @@ npm run receipt:verify
 ```
 
 ### 5. Run Adversarial Siege Test Suite
-Executes all 10 adversarial attack scenarios against the gateway and generates `scorecard.html`, `scorecard.json`, and `scorecard-badge.svg`:
+Executes all 11 adversarial attack scenarios against the gateway and generates `scorecard.html`, `scorecard.json`, and `scorecard-badge.svg`:
 ```bash
 npm run test:siege
 ```
 
 ### 6. Run Automated Mutation Testing
-Injects transient defects into approval binding and idempotency layers to prove that scenarios S1 and S4 fail with red scorecards when protections are weakened:
+Injects transient defects into approval binding, idempotency, and user isolation layers to prove that scenarios S1, S4, and S11 fail with red scorecards when protections are weakened:
 ```bash
 npm run test:mutation
 ```

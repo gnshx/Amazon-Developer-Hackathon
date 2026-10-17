@@ -39,7 +39,7 @@ npm run verify:evidence
    - Unprotected example server fails 0/3 (10 duplicate bookings charged, $120 orphaned hotel residue, budget exceeded).
    - Warrant passes 3/3 (1 deduplicated booking, $0 orphan residue after rollback, budget ceiling enforced).
 4. **`npm run test:latency`** measures gateway processing time on localhost across 50 calls per tool:
-   - Measured on localhost (12th Gen Intel i7, no network/TLS overhead): search p95 **2.71 ms**, propose p95 **1.16 ms**, execute p95 **1.12 ms**.
+   - Measured on localhost (12th Gen Intel i7, no network/TLS overhead): search p95 **2.81 ms**, propose p95 **1.64 ms**, execute p95 **1.28 ms**.
 5. **`npm run verify:evidence`** cryptographically validates the committed sample bundle in [`examples/evidence/`](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/examples/evidence/):
    - Detached **Ed25519 signature** verified over canonical RFC 8785 action parameters ($I_9$).
    - In-memory tamper attempt (mutating \$360.00 to \$36.00) is **cryptographically rejected**.
@@ -51,10 +51,10 @@ npm run verify:evidence
 
 ### 1. Technological Implementation
 - **Conforms to MCP Streamable HTTP Spec (`2025-11-25`):** Standard JSON-RPC over Streamable HTTP transport, compatible with Anthropic Claude Desktop, Cursor, and AWS Bedrock Agent MCP bridges.
-- **RFC 9728 OAuth Protected Resource Metadata:** Live `GET /.well-known/oauth-protected-resource` endpoint and RFC 6750/9728 401 challenges with `WWW-Authenticate: Bearer resource_metadata="..."`.
+- **RFC 9728 OAuth Protected Resource Metadata:** Live `GET /.well-known/oauth-protected-resource` endpoint returning canonical resource identifier and scopes; returns 401 on unauthenticated calls.
 - **User Identity Binding:** Grants and authorizations are bound to authenticated user identity (`userId` / OAuth `sub` claim), not ephemeral client session tokens.
-- **Local Gateway Processing Latency:** 50 consecutive calls on localhost measure search p95 **2.71 ms**, propose p95 **1.16 ms**, execute p95 **1.12 ms** (12th Gen Intel i7, no network/TLS overhead; `npm run test:latency`).
-- **MCP 2025-11-25 Semantic Tool Annotations:** Tools specify `readOnly`, `destructive`, `idempotent`, and `riskTier` hints, plus `mode: "url"` elicitation for out-of-band approvals.
+- **Local Gateway Processing Latency:** 50 consecutive calls on localhost measure search p95 **2.81 ms**, propose p95 **1.64 ms**, execute p95 **1.28 ms** (12th Gen Intel i7, no network/TLS overhead; `npm run test:latency`).
+- **MCP 2025-11-25 Semantic Tool Annotations:** Tools specify standard `readOnlyHint`, `destructiveHint`, and `idempotentHint`, alongside custom metadata like `riskTier` and companion approval URLs.
 - **Cryptographic Parameter Binding ($I_3$):** All high-risk ($T_2$) actions require approvals bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{args}))$. Changing a single date, price, or ID breaks the approval token.
 - **Multi-Layer Idempotency ($I_1$):** Dual-indexed in SQLite with in-flight state tracking (`PROCESSING` $\to$ `COMPLETED`). Concurrent voice retry storms execute external side effects exactly once.
 - **Compensating Saga Orchestrator ($I_4$):** Multi-step plans execute with strict atomicity; mid-flight failures trigger reverse compensations, guaranteeing zero orphan state or charges ($I_4$).
@@ -65,12 +65,12 @@ npm run verify:evidence
 
 ### 2. Design
 - **The Voice Dilemma Solved:** Voice assistants cannot present full checkout screens before execution. Warrant solves this by enforcing an out-of-band companion phone approval flow for actions exceeding the household threshold (\$200), with voice-first spoken summaries ($\le 300$ characters).
-- **Repositioning Around Alexa Voice Checkout:** Alexa handles voice PIN, payment instrument selection, and purchase confirmation. Warrant handles the complex multi-step operational transactional safety underneath: ensuring multi-step itineraries stay within cumulative limits and unwind cleanly if step 2 fails.
+- **Repositioning Around Alexa Voice Checkout:** Alexa handles voice PIN, payment instrument selection, and purchase confirmation, with documentation emphasizing idempotency. Warrant handles the complementary operational transactional safety layer: keeping multi-step plans within household limits and rolling them back if an intermediate step fails.
 - **5-View Companion Experience (Next.js 14):** Pixel-accurate console implementing 5 human-designed views:
   1. *Assistant Console & Live MCP Traces:* Real-time telemetry, tool arguments, and natural speech synthesis.
   2. *Out-of-Band Phone Approval Card:* Exact canonical arguments, price breakdown, and SHA-256 hash.
   3. *Mid-Plan Rollback Inspector:* Visual compensation tree when a step fails mid-flight.
-  4. *Adversarial Safety Scorecard:* Live and sample status across the 10 invariant attack scenarios.
+  4. *Adversarial Safety Scorecard:* Live and sample status across the 11 core adversarial scenarios.
   5. *Household Policy & Limits Editor:* Interactive out-of-band admin interface with persistent saving.
 - **Pre-Settlement Undo Countdown Bar:** Real-time 8-second grace countdown with one-click reversible cancellation ($I_{10}$).
 - **Receipt Verification Inspector:** Cryptographic modal displaying detached Ed25519 signature and canonical payload verification.
@@ -78,7 +78,7 @@ npm run verify:evidence
 ### 3. Potential Impact
 - **Unlocking High-Stakes Autonomous Voice Commerce:** Solves the core existential friction preventing users and brands from trusting voice assistants with real money: the fear of runaway spend, double-charges, and abandoned mid-plan state.
 - **Universal Ecosystem Testing via `@warrant/siege`:** Reusable CLI and GitHub Action that evaluates any third-party MCP tool server for transactional safety before exposing it to Alexa+ users.
-- **Complementary to AWS AgentCore Policy (GA March 3, 2026):** AWS AgentCore Policy evaluates individual tool calls outside the agent's reasoning loop (per-call authorization). Warrant provides the runtime transactional layer (cumulative minor-unit budgets, saga rollback, signed receipts, active timeout reconciliation). AWS customers can run Warrant directly with AgentCore.
+- **Relationship to AWS AgentCore Policy (GA March 3, 2026):** AgentCore Policy provides per-call authorization. Warrant targets a different layer (multi-step limits, rollback, receipts) and could sit alongside it. We have not integrated or tested with AgentCore.
 - **Bridges to Emerging Protocols (Google AP2):** Bridges payment intent/cart mandates into a distributed systems execution environment with automatic compensation and idempotency.
 
 ### 4. Quality of the Idea

@@ -15,7 +15,7 @@
   - Session auth via HTTP `Authorization: Bearer <session_token>`.
 - **Bedrock Integration & Model ID Findings:**
   - Amazon Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`, `@aws-sdk/client-bedrock`).
-  - Targeted default model: `amazon.nova-pro-v1:0` (Amazon's first-party flagship foundation model with native Converse API and structured tool calling).
+  - Targeted default model: `amazon.nova-pro-v1:0` (Amazon Nova Pro foundation model with native Converse API and structured tool calling).
   - Legacy models: `anthropic.claude-3-haiku-20240307-v1:0` is legacy/sunset in 2026 and should not be relied upon across regions.
   - Cross-region inference profiles: Newer Claude models require US cross-region profile IDs (e.g. `us.anthropic.claude-3-5-haiku-20241022-v1:0` or `us.anthropic.claude-3-5-sonnet-20241022-v2:0`). Model ID is configurable via `BEDROCK_MODEL_ID`.
   - Built-in audit CLI: `npm run check:bedrock-models` checks exact model lifecycle status (`ACTIVE` vs `LEGACY`) against any live AWS account.

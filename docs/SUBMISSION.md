@@ -12,7 +12,7 @@
 - **Elevator Pitch (1 sentence):** Warrant is a transactional safety layer for agents that act in the real world: bounded authority, exact-action approval, no double-charges, automatic rollback, and receipts anyone can verify, tested by attacks that fail when a protection is removed.
 - **Track Selection:** Alexa+ Track
 - **Mini-Challenge Selections:**
-  1. **Additional Open Source Project Mini-Challenge:** `@warrant/siege` is a modular, standalone open-source testing CLI (Apache 2.0 / MIT) that attacks any MCP server with 11 standard adversarial scenarios and generates an automated safety scorecard.
+  1. **Additional Open Source Project Mini-Challenge:** `@warrant/siege` is a modular, standalone open-source testing CLI (MIT License) that attacks any MCP server with 11 standard adversarial scenarios and generates an automated safety scorecard.
   2. **AWS Builder Mini-Challenge:** Native integration with Amazon Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`) for autonomous voice agent tool calling, with offline deterministic stub fallback and in-depth developer feedback.
 
 ---
@@ -22,7 +22,7 @@
 To satisfy all requirements for the Additional Open Source Project Mini-Challenge:
 - **Dedicated Open Source Project Repository:** `https://github.com/gnshx/warrant-siege`
 - **Primary Hackathon Monorepo:** `https://github.com/gnshx/Amazon-Developer-Hackathon`
-- **Open Source Contribution / Monorepo Source:** `https://github.com/gnshx/Amazon-Developer-Hackathon/tree/main/packages/warrant-siege`
+- **Open Source Contribution URL:** `https://github.com/gnshx/warrant-siege`
 - **GitHub Username:** `gnshx`
 - **Project License:** [MIT License](https://github.com/gnshx/warrant-siege/blob/main/LICENSE)
 - **Short Description:** `warrant-siege` is an independent, reusable security and adversarial test harness for Model Context Protocol (MCP) servers. It executes 11 attack scenarios (concurrency storms, parameter tampering, spend cap exhaustion, prompt injection, expired tokens, ambiguous timeouts, receipt fraud, cancellation races, and cross-user isolation) over Streamable HTTP and generates interactive HTML and JSON scorecards and SVG badges.
@@ -34,7 +34,7 @@ To satisfy all requirements for the Additional Open Source Project Mini-Challeng
   ```
   Evaluates all 11 core adversarial scenarios ($S_1 - S_{11}$) with 11/11 green scorecard output.
 - **Pre-Hackathon Non-Existence Confirmation:**  
-  *We explicitly affirm that this project and all associated packages (`@warrant/gateway`, `@warrant/siege`, `@warrant/alexa-client`) were created from scratch during the hackathon period and did not exist prior to the official hackathon start date.*
+  *Warrant's first commit was Oct 16, 2026. All packages in this repository (`@warrant/gateway`, `@warrant/siege`, `@warrant/alexa-client`) were created from scratch during the hackathon period.*
 
 ---
 
@@ -48,7 +48,7 @@ To satisfy all requirements for the Additional Open Source Project Mini-Challeng
 > 4. **Model Plan Generation vs. Gateway Damage Limitation:** LLMs can still hallucinate or generate inefficient plans; Warrant's role is not to guarantee LLM conversational brilliance, but to deterministically guarantee that no action executes outside policy bounds, spend caps, or unapproved parameters.
 > 5. **Structural Defense vs. Text Heuristics:** Warrant defends against prompt injection structurally (by separating data plane from out-of-band control plane and validating canonical parameter hashes), rather than relying on brittle regex or heuristic sentiment/prompt-guard classifiers.
 > 6. **Storage Architecture & Scalability:** Uses SQLite in WAL mode with a decoupled repository interface; while ideal for single-node / edge deployment, distributed production environments would swap the repository implementation for PostgreSQL or Amazon DynamoDB.
-> 7. **No External Third-Party Audit & Prior Work Disclosure:** While verified against 11 automated attack scenarios, property tests, and 3 mutation tests, Warrant has not undergone a formal third-party commercial pen-test. We transparently acknowledge prior architectural concepts in autonomous agent bounding (including the author's previous exploration of passkey-bounded mandates on Monad in `AgentTrust`), adapted and re-architected from scratch for AWS Bedrock, Amazon Alexa+, and Model Context Protocol Streamable HTTP under Apache 2.0 / MIT.
+> 7. **No External Third-Party Audit & Prior Work Disclosure:** While verified against 11 automated attack scenarios, property tests, and 3 mutation tests, Warrant has not undergone a formal third-party commercial pen-test. The author previously explored economic agent bounding in an open-source research project on Monad (`AgentTrust`, MIT License), which was EVM smart-contract based. No code was reused from AgentTrust. Warrant was conceptualized, architected, and built entirely anew in TypeScript for the Model Context Protocol (MCP 2025-11-25 Streamable HTTP), Amazon Bedrock Converse API, and Alexa+ ecosystem.
 > 
 > *For an instant evaluation path and full scoring rubric mapping, see [**`JUDGES.md`**](../JUDGES.md).*
 
@@ -58,13 +58,13 @@ To satisfy all requirements for the Additional Open Source Project Mini-Challeng
 
 - [x] **Public Git Repository:** Complete monorepo source code with verified quickstart instructions.
 - [x] **MCP in Code:** Streamable HTTP MCP server targeting specification `2025-11-25+`.
-- [x] **Public Demo Video:** Under 2:45 on YouTube/Vimeo with no copyrighted audio, no third-party trademark violations, and on-screen "Simulated" prototype disclosure (follows `docs/DEMO_SCRIPT.md`).
-- [x] **Product Feedback on Tools & SDKs:** Detailed feedback covering all 5 required prompts for Bedrock Converse API, AWS SDK v3, MCP SDK, Next.js 14, and SQLite.
+- [ ] **Public Demo Video:** Under 2:45 on YouTube/Vimeo with no copyrighted audio, no third-party trademark violations, and on-screen "Simulated" prototype disclosure (script finalized in `docs/DEMO_SCRIPT.md`; scheduled for recording).
+- [x] **Product Feedback on Tools & SDKs:** Detailed feedback covering all required prompts for Bedrock Converse API, AWS SDK v3, MCP SDK, Next.js 14, and SQLite.
 - [x] **Developer Friction Log:** Detailed table covering task, steps, expected vs actual, severity, workaround, and concrete suggestions (eligible for 10% bonus).
-- [x] **Scorecard Evidence:** Both machine-readable `scorecard.json` and styled `scorecard.html` generated by `warrant-siege` showing 11/11 green passed invariants.
+- [x] **Scorecard Evidence:** Both machine-readable `scorecard.json` and styled `scorecard.html` generated by `warrant-siege` showing 11/11 green passed scenarios and 10/10 invariants.
 - [x] **Automated Mutation Test:** `npm run test:mutation` proving that disabling idempotency, approval verification, or user isolation causes scenarios S1, S4, and S11 to turn RED (3/3 caught).
 - [x] **Comparative Benchmark:** `npm run test:compare` demonstrating an intentionally unprotected example server fails 3 of 3 vs 3/3 passing on Warrant.
-- [x] **Gateway Processing Latency:** `npm run test:latency` measuring gateway processing time on localhost across 50 calls/tool (search p95 2.71ms, propose p95 1.16ms, exec p95 1.12ms).
+- [x] **Gateway Processing Latency:** `npm run test:latency` measuring gateway processing time on localhost across 50 calls/tool (search p95 2.81ms, propose p95 1.64ms, exec p95 1.28ms).
 - [x] **Verified Clean Path:** `npm install && npm run test && npm run dev` tested and confirmed in <5 minutes.
 
 ---
@@ -108,16 +108,16 @@ It operates as an open-source trust gateway over the Model Context Protocol (MCP
 ### Foundational Architectural Pillars
 
 Warrant is engineered around four core architectural pillars:
-1. **Transactional Safety:** Multi-layer idempotency, compensating saga rollback, and active timeout reconciliation. Alexa+'s checkout documentation specifically lists idempotency and failure unwinding among required capabilities.
+1. **Transactional Safety:** Multi-layer idempotency, compensating saga rollback, and active timeout reconciliation. Alexa+'s checkout documentation specifically emphasizes idempotency to prevent duplicate charges.
 2. **Exact-Parameter Approval & Signed Receipts:** Cryptographic binding to canonical parameter hashes, detached Ed25519 receipts, and Merkle tree inclusion proofs.
 3. **Falsifiable Verification:** 11 adversarial attack scenarios ($S_1 - S_{11}$) and an automated mutation test (`npm run test:mutation`) that intentionally disables safeguards to verify that the scorecard turns RED across 3 distinct mutations.
 4. **Tool-Agnostic Open-Source Harness:** A standalone CLI (`@warrant/siege`) and CI template that evaluates any MCP server over Streamable HTTP.
 
 ### Relationship to AWS AgentCore Policy, Google AP2 & Academic Research
-- **AWS AgentCore Policy (GA March 3, 2026) — *Complementary, not competing*:** AWS AgentCore Policy checks gateway tool calls outside the agent's reasoning loop based on caller identity and tool call arguments (per-call authorization). It does *not* cover multi-step cumulative budgets across conversations, saga rollback on failure, signed receipts, or active reconciliation of network drops. Warrant provides the complementary transactional execution and recovery runtime.
+- **AWS AgentCore Policy (GA March 3, 2026) — *Complementary, not competing*:** AgentCore Policy provides per-call authorization. Warrant targets a different layer (multi-step limits, rollback, receipts) and could sit alongside it. We have not integrated or tested with AgentCore.
 - **Google AP2 (Agent Payment Protocol):** AP2 introduces signed intent, cart, and payment mandates. Warrant's out-of-band grant maps to an intent mandate, and its parameter-bound approval maps to a cart mandate, adding the missing distributed systems runtime (saga compensation, timeout reconciliation, and zero orphan state).
 - **CaMeL Prompt-Injection Research:** Implements propose-then-execute gateway constraints enforced at the tool boundary, isolating untrusted third-party provider responses from administrative authority.
-- **Alexa Voice Checkout vs. Warrant:** Alexa handles voice PIN, payment instrument selection, and purchase confirmation. Warrant handles the underlying operational transactional safety: keeping multi-step plans within limits and unwinding them cleanly if step 2 fails.
+- **Alexa Voice Checkout vs. Warrant:** Alexa handles voice PIN, payment instrument selection, and purchase confirmation, with documentation emphasizing idempotency. Warrant handles the complementary operational transactional safety layer: keeping multi-step plans within household limits and rolling them back if an intermediate step fails.
 
 ### Alexa+ Compatibility & Readiness Checklist
 
@@ -126,8 +126,8 @@ Warrant is engineered around four core architectural pillars:
 | 1 | **MCP Streamable HTTP Transport** | Transport | **Done** | [`server.test.ts`](packages/warrant-gateway/src/mcp/server.test.ts) | Full JSON-RPC 2.0 over HTTP POST `/mcp` (`@modelcontextprotocol/sdk`). |
 | 2 | **Protocol Version Negotiation (`2025-11-25`)** | Protocol | **Done** | [`server.test.ts:L397-L408`](packages/warrant-gateway/src/mcp/server.test.ts) | `initialize` negotiates spec version `2025-11-25` cleanly with client. |
 | 3 | **Protocol Header (`MCP-Protocol-Version`) Validation** | Protocol | **Done** | [`server.test.ts:L347-L395`](packages/warrant-gateway/src/mcp/server.test.ts) | Supported versions accepted with header; unsupported versions return 400. |
-| 4 | **Gateway Processing Latency (Sub-500ms Platform SLA)** | Performance | **Done** | [`latency.test.ts`](packages/warrant-gateway/src/mcp/latency.test.ts) & [`latency.json`](examples/evidence/latency.json) | Gateway processing time on localhost (50 calls per tool, 12th Gen Intel i7, no network/TLS): search p95 **2.71 ms**, propose p95 **1.16 ms**, execute p95 **1.12 ms**. |
-| 5 | **Non-Blocking Asynchronous Grace Hold** | Resilience | **Done** | [`latency.test.ts`](packages/warrant-gateway/src/mcp/latency.test.ts) | `execute_plan` with 8s undo window returns in **2.52 ms max** without blocking hold. |
+| 4 | **Gateway Processing Latency (Sub-500ms Platform SLA)** | Performance | **Done** | [`latency.test.ts`](packages/warrant-gateway/src/mcp/latency.test.ts) & [`latency.json`](examples/evidence/latency.json) | Gateway processing time on localhost (50 calls per tool, 12th Gen Intel i7, no network/TLS): search p95 **2.81 ms**, propose p95 **1.64 ms**, execute p95 **1.28 ms**. |
+| 5 | **Non-Blocking Asynchronous Grace Hold** | Resilience | **Done** | [`latency.test.ts`](packages/warrant-gateway/src/mcp/latency.test.ts) | `execute_plan` with 8s undo window returns in **2.42 ms max** without blocking hold. |
 | 6 | **HTTP 401 on Unauthenticated Calls** | Auth | **Done** | [`server.test.ts:L106-L122`](packages/warrant-gateway/src/mcp/server.test.ts) | Missing or invalid Bearer token immediately returns 401 Unauthorized. |
 | 7 | **Header-Only Token Delivery** | Auth | **Done** | [`server.test.ts:L142-L153`](packages/warrant-gateway/src/mcp/server.test.ts) | Strictly requires `Authorization: Bearer <token>`; query string tokens rejected (400). |
 | 8 | **Protected Resource Metadata (RFC 9728)** | Auth | **Done** | [`server.test.ts:L91-L104`](packages/warrant-gateway/src/mcp/server.test.ts) | `GET /.well-known/oauth-protected-resource` returns canonical resource and scopes. |
@@ -160,20 +160,20 @@ Warrant is engineered around four core architectural pillars:
 *(Hackathon rules mandate structured feedback on all tools, APIs, and SDKs utilized in the submission.)*
 
 ### 1. Amazon Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`)
-- **What it was used for:** Driving the multi-turn conversational voice agent loop, translating natural language user trip requests into structured MCP tool calls (`propose_plan`, `execute_plan`), and generating natural spoken summaries.
-- **What worked:** The unified Converse API interface (`ConverseCommand`) dramatically simplifies message history formatting compared to model-specific invoke schemas. Tool configuration (`toolConfig`) with JSON schema definitions is clean, and tool-use blocks return reliably.
-- **What needs work:** Foundation model lifecycles and regional routing require careful diligence. Older model IDs (such as Claude 3 Haiku `anthropic.claude-3-haiku-20240307-v1:0`) have entered legacy or retired states across regions, while newer models (such as Claude 3.5 Sonnet v2) require cross-region inference profile IDs (`us.anthropic...`) rather than raw model IDs. Clearer error messaging and an automated model lifecycle verification helper in the SDK would streamline adoption.
-- **Onboarding experience:** Model access must be explicitly requested in the AWS Bedrock Console before API keys will function. The offline deterministic fallback mode was essential for CI/CD and automated testing without incurring cloud fees or failing when credentials are absent.
-- **Would you use it again?** Yes. For agentic tool calling in AWS environments, Converse API is the best multi-model abstraction available.
+- **What it was used for:** Wiring the simulated Alexa+ voice assistant loop in `packages/alexa-client/src/lib/bedrock-agent.ts`, converting user travel requests into structured MCP tool calls (`propose_plan`, `execute_plan`) and natural spoken summaries.
+- **What worked:** The unified Converse API interface (`ConverseCommand`) cleanly separates tool specifications (`toolConfig`) from message history, making it straightforward to pass JSON schema definitions for our travel tools.
+- **What needs work:** For local development and automated CI testing without live AWS credentials, developers must construct custom mock/stub implementations. An official local mock runner or client stub in `@aws-sdk/client-bedrock-runtime` would greatly ease developer onboarding and testing.
+- **Onboarding experience:** The TypeScript SDK types are comprehensive, though accessing nested tool parameters requires multiple optional chaining guards (`output?.message?.content?.[0]?.toolUse`).
+- **Would you use it again?** Yes. For structured agent tool calling on AWS, the Converse API provides a clean multi-model contract.
 
 ### 2. AWS SDK for JavaScript v3 (`@aws-sdk/*`)
-- **What it was used for:** Client communication with AWS services, specifically `@aws-sdk/client-bedrock-runtime` and `@aws-sdk/client-bedrock`.
+- **What it was used for:** Client communication with AWS services, specifically `@aws-sdk/client-bedrock-runtime`.
 - **What worked:** Modular v3 package structure keeps bundle sizes small. TypeScript types are first-class, and modern Promise-based command dispatch (`client.send(new ConverseCommand({...}))`) is predictable.
 - **What needs work:** Deeply nested command response types often require cumbersome optional chaining (`response.output?.message?.content?.[0]?.toolUse`).
 - **Onboarding experience:** Straightforward with `npm install @aws-sdk/client-bedrock-runtime`.
 - **Would you use it again?** Yes, it is the standard for AWS development in TypeScript.
 
-### 3. Model Context Protocol (MCP) TypeScript SDK
+### 3. Model Context Protocol (MCP) TypeScript SDK (`@modelcontextprotocol/sdk`)
 - **What it was used for:** Implementing the Warrant Trust Gateway over Streamable HTTP (spec 2025-11-25) and client MCP connections.
 - **What worked:** Standardized JSON-RPC 2.0 tool discovery (`tools/list`) and invocation (`tools/call`) allowed clean separation between agent reasoning and tool execution.
 - **What needs work:** Streamable HTTP specification transitions have created version divergence between older Stdio transports and newer HTTP SSE endpoints. Better official reference examples for long-lived Express server hosting would help developers.
@@ -202,7 +202,7 @@ Warrant is engineered around four core architectural pillars:
 - **Would you use it again?** Absolutely. Warrant was engineered specifically to be the foundational security layer for the Alexa+ ecosystem.
 
 ### 7. Agent Skills Specification (`skills/warrant-safe-actions/SKILL.md`)
-- **What it was used for:** Authoring the portable `warrant-safe-actions` agent skill, guiding conversational models (Amazon Bedrock Nova Pro, Claude Code, Alexa+) on safe action sequencing, out-of-band approval expectations, idempotency key persistence, provider prompt injection immunity, and concise spoken summaries.
+- **What it was used for:** Authoring the portable `warrant-safe-actions` agent skill, guiding conversational models (Amazon Nova Pro, Claude Code, Alexa+) on safe action sequencing, out-of-band approval expectations, idempotency key persistence, provider prompt injection immunity, and concise spoken summaries.
 - **What worked:** Clean Markdown frontmatter with clear behavioral rules, failure case handling, and voice-first spoken guidelines. Easy to load directly into the Bedrock Converse API `system` prompt array or pass into autonomous agent frameworks.
 - **What needs work:** Currently, Agent Skills rely on model compliance rather than cryptographic enforcement at runtime. Warrant solves this by combining the Agent Skill with an MCP trust gateway that deterministically validates every parameter, approval token, and spend cap.
 - **Onboarding experience:** Simple and expressive.
@@ -216,10 +216,10 @@ Warrant is engineered around four core architectural pillars:
 
 | Request ID | Urgency Level | Proposed Feature | Problem Solved | Recommended Implementation |
 |---|:---:|---|---|---|
-| **FR-1** | **🚨 CRITICAL** | **Native Companion App Out-of-Band Step-Up Approval Protocol** | High-value ($T_2$) voice transactions currently have no official elevation mechanism. The official Amazon Alexa+ Developer Documentation (*Authentication & Permissions* section) explicitly states: *"Note: Step-up authorization is currently unsupported in Alexa+ preview sessions. Custom tools requiring multi-factor elevation must reject unverified calls or rely on customer account pre-linking."* | Provide an official Alexa Skill / Bedrock Agent primitive that dispatches an interactive push card to the user's Alexa smartphone app with cryptographic parameter binding (e.g., WebAuthn biometric assertion or signed hash confirmation), pausing agent execution until the companion token returns. |
-| **FR-2** | **⚠️ IMPORTANT** | **First-Class Support for MCP Tool Semantic Annotations (`readOnly`, `destructive`, `idempotent`) in Bedrock Converse API** | We encountered this directly when configuring Bedrock `toolConfig` in `@aws-sdk/client-bedrock-runtime`: the API treats all tool definitions as generic JSON schemas, preventing the runtime from differentiating read-only queries from irreversible financial transfers. | Allow tool definitions in Bedrock Converse API to include MCP-aligned annotations (`destructive: true`, `idempotent: true`, `riskTier: "T2"`). This enables the LLM runtime to automatically require confirmation before proposing destructive calls. |
+| **FR-1** | **🚨 CRITICAL** | **Native Companion App Out-of-Band Step-Up Approval Protocol** | Alexa+'s MCP quickstart lists step-up authorization as not yet supported, so Warrant routes high-value approvals to a companion phone page. | Provide an official Alexa Skill / Bedrock Agent primitive that dispatches an interactive push card to the user's Alexa smartphone app with cryptographic parameter binding (e.g., WebAuthn biometric assertion or signed hash confirmation), pausing agent execution until the companion token returns. |
+| **FR-2** | **⚠️ IMPORTANT** | **First-Class Support for MCP Tool Semantic Annotations in Bedrock Converse API** | Bedrock Converse API `toolConfig` treats all tool definitions as generic JSON schemas, preventing the runtime from differentiating read-only queries from irreversible financial transfers before execution. | Allow tool definitions in Bedrock Converse API to include MCP-aligned annotations (`destructive: true`, `idempotent: true`, alongside custom metadata like `riskTier: "T2"`). This enables the LLM runtime to automatically require confirmation before proposing destructive calls. |
 | **FR-3** | **⚠️ IMPORTANT** | **Enforced Voice-First Spoken Summary Budget Guidelines ($\le 300$ characters)** | LLMs frequently return verbose, paragraph-length responses after tool calls that sound unnatural and tedious when read aloud by Alexa. | Introduce a token/character budget constraint in Converse API tool-use responses specifically designated for speech synthesis (e.g., maximum 300 characters of natural spoken summary alongside rich JSON data). |
-| **FR-4** | **💡 NICE-TO-HAVE** | **Automatic Cross-Region Inference Profile Resolution in `@aws-sdk/client-bedrock-runtime`** | We hit this directly during model integration: attempting to invoke Claude 3.5 Sonnet v2 via direct model ID `anthropic.claude-3-5-sonnet-20241022-v2:0` returns an AWS `ValidationException` requiring cross-region inference profile `us.anthropic.claude-3-5-sonnet-20241022-v2:0`. | Have the AWS Bedrock SDK or runtime automatically resolve a base model ID to the nearest accessible cross-region inference profile if direct regional invocation is deprecated. |
+| **FR-4** | **💡 NICE-TO-HAVE** | **Standardized MCP Application Error Codes for Voice-Assistant Interventions** | When an MCP tool call fails due to policy (e.g. approval required, budget exceeded, or session expired), there is no standardized JSON-RPC error code convention in MCP or Bedrock, forcing agents to parse unstructured error strings. | Standardize JSON-RPC application error codes (e.g., `-32001` for `APPROVAL_REQUIRED`, `-32002` for `BUDGET_EXCEEDED`) so agents can react deterministically without brittle string parsing. |
 
 ---
 
@@ -227,11 +227,11 @@ Warrant is engineered around four core architectural pillars:
 
 | # | Task | Steps Taken | Expected Result | Actual Result | Severity | Workaround Applied | Suggestion for AWS / MCP Teams |
 |---|---|---|---|---|---|---|---|
-| **FL-1** | Streamable HTTP Session Token Passing | Tried passing grant session token via standard MCP tool parameters. | Agent should pass token to identify caller. | Agent hallucinated or stripped session tokens; tool params cannot be trusted for identity. | **High** | Extracted caller identity strictly from HTTP `Authorization: Bearer <token>` header, ignoring tool arguments. | Formalize HTTP authorization header handling in MCP Streamable HTTP specification. |
-| **FL-2** | Cross-Platform Parameter Hash Mismatch | Evaluated JSON hashes of tool arguments between client and gateway. | `JSON.stringify(args)` should produce identical hashes. | Key order divergence (e.g. `{a:1, b:2}` vs `{b:2, a:1}`) caused approval verification to fail. | **Critical** | Enforced RFC 8785 Canonical JSON serialization with lexicographical key sorting. | Provide an official canonical hashing utility inside the core MCP SDK. |
-| **FL-3** | Bedrock Model Deprecation & Regional Routing | Tested Bedrock Converse API against older tutorial model IDs (`anthropic.claude-3-haiku-20240307-v1:0`) and Claude 3.5 Sonnet. | Bedrock should execute tool calling inference directly. | Legacy models returned deprecation/sunset errors, and Sonnet v2 failed without cross-region inference profile IDs (`us.anthropic...`). | **Medium** | Migrated default model to Amazon's flagship `amazon.nova-pro-v1:0` with support for cross-region inference profiles and built a model lifecycle audit script (`npm run check:bedrock-models`). | Provide automatic cross-region inference profile resolution in `@aws-sdk/client-bedrock-runtime`. |
-| **FL-4** | Non-Integer Currency Floating Point Drift | Calculated split-booking prices in floating-point dollars. | 0.1 + 0.2 equals 0.3. | 0.30000000000000004 breached strict spend cap checks. | **High** | Mandated integer minor currency units (`cents`, integer minor units) across all types and APIs. | Include monetary calculation guidelines in agent developer documentation. |
-| **FL-5** | Ambiguous Network Timeouts During Booking | Injected 10-second network drop on train booking request. | Gateway should know if booking succeeded or failed. | Blind retry created a duplicate booking on mock provider. | **High** | Implemented active provider reconciliation: query provider truth by idempotency key prior to retry. | Add active reconciliation pattern guidance to distributed agent tool architectures. |
+| **FL-1** | Streamable HTTP Session Token Extraction | Evaluated passing grant session token via standard MCP tool parameters. | Caller identity passed inside tool parameters. | Tool call arguments cannot be trusted for user identity because an agent can drop, alter, or hallucinate them. | **High** | Extracted caller identity strictly from HTTP `Authorization: Bearer <token>` header, ignoring tool arguments. | Formalize HTTP authorization header handling in MCP Streamable HTTP specification. |
+| **FL-2** | Cross-Platform Parameter Hash Mismatch | Evaluated JSON hashes of tool arguments between client and gateway. | `JSON.stringify(args)` should produce identical hashes across runtimes. | Key order divergence (e.g. `{a:1, b:2}` vs `{b:2, a:1}`) caused approval verification to fail. | **Critical** | Enforced RFC 8785 Canonical JSON serialization with lexicographical key sorting. | Provide an official canonical hashing utility inside the core MCP SDK. |
+| **FL-3** | Multi-Package SQLite Test Isolation | Ran concurrent Vitest test suites across workspace packages against a shared SQLite database file. | Tests execute in parallel without file interference. | Vitest concurrency caused file locking and table conflicts (`database is locked`). | **High** | Configured isolated in-memory SQLite instances per test runner and enabled WAL mode for file-based execution. | Include test concurrency guidelines for embedded databases in monorepo starter kits. |
+| **FL-4** | Non-Integer Currency Precision Risks | Evaluated monetary calculation for multi-step booking items in standard JavaScript numbers. | Floating-point additions and subtractions should be exact. | IEEE 754 precision issues introduce rounding risks on cumulative budget deductions. | **High** | Standardized all spend caps, prices, and balances strictly in integer minor units (e.g. cents: $150.00 is `15000`). | Include minor-unit currency formatting conventions in agent commerce guidelines. |
+| **FL-5** | Ambiguous Network Timeouts During Booking | Injected 10-second network drop on train booking request. | Gateway should know if booking succeeded or failed. | Blind retry risks duplicate bookings if the request succeeded before the socket dropped. | **High** | Implemented active provider reconciliation: query external provider truth by idempotency key prior to retry or compensation. | Add active reconciliation pattern guidance to distributed agent tool architectures. |
 
 ---
 
@@ -251,10 +251,10 @@ Warrant is engineered around four core architectural pillars:
   - Monorepo: `https://github.com/gnshx/Amazon-Developer-Hackathon`
   - Standalone Open Source Challenge: `https://github.com/gnshx/warrant-siege`
 - **"Did this project exist before the hackathon?" Field:**
-  > *Warrant and all packages in this repository (`@warrant/gateway`, `@warrant/siege`, `@warrant/alexa-client`) were created from scratch during the Amazon Developer Hackathon period (Oct 16 – Oct 23, 2026).*
-  > *In full transparency and adherence to open-source integrity, the architectural concept of economic agent bounding draws inspiration from the author's previous open-source research on EVM-level passkey mandates (`AgentTrust` on Monad, MIT License). That project operated on smart contracts and blockchain testnets. For this hackathon, Warrant was conceptualized, architected, and built entirely anew in TypeScript for the Model Context Protocol (MCP 2025-11-25 Streamable HTTP), Amazon Bedrock Converse API, and Amazon Alexa+ ecosystem with new primitives (Saga Orchestration, Active Timeout Reconciliation, Detached Ed25519 Signed Receipts, and the Grace-Hold Undo Window).*
+  > *Warrant's first commit was Oct 16, 2026. All packages in this repository (`@warrant/gateway`, `@warrant/siege`, `@warrant/alexa-client`) were created from scratch during the hackathon.*
+  > *Prior Work Disclosure: The author previously explored economic agent bounding in an open-source research project on Monad (`AgentTrust`, MIT License), which was EVM smart-contract based. No code was reused from AgentTrust. Warrant is an entirely new codebase written from scratch in TypeScript under the MIT / Apache 2.0 license for the Model Context Protocol (MCP 2025-11-25 Streamable HTTP), Amazon Bedrock Converse API, and Alexa+ voice ecosystem with new runtime primitives (Saga Orchestration, Active Timeout Reconciliation, Detached Ed25519 Signed Receipts, and the Grace-Hold Undo Window).*
 - **Collaborator Instructions:**
-  The repository is public at `https://github.com/gnshx/Amazon-Developer-Hackathon`, allowing evaluators direct access without requiring GitHub organization invites. If the repository is ever switched to private, the five official hackathon evaluators will be invited: `alexa-dev-1`, `alexa-dev-2`, `amazon-eval-1`, `amazon-eval-2`, `amazon-dev-judge`.
+  The repository is public; no collaborator access is needed. If the repository is ever switched to private, access will be granted to the official evaluators: `knmeiss`, `giolaq`, `anishamalde`, `mosesroth`, `emersonsklar`, and `testing@devpost.com`.
 
 ---
 
