@@ -60,7 +60,8 @@ Warrant was engineered to satisfy the real-world operational requirements of the
 | **Transport** | MCP Streamable HTTP | Full JSON-RPC 2.0 over Streamable HTTP (`@modelcontextprotocol/sdk`) | **✅ PASS** |
 | **Network Reachability** | Remote HTTPS URL | Public tunnel & reverse proxy compatible | **✅ PASS** |
 | **OAuth 2.1 Protected Resource** | RFC 9728 Resource Metadata | `GET /.well-known/oauth-protected-resource` returns resource metadata | **✅ PASS** |
-| **Auth Challenge** | RFC 6750 / 9728 401 Challenge | 401 returns `WWW-Authenticate: Bearer resource_metadata="..."` | **✅ PASS** |
+| **Auth Challenge** | RFC 6750 / 9728 401 Challenge | 401 on unauthenticated calls; header-only Bearer tokens (query tokens rejected) | **✅ PASS** |
+| **Demo OAuth 2.1 Server** | OAuth 2.1 + PKCE S256 + RFC 8707 | Demo authorization code flow for local testing (`/.well-known/oauth-authorization-server`) | **✅ PASS (Demo)** |
 | **Latency SLA** | < 500 ms response time | Gateway average **1.58 ms**, p99 **34.68 ms** (`npm run test:latency`) | **✅ PASS (14x margin)** |
 | **Identity Binding** | Tied to authenticated user | Grants bound to OAuth `sub` subject / `userId`, not client session | **✅ PASS** |
 | **Out-of-Band Elicitation** | MCP 2025-11-25 Elicitation | `propose_plan` returns `elicitation: { mode: "url" }` for phone approval | **✅ PASS** |
@@ -93,6 +94,7 @@ To maintain uncompromising engineering transparency, the following constraints a
 5. **Storage Architecture:** Uses SQLite in WAL mode with a decoupled repository interface; while ideal for single-node / edge deployment, distributed production environments would swap the repository implementation for PostgreSQL or Amazon DynamoDB.
 6. **No External Third-Party Audit:** While verified against 10 automated attack scenarios, property tests, and mutation tests, Warrant has not undergone a formal third-party commercial pen-test.
 7. **Prior Work & Open Source Disclosure:** Transparently acknowledges prior architectural concepts in autonomous agent bounding (including the author's previous exploration of passkey-bounded mandates on Monad in `AgentTrust`), adapted and re-architected from scratch for AWS Bedrock, Amazon Alexa+, and Model Context Protocol Streamable HTTP under Apache 2.0 / MIT.
+8. **Simulated Demo OAuth 2.1 Server:** The repository includes a lightweight, simulated OAuth 2.1 authorization server (`/.well-known/oauth-authorization-server`, `GET /oauth/authorize`, `POST /oauth/token`) with PKCE (S256 mandatory) and RFC 8707 Resource Indicators for local testing, evaluation, and CI workflows. It is strictly a demo authorization server for developer evaluation and does not represent official Amazon Alexa+ certification or production identity infrastructure.
 
 ### Visual Interface & Safety Flow
 
@@ -199,7 +201,7 @@ Every user story and safety requirement maps directly to an architectural invari
 ### Comprehensive Verification Summary
 
 > **Exact Verification Breakdown:**  
-> **53 automated unit & integration tests**, **10 adversarial siege attack scenarios** ($S_1 - S_{10}$), **2 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 requests), and **1 comparative benchmark** (3 scenarios).
+> **60 automated unit & integration tests**, **10 adversarial siege attack scenarios** ($S_1 - S_{10}$), **2 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 requests), and **1 comparative benchmark** (3 scenarios).
 
 | Verification Suite | Type | Verified Scope | Execution Time | Status |
 |:---|:---|:---:|:---:|:---:|

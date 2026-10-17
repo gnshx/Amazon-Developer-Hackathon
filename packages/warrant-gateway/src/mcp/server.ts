@@ -14,6 +14,7 @@ import { MockHotelProvider } from "../providers/hotel.js";
 import { MockTrainProvider } from "../providers/train.js";
 import { MockRestaurantProvider } from "../providers/restaurant.js";
 import { FaultType, IMockProvider } from "../providers/types.js";
+import { createDemoOAuthRouter } from "../auth/demo-oauth.js";
 
 export interface GatewayServerOptions {
   repo?: WarrantRepository;
@@ -28,6 +29,7 @@ export interface GatewayServerOptions {
 export function createGatewayApp(options: GatewayServerOptions = {}) {
   const app = express();
   app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
 
   const repo = options.repo ?? new WarrantRepository();
   const approvalService = options.approvalService ?? new ApprovalService(repo);
@@ -46,6 +48,9 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
     restaurantProvider,
     receiptService
   );
+
+  // Mount Demo OAuth 2.1 Server (RFC 8414, RFC 7636 PKCE S256, RFC 8707)
+  app.use(createDemoOAuthRouter(repo));
 
   // Mount Out-of-band Admin Channel (Inaccessible to agent via MCP)
   app.use("/admin", createAdminRouter(repo, approvalService, sagaOrchestrator, receiptService));
@@ -121,7 +126,10 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
     res.setHeader("Content-Type", "application/json");
     res.json({
       resource: `${protocol}://${host}/mcp`,
-      authorization_servers: ["https://auth.amazon.com/oauth2/v2"],
+      authorization_servers: [
+        `${protocol}://${host}`,
+        "https://auth.amazon.com/oauth2/v2"
+      ],
       scopes_supported: ["hotel:search", "hotel:book", "train:search", "train:book", "dining:search", "dining:book"],
       bearer_methods_supported: ["header"],
       resource_documentation: "https://github.com/gnshx/Amazon-Developer-Hackathon"
@@ -130,6 +138,18 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
 
   // Bearer Token Authentication Middleware for /mcp
   const requireGrantAuth = (req: Request, res: Response, next: NextFunction) => {
+    // Reject tokens in query parameters per Alexa+ checklist (header-only tokens)
+    if (req.query.token || req.query.access_token || req.query.bearer_token) {
+      return res.status(400).json({
+        jsonrpc: "2.0",
+        id: req.body?.id ?? null,
+        error: {
+          code: -32000,
+          message: "Bad Request: Bearer tokens in query parameters are strictly forbidden. Pass token in 'Authorization: Bearer <token>' header only."
+        }
+      });
+    }
+
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       res.setHeader("WWW-Authenticate", 'Bearer resource_metadata="/.well-known/oauth-protected-resource", error="invalid_token"');
@@ -185,7 +205,13 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
   };
 
   // MCP Streamable HTTP GET handshake
-  app.get("/mcp", (_req: Request, res: Response) => {
+  app.get("/mcp", (req: Request, res: Response) => {
+    if (req.query.token || req.query.access_token || req.query.bearer_token) {
+      return res.status(400).json({
+        error: "invalid_request",
+        message: "Bearer tokens in query parameters are strictly forbidden. Pass token in 'Authorization: Bearer <token>' header only."
+      });
+    }
     res.setHeader("Content-Type", "application/json");
     res.json({
       name: "warrant-gateway",
