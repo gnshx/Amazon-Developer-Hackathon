@@ -16,6 +16,14 @@ async function runSkillTests() {
 
   const skillContent = fs.readFileSync(skillPath, "utf8");
   console.log(`Loaded Skill: warrant-safe-actions (${skillContent.length} bytes)`);
+
+  const isLiveBedrock = !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY);
+  if (isLiveBedrock) {
+    console.log("Evaluation Engine: ☁️  LIVE Amazon Bedrock Converse API (amazon.nova-pro-v1:0)");
+  } else {
+    console.log("Evaluation Engine: 🤖 Deterministic Agent Stub (Offline Contract Evaluation)");
+    console.log("                   [Note: Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to run live against Bedrock]");
+  }
   console.log("Evaluating Agent against 3 Critical Boundary Failure Cases...\n");
 
   const mockMcpClient = new WarrantMcpClient("http://localhost:8000/mcp", "test_token");

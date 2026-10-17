@@ -196,20 +196,23 @@ Every user story and safety requirement maps directly to an architectural invari
 | **State Residue** | Multi-step booking fails mid-flight, leaving orphaned bookings | Compensating Saga Orchestrator executes reverse cancellations with clean baseline | $I_4$ | **S2** | ✅ Passing |
 | **Accidental Commitment**| User changes mind immediately after voice confirmation | Grace-hold undo window (8s delay) allows out-of-band cancellation before provider settlement | $I_{10}$ | **S10** | ✅ Passing |
 
-### Comprehensive Test Summary (69 Total Checks)
+### Comprehensive Verification Summary
 
-| Package / Test Suite | Scope | Checks / Tests | Execution Time | Status |
+> **Exact Verification Breakdown:**  
+> **53 automated unit & integration tests**, **10 adversarial siege attack scenarios** ($S_1 - S_{10}$), **2 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 requests), and **1 comparative benchmark** (3 scenarios).
+
+| Verification Suite | Type | Verified Scope | Execution Time | Status |
 |:---|:---|:---:|:---:|:---:|
-| **`@warrant/gateway`** | Policy Engine, RFC 8785 Hasher, Idempotency, Saga, Merkle, Receipts, DB | 51 unit & integration tests | ~500ms | ✅ 51/51 Passing |
-| **`@warrant/alexa-client`** | Bedrock Converse Agent Loop & MCP Client Execution | 1 end-to-end integration test | ~300ms | ✅ 1/1 Passing |
-| **`@warrant/siege`** | 10 Core Adversarial Attack Scenarios (S1 – S10) | 10 scenario invariants ($I_1 - I_{10}$) | ~1.6s | ✅ 10/10 Passing |
-| **`Mutation Suite`** | Architectural Negative Fault Injection (Idempotency & Approval) | 2 mutations caught RED | ~2.5s | ✅ 2/2 Caught |
-| **`Audit Verifier`** | SHA-256 chained event log verification from genesis | 53 events verified | ~200ms | ✅ Tip Continuous |
-| **`Receipt Verifier`** | Detached Ed25519 signature & parameter integrity | Signature & tamper check | ~150ms | ✅ Cryptographically Valid |
-| **`Offline Evidence`** | Standalone verification of committed evidence bundle | 3 cryptographic checks | ~250ms | ✅ Zero Setup Green |
-| **`Latency SLA Gate`** | Streamable HTTP SLA Verification (<500ms platform limit) | 50 operations (avg 1.58ms, p99 34ms) | ~1.5s | ✅ <500ms Passing |
-| **`Comparative Benchmark`**| Naive Unprotected Server vs. Warrant Gateway | 3 comparative attack scenarios | ~600ms | ✅ 3/3 Warrant vs 0/3 Naive |
-| **Total Test Suite** | **Full Workspace Verification** | **69 checks & scenarios** | **<8s** | **100% Green** |
+| **`@warrant/gateway`** | Vitest Unit & Integration | 51 unit & integration tests | ~500ms | ✅ 51/51 Passing |
+| **`@warrant/alexa-client`** | Vitest Agent Integration | 1 Bedrock agent loop test | ~300ms | ✅ 1/1 Passing |
+| **`@warrant/siege`** | Vitest Scenario Runner | 1 scenario suite test | ~1.6s | ✅ 1/1 Passing |
+| **`warrant-siege` (CLI)** | Standalone Adversarial Suite | 10 attack scenarios ($S_1 - S_{10}$) | ~1.6s | ✅ 10/10 Passing |
+| **`Mutation Suite`** | Architectural Negative Testing | 2 mutations caught RED | ~2.5s | ✅ 2/2 Caught |
+| **`Agent Skill Suite`** | Skill Boundary Evaluation | 3 rule boundary checks | ~200ms | ✅ 3/3 Passing |
+| **`Latency SLA Gate`** | Streamable HTTP SLA Benchmark | 50 operations (avg 1.58ms, p99 34ms) | ~1.5s | ✅ <500ms Passing |
+| **`Comparative Benchmark`**| Naive vs. Warrant Attack Run | 3 comparative attack scenarios | ~600ms | ✅ 3/3 Warrant vs 0/3 Naive |
+| **`Audit Chain Verifier`** | SHA-256 Ledger Verification | Genesis-to-tip hash continuity | ~200ms | ✅ Cryptographically Continuous |
+| **`Receipt Verifier`** | Ed25519 Offline Validation | Detached signature & tamper check | ~150ms | ✅ Cryptographically Valid |
 
 ---
 

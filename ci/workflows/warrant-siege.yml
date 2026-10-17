@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
+  workflow_call:
 
 jobs:
   adversarial-siege:
@@ -35,8 +36,17 @@ jobs:
       - name: Execute Adversarial Siege Harness (S1 - S10)
         run: npm run test:siege -- --out ./scorecard.html --json ./scorecard.json
 
+      - name: Execute Comparative Benchmark (Naive vs Warrant)
+        run: npm run test:compare
+
+      - name: Execute Latency SLA Benchmark (<500ms)
+        run: npm run test:latency
+
       - name: Verify Cryptographic Audit Event Chain
         run: npm run audit:verify
+
+      - name: Verify Offline Action Receipts
+        run: npm run receipt:verify
 
       - name: Upload Safety Scorecard Artifacts
         if: always()

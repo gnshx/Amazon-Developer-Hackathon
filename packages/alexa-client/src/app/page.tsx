@@ -1044,7 +1044,22 @@ export default function WarrantApplication() {
 
             {/* Save Limits Button */}
             <button
-              onClick={() => {
+              onClick={async () => {
+                try {
+                  await fetch("http://localhost:8000/admin/grants", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      id: grant.id,
+                      scopes: customScopes,
+                      spendCapMinor: customBudget * 100,
+                      expiresAt: new Date(Date.now() + 2 * 3600 * 1000).toISOString(),
+                      userId: "user_household_primary"
+                    })
+                  });
+                } catch {
+                  // Gateway might be offline during static preview; local state still applies
+                }
                 setGrant({
                   ...grant,
                   budgetMinor: customBudget * 100,
