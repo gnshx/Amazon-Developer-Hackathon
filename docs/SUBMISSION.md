@@ -114,7 +114,7 @@ For brands, Warrant is an MCP server over Streamable HTTP (spec 2025-11-25) plus
 The gateway behaves the way Alexa+ MCP quickstart describes: unauthenticated calls get a 401, it serves protected resource metadata, tokens are accepted only in the Authorization header, and grants are tied to the signed-in user, not to a session. Tool annotations and 300-character spoken summaries are tested. Not yet done: a public HTTPS endpoint and a run on a real Alexa+ device.
 
 #### Honest scope
-The Alexa+ client and the providers are simulated, because real Alexa+ access is limited. No real money moves. The OAuth server is a demo and is not Alexa+ certified. The model can still propose a bad plan; the gateway limits the damage it can do. There has been no external security audit. No code was reused from AgentTrust; Warrant is an entirely new codebase written from scratch for this hackathon.
+The Alexa+ client and the providers are simulated, because we did not have access to a real Alexa+ device or add-on environment. No real money moves. The OAuth server is a demo and is not Alexa+ certified. The model can still propose a bad plan; the gateway limits the damage it can do. There has been no external security audit. No code was reused from AgentTrust; Warrant is an entirely new codebase written from scratch for this hackathon.
 
 #### What's next
 • Passkey-signed approvals  

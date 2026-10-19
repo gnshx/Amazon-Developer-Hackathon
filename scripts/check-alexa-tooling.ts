@@ -72,10 +72,11 @@ async function main() {
 
   // Summary & Alexa+ MCP Quickstart Assessment
   log("\n--------------------------------------------------------");
-  log("Assessment per Alexa+ MCP Quickstart Requirements:");
-  log("- `alexa-ai` CLI: Unavailable in local development environment.");
-  log("  (Alexa+ developer preview CLI is distributed via restricted Amazon channels or pre-release SDK).");
-  log("- Fallback / Direct Testing Strategy:");
+  log("Assessment:");
+  log("- `alexa-ai` CLI: Not tested beyond a PATH check.");
+  log("  `alexa-ai` was not found in PATH in our development environment.");
+  log("- We did not have access to a real Alexa+ device or add-on environment.");
+  log("- Testing Strategy:");
   log("  1. Warrant Trust Gateway implements standard MCP 2025-11-25 Streamable HTTP transport.");
   log("  2. End-to-end verification runs live against Amazon Bedrock Converse API (`us.amazon.nova-pro-v1:0`).");
   log("  3. Warrant provides an interactive Simulated Alexa+ Client (`packages/alexa-client`) and phone approval portal.");

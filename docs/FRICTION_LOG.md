@@ -64,10 +64,10 @@ This document logs architectural feedback, ergonomics, failure modes, and develo
 
 ## 4. Voice Agent Safety & Alexa+ Voice Interface Feedback
 
-### 4.1 Alexa+ Developer Preview Tooling Availability
-- **Observation:** The Alexa+ MCP quickstart references testing with developer preview tooling (`alexa-ai` CLI). However, `alexa-ai` is not publicly published to npm or operating system package managers.
+### 4.1 Alexa+ Tooling: Not Tested Beyond a PATH Check
+- **Observation:** The Alexa+ MCP quickstart references testing with developer preview tooling (`alexa-ai` CLI). In our development environment, `alexa-ai` was not found in PATH (tested via `which alexa-ai` and `npm list -g --depth=0`). We did not test beyond this PATH check, and we did not have access to a real Alexa+ device or add-on environment.
 - **Empirical Evidence:** Documented in [`examples/evidence/alexa-tooling/cli-check.txt`](../examples/evidence/alexa-tooling/cli-check.txt) via `npm run check:alexa-tooling`.
-- **Workaround & Solution:** Warrant provides a 100% compliant simulated Alexa+ client (`packages/alexa-client`) and an automated live test against the Bedrock Converse API (`npm run test:demo-flow`), saving complete execution transcripts to [`examples/evidence/bedrock-live/demo-flow-transcript.json`](../examples/evidence/bedrock-live/demo-flow-transcript.json).
+- **Testing Strategy:** Warrant provides a simulated Alexa+ client (`packages/alexa-client`) and an automated live test against the Bedrock Converse API (`npm run test:demo-flow`), saving complete execution transcripts to [`examples/evidence/bedrock-live/demo-flow-transcript.json`](../examples/evidence/bedrock-live/demo-flow-transcript.json).
 
 ### 4.2 Spoken Summary Constraints & Audio Delivery
 - **Observation:** LLMs typically generate verbose textual descriptions when summarizing tool outputs. In a voice environment (Alexa+), output exceeding 2-3 sentences degrades user experience and increases cognitive load.

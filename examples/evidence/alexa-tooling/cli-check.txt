@@ -1,6 +1,6 @@
 Command: npm run check:alexa-tooling
-Timestamp (UTC): 2026-10-19T12:17:35.693Z
-Git Commit: b214fb3c15a5aee00234c48f69aa0eaa7d081b1d
+Timestamp (UTC): 2026-10-19T12:34:12.166Z
+Git Commit: caede24d2c4666c7df12d8c627b0a256db78c479
 Machine: Linux x64 | 12th Gen Intel(R) Core(TM) i7-12700 (20 cores, 16.4GB RAM)
 Node: v22.23.3
 --------------------------------------------------------
@@ -23,10 +23,11 @@ Exit Code: 1
 └── pnpm@12.14.0
 
 --------------------------------------------------------
-Assessment per Alexa+ MCP Quickstart Requirements:
-- `alexa-ai` CLI: Unavailable in local development environment.
-  (Alexa+ developer preview CLI is distributed via restricted Amazon channels or pre-release SDK).
-- Fallback / Direct Testing Strategy:
+Assessment:
+- `alexa-ai` CLI: Not tested beyond a PATH check.
+  `alexa-ai` was not found in PATH in our development environment.
+- We did not have access to a real Alexa+ device or add-on environment.
+- Testing Strategy:
   1. Warrant Trust Gateway implements standard MCP 2025-11-25 Streamable HTTP transport.
   2. End-to-end verification runs live against Amazon Bedrock Converse API (`us.amazon.nova-pro-v1:0`).
   3. Warrant provides an interactive Simulated Alexa+ Client (`packages/alexa-client`) and phone approval portal.
