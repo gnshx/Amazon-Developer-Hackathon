@@ -115,9 +115,6 @@ async function main() {
       rawContent: content
     };
 
-    const proofPath = path.join(process.cwd(), "docs", "bedrock-live-proof.json");
-    fs.writeFileSync(proofPath, JSON.stringify(proofData, null, 2));
-
     const evidenceDir = path.resolve(process.cwd(), "examples/evidence/bedrock-live");
     fs.mkdirSync(evidenceDir, { recursive: true });
     fs.writeFileSync(path.join(evidenceDir, "converse-proof.json"), JSON.stringify(proofData, null, 2));
@@ -150,7 +147,6 @@ async function main() {
 
     fs.writeFileSync(path.join(evidenceDir, "converse.txt"), textHeader + "\n");
 
-    console.log(`\n📄 Execution proof saved to: ${proofPath}`);
     console.log(`📄 Evidence file saved to:   examples/evidence/bedrock-live/converse-proof.json`);
     console.log(`📄 Raw text saved to:        examples/evidence/bedrock-live/converse.txt`);
     console.log("\n========================================================");
@@ -169,9 +165,10 @@ async function main() {
       errorMessage: err.message,
       durationMs: duration
     };
-    const proofPath = path.join(process.cwd(), "docs", "bedrock-live-proof.json");
-    fs.writeFileSync(proofPath, JSON.stringify(errorProof, null, 2));
-    console.log(`📄 Failure metrics saved to: ${proofPath}`);
+    const evidenceDir = path.resolve(process.cwd(), "examples/evidence/bedrock-live");
+    fs.mkdirSync(evidenceDir, { recursive: true });
+    fs.writeFileSync(path.join(evidenceDir, "converse-proof.json"), JSON.stringify(errorProof, null, 2));
+    console.log(`📄 Failure metrics saved to: examples/evidence/bedrock-live/converse-proof.json`);
 
     if (err.name === "ValidationException") {
       console.error("\n💡 Hint: Model ID format error. If using Claude 3.5 Sonnet in us-east-1,");

@@ -32,11 +32,15 @@ program
     let targetAdmin = options.admin;
 
     try {
-      // Check if target gateway is responding
+      // Check if target gateway is responding and is genuine Warrant Gateway
       let isLive = false;
       try {
-        const res = await fetch(options.target, { method: "GET", signal: AbortSignal.timeout(1200) });
-        isLive = res.status < 500;
+        const healthUrl = options.target.replace(/\/mcp\/?$/, "/health");
+        const res = await fetch(healthUrl, { method: "GET", signal: AbortSignal.timeout(1200) });
+        if (res.ok) {
+          const data = (await res.json()) as any;
+          isLive = data.service === "warrant-trust-gateway";
+        }
       } catch {
         isLive = false;
       }

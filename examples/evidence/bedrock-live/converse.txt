@@ -1,14 +1,14 @@
 # Command: npm run test:bedrock
-# Date (UTC): 2026-10-19T12:08:12.482Z
-# Git Commit: b214fb3c15a5aee00234c48f69aa0eaa7d081b1d
+# Date (UTC): 2026-10-19T18:24:28.140Z
+# Git Commit: 5e34ea1b278fe975832dd9c484fc703b7371a5ce
 # Machine: Linux x64 | 12th Gen Intel(R) Core(TM) i7-12700 (20 cores, 16.4GB RAM)
 # Region: us-east-1
 # Model ID: us.amazon.nova-pro-v1:0
 # SDK Version: @aws-sdk/client-bedrock-runtime@3.1152.0
-# Bedrock Request ID: 3a64d677-e33b-4806-b13d-c21373a036f8
+# Bedrock Request ID: 5d4b5650-b1bf-4e04-adfa-8be3af1e2d61
 # Stop Reason: tool_use
-# Latency: 1853ms
-# Token Usage: input=428, output=104, total=532
+# Latency: 2332ms
+# Token Usage: input=428, output=108, total=536
 --------------------------------------------------------
 Status: HTTP 200
 Tool Invocation: search_trains
@@ -16,11 +16,11 @@ Tool Input: {"maxPriceMinor":5000,"origin":"Portland","destination":"Seattle"}
 Raw Content:
 [
   {
-    "text": "<thinking> To find a train from Portland to Seattle under $50, I need to use the `search_trains` tool with the origin set to \"Portland\", the destination set to \"Seattle\", and the maxPriceMinor set to 5000 (since the price is in minor units, i.e., cents). </thinking>\n"
+    "text": "<thinking> To find a train from Portland to Seattle under $50, I need to use the `search_trains` tool with the origin set to \"Portland\" and the destination set to \"Seattle\". I also need to set the `maxPriceMinor` to 5000, which represents $50 in minor units (cents). </thinking>\n"
   },
   {
     "toolUse": {
-      "toolUseId": "tooluse_5b9CUNKRDXg7EwiZx9sr1X",
+      "toolUseId": "tooluse_cOIZC3Na72r2Yybu3EQABs",
       "name": "search_trains",
       "input": {
         "maxPriceMinor": 5000,

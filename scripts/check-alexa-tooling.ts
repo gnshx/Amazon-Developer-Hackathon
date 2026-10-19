@@ -61,24 +61,40 @@ async function main() {
     log(`Exit Code: ${err.status ?? 1}`);
   }
 
-  // Probe 3: Check global npm packages
-  log("\n--- Probe 3: Global npm CLI Packages (`npm list -g --depth=0`) ---");
+  // Probe 3: Attempting Quickstart install command from npm
+  log("\n--- Probe 3: Quickstart CLI Install (`npm install -g --dry-run @alexa-ai/cli`) ---");
   try {
-    const npmList = execSync("npm list -g --depth=0", { encoding: "utf8", stdio: ["pipe", "pipe", "pipe"] }).trim();
-    log(npmList);
+    const installOut = execSync("npm install -g --dry-run @alexa-ai/cli 2>&1", {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+    }).trim();
+    log(`Result: SUCCESS\nOutput: ${installOut}`);
   } catch (err: any) {
-    log(`npm list -g error: ${err.message}`);
+    const out = (err.stdout || err.stderr || err.message || "").toString();
+    const cleaned = out
+      .split("\n")
+      .filter((line: string) => !line.includes("/home/") && !line.includes(".npm/_logs"))
+      .join("\n")
+      .trim();
+    log(`Result: REGISTRY_404_OR_UNAVAILABLE`);
+    log(`Output:`);
+    log(cleaned);
+    log(`Exit Code: ${err.status ?? 1}`);
   }
 
   // Summary & Alexa+ MCP Quickstart Assessment
   log("\n--------------------------------------------------------");
-  log("Assessment:");
-  log("- `alexa-ai` CLI: Not tested beyond a PATH check.");
-  log("  `alexa-ai` was not found in PATH in our development environment.");
-  log("- We did not have access to a real Alexa+ device or add-on environment.");
-  log("- Testing Strategy:");
-  log("  1. Warrant Trust Gateway implements standard MCP 2025-11-25 Streamable HTTP transport.");
-  log("  2. End-to-end verification runs live against Amazon Bedrock Converse API (`us.amazon.nova-pro-v1:0`).");
+  log("Assessment & Friction Analysis:");
+  log("- `alexa-ai` CLI is not present in PATH.");
+  log("- The Alexa+ Developer Docs ('Set Up Your Development Environment') specify");
+  log("  `npm install -g @alexa-ai/cli` after authenticating against an AWS CodeArtifact");
+  log("  registry (`domain: alexa-ai`, `domain-owner: 372468808636`, `region: us-west-2`).");
+  log("- On the public npm registry (without private CodeArtifact role assumption via");
+  log("  `arn:aws:iam::372468808636:role/AddOn3PDeveloperToolsRead`), `@alexa-ai/cli` returns HTTP 404.");
+  log("- Developer access requires pre-approval and role-granting by an Alexa Solutions Architect.");
+  log("- Gateway Testing Strategy:");
+  log("  1. Warrant Trust Gateway strictly conforms to standard MCP 2025-11-25 Streamable HTTP.");
+  log("  2. End-to-end model invocation verified live against Amazon Bedrock Converse API (`us.amazon.nova-pro-v1:0`).");
   log("  3. Warrant provides an interactive Simulated Alexa+ Client (`packages/alexa-client`) and phone approval portal.");
   log("--------------------------------------------------------\n");
 

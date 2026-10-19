@@ -25,12 +25,7 @@ This document logs architectural feedback, ergonomics, failure modes, and develo
 
 ### 2.2 Friction Points & Specific Recommendations
 
-#### Friction 1: Foundation Model ID vs System-Defined Inference Profile
-- **Observation:** When requesting on-demand throughput for bare foundation model IDs (e.g. `amazon.nova-pro-v1:0` or `anthropic.claude-3-5-sonnet-20241022-v2:0`), the API returns `ValidationException: Invocation of model ID with on-demand throughput isn't supported.` Discovering that cross-region inference profiles (`us.amazon.nova-pro-v1:0`) must be used instead required running custom model enumeration scripts.
-- **Empirical Evidence:** Recorded in [`examples/evidence/bedrock-live/check-models.txt`](../examples/evidence/bedrock-live/check-models.txt) and [`examples/evidence/bedrock-live/converse.txt`](../examples/evidence/bedrock-live/converse.txt) via `npm run check:bedrock-models`.
-- **Recommendation for AWS Team:** The SDK / API error message should explicitly list compatible system-defined inference profiles for the requested foundation model (e.g., "Use profile 'us.amazon.nova-pro-v1:0' for on-demand invocation in us-east-1").
-
-#### Friction 2: Error Normalization across Regional Endpoints
+#### Friction 1: Error Normalization across Regional Endpoints
 - **Observation:** If a specific model ID is throttled or pending access approval in a specific region (e.g., `us-east-1` vs `us-west-2`), the error response returned by the SDK wraps internal XML/JSON payloads with ambiguous status codes (`AccessDeniedException` vs `ValidationException`).
 - **Recommendation for AWS Team:** Provide a unified diagnostic error payload in the SDK that clearly distinguishes between:
   1. *AWS IAM permission missing*
@@ -38,7 +33,7 @@ This document logs architectural feedback, ergonomics, failure modes, and develo
   3. *Model ID unavailable in requested region*
   4. *Account concurrency quota exceeded*
 
-#### Friction 3: Tool Specification Strictness on Empty Parameters
+#### Friction 2: Tool Specification Strictness on Empty Parameters
 - **Observation:** When defining tools that require zero parameters (e.g., `get_plan_status` or ping tools), Bedrock Converse API schema expects an explicit JSON schema object with `{ type: "object", properties: {} }`. Certain client libraries emit null or omit `inputSchema`, resulting in schema rejection.
 - **Recommendation for AWS Team:** Support optional or omitted `inputSchema` for parameter-free tools.
 
@@ -64,8 +59,8 @@ This document logs architectural feedback, ergonomics, failure modes, and develo
 
 ## 4. Voice Agent Safety & Alexa+ Voice Interface Feedback
 
-### 4.1 Alexa+ Tooling: Not Tested Beyond a PATH Check
-- **Observation:** The Alexa+ MCP quickstart references testing with developer preview tooling (`alexa-ai` CLI). In our development environment, `alexa-ai` was not found in PATH (tested via `which alexa-ai` and `npm list -g --depth=0`). We did not test beyond this PATH check, and we did not have access to a real Alexa+ device or add-on environment.
+### 4.1 Alexa+ Tooling & Quickstart CLI Availability
+- **Observation:** The Alexa+ Developer Documentation ("Set Up Your Development Environment") specifies installing the developer CLI via `npm install -g @alexa-ai/cli` after logging in to an AWS CodeArtifact registry (`aws codeartifact login --domain alexa-ai --repository npm-packages --domain-owner 372468808636 --region us-west-2`). In our environment, `alexa-ai` was not in PATH, and invoking `npm install -g --dry-run @alexa-ai/cli` against the public npm registry returned HTTP 404 because developer access requires pre-approval from an Alexa Solutions Architect to assume role `arn:aws:iam::372468808636:role/AddOn3PDeveloperToolsRead`.
 - **Empirical Evidence:** Documented in [`examples/evidence/alexa-tooling/cli-check.txt`](../examples/evidence/alexa-tooling/cli-check.txt) via `npm run check:alexa-tooling`.
 - **Testing Strategy:** Warrant provides a simulated Alexa+ client (`packages/alexa-client`) and an automated live test against the Bedrock Converse API (`npm run test:demo-flow`), saving complete execution transcripts to [`examples/evidence/bedrock-live/demo-flow-transcript.json`](../examples/evidence/bedrock-live/demo-flow-transcript.json).
 

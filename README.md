@@ -26,6 +26,8 @@ Five screens (images in [`docs/assets`](docs/assets)): the assistant console wit
 |:---:|
 | ![Your Assistant's Limits](docs/assets/5-assistants-limits.png) |
 
+> **Note on Test Data:** The five UI screenshots above demonstrate the interface using sample scenario data (Chicago weekend trip with Harbor Inn). The live Amazon Bedrock Converse execution recorded in [`examples/evidence/bedrock-live/`](examples/evidence/bedrock-live/) evaluated a live travel query between Portland and Seattle.
+
 ---
 
 ## Verify it in about a minute
@@ -172,6 +174,18 @@ Every user story and safety requirement maps directly to an architectural invari
 | **`Comparative Benchmark`**| Example Unprotected Server vs. Warrant | 3 comparative attack scenarios | ~600ms | ✅ 3/3 Warrant vs 0/3 Unprotected Example |
 | **`Audit Chain Verifier`** | SHA-256 Ledger Verification | Genesis-to-tip hash continuity | ~200ms | ✅ Cryptographically Continuous |
 | **`Receipt Verifier`** | Ed25519 Offline Validation | Detached signature & tamper check | ~150ms | ✅ Cryptographically Valid |
+
+### Live Amazon Bedrock Converse Execution (`demo-flow-transcript.json`)
+
+The end-to-end live model execution transcript is preserved in [`examples/evidence/bedrock-live/demo-flow-transcript.json`](examples/evidence/bedrock-live/demo-flow-transcript.json). The transcript records a multi-turn conversation with Amazon Bedrock (`us.amazon.nova-pro-v1:0` in `us-east-1`):
+1. **User Prompt:** *"Book a weekend trip to Seattle with a hotel and train under $300."*
+2. **Turn 1 (Autonomous Tool Selection):** The model independently chooses and invokes `search_hotels` (destination: Seattle, 2 nights) at `12:14:06.596Z` and `search_trains` (destination: Seattle) at `12:14:06.599Z`. Both tools return real candidate options.
+3. **Turn 2 (Plan Construction):** The model receives tool results and independently chooses `propose_plan` at `12:14:09.339Z`, specifying two steps: `book_hotel` ($95) and `book_train` ($45) with reverse compensations (`cancel_hotel`, `cancel_train`). Note that distinct timestamps and Bedrock `toolUseId`s between turns confirm genuine multi-turn conversational tool selection.
+4. **Gateway Policy Evaluation:** The gateway evaluates deterministic policy against active user grant `grant_live_demo` ($500 cap). `book_hotel` exceeds the auto-commit threshold and is classified as $T_2$ (High Risk), placing the plan into `PENDING_APPROVAL` with an RFC 8785 canonical argument hash (`5020e909...`).
+5. **Out-of-Band Step-Up Approval:** The user confirms the action on their companion phone card. This approval step goes strictly through the gateway's internal Admin REST API (`POST /admin/approvals/:id/decide`), completely off the MCP agent channel, issuing a cryptographically signed approval token.
+6. **Execution & Signed Receipts:** The agent submits the approval token to `execute_plan` at `12:14:11.142Z`. The gateway verifies token validity against the canonical argument hash, commits the bookings, issues detached Ed25519 signed action receipts (`rcpt_2ee4...`), initiates the 8-second grace-hold undo window, and returns a spoken summary of under 300 characters (*"Your trip is booked and confirmed! Total spend was $165.00."*).
+
+A single-turn isolated invocation proof is also saved in [`examples/evidence/bedrock-live/converse-proof.json`](examples/evidence/bedrock-live/converse-proof.json) (Request ID: `5d4b5650-b1bf-4e04-adfa-8be3af1e2d61`).
 
 ---
 

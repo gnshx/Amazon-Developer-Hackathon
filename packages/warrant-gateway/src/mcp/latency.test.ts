@@ -194,17 +194,19 @@ describe("T4: Alexa+ Latency SLA & Contract Benchmark (<500ms)", () => {
       overallStatus: "PASS"
     };
 
-    // Save report to workspace root examples/evidence/latency.json
-    const rootDir = process.cwd().includes("packages")
-      ? path.resolve(process.cwd(), "../..")
-      : process.cwd();
-    const evidenceDir = path.resolve(rootDir, "examples/evidence");
-    if (!fs.existsSync(evidenceDir)) {
-      fs.mkdirSync(evidenceDir, { recursive: true });
+    // Save report to workspace root examples/evidence/latency.json only when explicitly requested
+    if (process.env.UPDATE_LATENCY_EVIDENCE === "true") {
+      const rootDir = process.cwd().includes("packages")
+        ? path.resolve(process.cwd(), "../..")
+        : process.cwd();
+      const evidenceDir = path.resolve(rootDir, "examples/evidence");
+      if (!fs.existsSync(evidenceDir)) {
+        fs.mkdirSync(evidenceDir, { recursive: true });
+      }
+      fs.writeFileSync(
+        path.join(evidenceDir, "latency.json"),
+        JSON.stringify(benchmarkReport, null, 2)
+      );
     }
-    fs.writeFileSync(
-      path.join(evidenceDir, "latency.json"),
-      JSON.stringify(benchmarkReport, null, 2)
-    );
   });
 });

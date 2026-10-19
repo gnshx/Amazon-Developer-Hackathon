@@ -45,7 +45,10 @@ async function runClaimsCheck() {
     { regex: /\bmathematical\b/i, name: "Forbidden term 'mathematical' (overstatement without formal proof)" },
     { regex: /alexa-dev-1/i, name: "Fabricated reviewer username 'alexa-dev-1'" },
     { regex: /amazon-eval-1/i, name: "Fabricated reviewer username 'amazon-eval-1'" },
-    { regex: /explicitly state/i, name: "Fabricated direct quote 'explicitly state'" }
+    { regex: /explicitly state/i, name: "Fabricated direct quote 'explicitly state'" },
+    { regex: /chance of winning/i, name: "Forbidden speculative phrase 'chance of winning'" },
+    { regex: /\/\s*100\b/i, name: "Forbidden fabricated score '/ 100'" },
+    { regex: /Overall Score/i, name: "Forbidden fabricated evaluation phrase 'Overall Score'" }
   ];
 
   console.log("1. Scanning documentation for forbidden buzzwords and fabricated quotes...");
