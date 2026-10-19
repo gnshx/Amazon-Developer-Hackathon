@@ -1,0 +1,14 @@
+# Command: npm run test:latency
+# Date (UTC): 2026-10-19T12:16:44.074Z
+# Git Commit: b214fb3c15a5aee00234c48f69aa0eaa7d081b1d
+# Machine: 12th Gen Intel(R) Core(TM) i7-12700 (20 cores, x64, linux, 15.3 GB RAM)
+# Note: Gateway processing time on localhost with mock providers (50 sequential calls per tool)
+# Platform SLA Ceiling: 500ms p95
+----------------------------------------------------------------------------------
+| Tool / Operation              | Calls | Avg (ms) | p50 (ms) | p95 (ms) | Max (ms) | Status |
+|-------------------------------|-------|----------|----------|----------|----------|--------|
+| search_hotels (T0 Read-Only)  | 50    |     1.79 |     0.85 |     3.35 |    37.52 | ✅ PASS |
+| propose_plan (T1 Policy Check)| 50    |     1.06 |     0.99 |     1.71 |     2.49 | ✅ PASS |
+| execute_plan (8s Undo Window) | 50    |     0.99 |     0.94 |     1.20 |     2.38 | ✅ PASS |
+----------------------------------------------------------------------------------
+Overall Status: PASS

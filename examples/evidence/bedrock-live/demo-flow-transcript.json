@@ -1,0 +1,345 @@
+{
+  "metadata": {
+    "command": "tsx scripts/run-live-demo-flow.ts",
+    "timestamp": "2026-10-19T12:14:11.147Z",
+    "gitCommit": "b214fb3c15a5aee00234c48f69aa0eaa7d081b1d",
+    "machine": "Linux x64 | 12th Gen Intel(R) Core(TM) i7-12700 (20 cores, 16.4GB RAM)",
+    "region": "us-east-1",
+    "modelId": "us.amazon.nova-pro-v1:0",
+    "totalDurationMs": 6894
+  },
+  "userPrompt": "Book a weekend trip to Seattle with a hotel and train under $300.",
+  "agentSpokenResponse": "<thinking> The plan has been proposed, and the user needs to approve the hotel booking, which is a high-risk action. I will inform the user about the plan and ask them to approve it on their mobile device. </thinking> I have found a plan for your weekend trip to Seattle with a hotel and train for $140. The hotel booking needs your approval, so I sent a request to your phone. Please approve it on your mobile device.",
+  "planId": "plan_72cf21acd2354c44931a74a6413fbb0e",
+  "executionResult": {
+    "planId": "plan_72cf21acd2354c44931a74a6413fbb0e",
+    "state": "COMPLETED",
+    "confirmedSpendMinor": 16500,
+    "stepResults": [
+      {
+        "actionId": "act_51172babe7414bbaa7aac0b86b722561",
+        "toolName": "book_hotel",
+        "bookingRef": "htl_e570b896",
+        "costMinor": 12000,
+        "receipt": {
+          "actionId": "act_51172babe7414bbaa7aac0b86b722561",
+          "currency": "USD",
+          "executedAt": "2026-10-19T12:14:11.140Z",
+          "grantId": "grant_live_demo",
+          "paramsHash": "5020e90957bd67e6ef646252be43aecf51336c805f1724b1b46984cce1da5501",
+          "planId": "plan_72cf21acd2354c44931a74a6413fbb0e",
+          "providerBookingRef": "htl_e570b896",
+          "receiptId": "rcpt_2ee41a778b37487dbb5aba3f42fae241",
+          "spendMinor": 12000,
+          "toolName": "book_hotel",
+          "version": "1.0",
+          "gatewayPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAFIjvpy/udS3i03y2hAeYggrr6zLn2xG2iKTcnVeM+NU=\n-----END PUBLIC KEY-----\n",
+          "signature": "f9dd7631abfc19326d76a495638739d108a56112530062f974258c56c1f4977cd8da75956642fdc708bb8d27d5683fbc87de2271bf7e983fe6949e57db15830c"
+        }
+      },
+      {
+        "actionId": "act_3808240368614ae79e3678f6d0a30b8e",
+        "toolName": "book_train",
+        "bookingRef": "trn_d83f555d",
+        "costMinor": 4500,
+        "receipt": {
+          "actionId": "act_3808240368614ae79e3678f6d0a30b8e",
+          "currency": "USD",
+          "executedAt": "2026-10-19T12:14:11.141Z",
+          "grantId": "grant_live_demo",
+          "paramsHash": "c4440b7c2fde54abe664db7530d3e4e61f988bed564c4f11d8f04454e6a8b9a3",
+          "planId": "plan_72cf21acd2354c44931a74a6413fbb0e",
+          "providerBookingRef": "trn_d83f555d",
+          "receiptId": "rcpt_117067cd519b408ba8ac1a58682389eb",
+          "spendMinor": 4500,
+          "toolName": "book_train",
+          "version": "1.0",
+          "gatewayPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAFIjvpy/udS3i03y2hAeYggrr6zLn2xG2iKTcnVeM+NU=\n-----END PUBLIC KEY-----\n",
+          "signature": "5b0a0d0c03349ae81d368d6fb77fc42f2e00f41914c6859534626d1fc706be7f2f8aff07afdac2a39cb4a9a94f7976e8ef05b365e7980b878d9f5418b80ec704"
+        }
+      }
+    ],
+    "compensatedSteps": [],
+    "receipts": [
+      {
+        "actionId": "act_51172babe7414bbaa7aac0b86b722561",
+        "currency": "USD",
+        "executedAt": "2026-10-19T12:14:11.140Z",
+        "grantId": "grant_live_demo",
+        "paramsHash": "5020e90957bd67e6ef646252be43aecf51336c805f1724b1b46984cce1da5501",
+        "planId": "plan_72cf21acd2354c44931a74a6413fbb0e",
+        "providerBookingRef": "htl_e570b896",
+        "receiptId": "rcpt_2ee41a778b37487dbb5aba3f42fae241",
+        "spendMinor": 12000,
+        "toolName": "book_hotel",
+        "version": "1.0",
+        "gatewayPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAFIjvpy/udS3i03y2hAeYggrr6zLn2xG2iKTcnVeM+NU=\n-----END PUBLIC KEY-----\n",
+        "signature": "f9dd7631abfc19326d76a495638739d108a56112530062f974258c56c1f4977cd8da75956642fdc708bb8d27d5683fbc87de2271bf7e983fe6949e57db15830c"
+      },
+      {
+        "actionId": "act_3808240368614ae79e3678f6d0a30b8e",
+        "currency": "USD",
+        "executedAt": "2026-10-19T12:14:11.141Z",
+        "grantId": "grant_live_demo",
+        "paramsHash": "c4440b7c2fde54abe664db7530d3e4e61f988bed564c4f11d8f04454e6a8b9a3",
+        "planId": "plan_72cf21acd2354c44931a74a6413fbb0e",
+        "providerBookingRef": "trn_d83f555d",
+        "receiptId": "rcpt_117067cd519b408ba8ac1a58682389eb",
+        "spendMinor": 4500,
+        "toolName": "book_train",
+        "version": "1.0",
+        "gatewayPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAFIjvpy/udS3i03y2hAeYggrr6zLn2xG2iKTcnVeM+NU=\n-----END PUBLIC KEY-----\n",
+        "signature": "5b0a0d0c03349ae81d368d6fb77fc42f2e00f41914c6859534626d1fc706be7f2f8aff07afdac2a39cb4a9a94f7976e8ef05b365e7980b878d9f5418b80ec704"
+      }
+    ],
+    "spoken_summary": "Your trip is booked and confirmed! Total spend was $165.00."
+  },
+  "traces": [
+    {
+      "timestamp": "2026-10-19T12:14:04.248Z",
+      "type": "THINKING",
+      "content": "Received voice prompt: \"Book a weekend trip to Seattle with a hotel and train under $300.\""
+    },
+    {
+      "timestamp": "2026-10-19T12:14:06.596Z",
+      "type": "TOOL_CALL",
+      "toolName": "search_hotels",
+      "args": {
+        "nights": 2,
+        "destination": "Seattle"
+      },
+      "content": "Bedrock Converse invoked tool search_hotels"
+    },
+    {
+      "timestamp": "2026-10-19T12:14:06.599Z",
+      "type": "TOOL_RESULT",
+      "toolName": "search_hotels",
+      "result": {
+        "destination": "Seattle",
+        "hotels": [
+          {
+            "id": "hotel_grand",
+            "name": "Grand Plaza Hotel",
+            "priceMinor": 12000,
+            "rating": 4.8
+          },
+          {
+            "id": "hotel_boutique",
+            "name": "Harbor Boutique Inn",
+            "priceMinor": 9500,
+            "rating": 4.6
+          }
+        ]
+      },
+      "content": "Found 2 hotels in Seattle starting at $95.00 per night."
+    },
+    {
+      "timestamp": "2026-10-19T12:14:06.599Z",
+      "type": "TOOL_CALL",
+      "toolName": "search_trains",
+      "args": {
+        "origin": "User's current location",
+        "destination": "Seattle"
+      },
+      "content": "Bedrock Converse invoked tool search_trains"
+    },
+    {
+      "timestamp": "2026-10-19T12:14:06.601Z",
+      "type": "TOOL_RESULT",
+      "toolName": "search_trains",
+      "result": {
+        "origin": "User's current location",
+        "destination": "Seattle",
+        "trains": [
+          {
+            "id": "train_exp_1",
+            "departure": "08:30",
+            "priceMinor": 4500,
+            "duration": "1h 45m"
+          },
+          {
+            "id": "train_exp_2",
+            "departure": "11:15",
+            "priceMinor": 5200,
+            "duration": "1h 40m"
+          }
+        ]
+      },
+      "content": "Found 2 trains from User's current location to Seattle starting at $45.00."
+    },
+    {
+      "timestamp": "2026-10-19T12:14:09.339Z",
+      "type": "TOOL_CALL",
+      "toolName": "propose_plan",
+      "args": {
+        "steps": [
+          {
+            "toolName": "book_hotel",
+            "params": {
+              "hotel_id": "hotel_boutique",
+              "nights": 2
+            },
+            "estimatedCostMinor": 9500,
+            "compensationTool": "cancel_hotel",
+            "compensationParams": {
+              "hotel_id": "hotel_boutique"
+            }
+          },
+          {
+            "toolName": "book_train",
+            "params": {
+              "train_id": "train_exp_1"
+            },
+            "estimatedCostMinor": 4500,
+            "compensationTool": "cancel_train",
+            "compensationParams": {
+              "train_id": "train_exp_1"
+            }
+          }
+        ]
+      },
+      "content": "Bedrock Converse invoked tool propose_plan"
+    },
+    {
+      "timestamp": "2026-10-19T12:14:09.343Z",
+      "type": "TOOL_RESULT",
+      "toolName": "propose_plan",
+      "result": {
+        "planId": "plan_72cf21acd2354c44931a74a6413fbb0e",
+        "state": "PROPOSED",
+        "totalEstimatedMinor": 14000,
+        "actions": [
+          {
+            "id": "act_51172babe7414bbaa7aac0b86b722561",
+            "seq": 1,
+            "toolName": "book_hotel",
+            "riskTier": "T2",
+            "state": "PENDING_APPROVAL",
+            "estimatedCostMinor": 9500
+          },
+          {
+            "id": "act_3808240368614ae79e3678f6d0a30b8e",
+            "seq": 2,
+            "toolName": "book_train",
+            "riskTier": "T1",
+            "state": "PROPOSED",
+            "estimatedCostMinor": 4500
+          }
+        ],
+        "pendingApprovals": [
+          {
+            "actionId": "act_51172babe7414bbaa7aac0b86b722561",
+            "toolName": "book_hotel",
+            "params": {
+              "hotel_id": "hotel_boutique",
+              "nights": 2
+            },
+            "paramsHash": "5020e90957bd67e6ef646252be43aecf51336c805f1724b1b46984cce1da5501",
+            "approvalId": "apr_cf7e0f378ae149de91c45e669d0d17e3",
+            "status": "PENDING",
+            "elicitation": {
+              "mode": "url",
+              "url": "http://localhost:3000/approval?actionId=act_51172babe7414bbaa7aac0b86b722561&hash=5020e90957bd67e6ef646252be43aecf51336c805f1724b1b46984cce1da5501",
+              "description": "Approve this high-risk action out-of-band on your mobile device"
+            }
+          }
+        ]
+      },
+      "content": "I prepared a plan with 2 steps totaling $140.00. 1 step requires your approval on your phone."
+    },
+    {
+      "timestamp": "2026-10-19T12:14:11.138Z",
+      "type": "APPROVAL",
+      "content": "User confirmed action book_hotel on companion phone card. Issued approval token."
+    },
+    {
+      "timestamp": "2026-10-19T12:14:11.142Z",
+      "type": "TOOL_RESULT",
+      "toolName": "execute_plan",
+      "result": {
+        "planId": "plan_72cf21acd2354c44931a74a6413fbb0e",
+        "state": "COMPLETED",
+        "confirmedSpendMinor": 16500,
+        "stepResults": [
+          {
+            "actionId": "act_51172babe7414bbaa7aac0b86b722561",
+            "toolName": "book_hotel",
+            "bookingRef": "htl_e570b896",
+            "costMinor": 12000,
+            "receipt": {
+              "actionId": "act_51172babe7414bbaa7aac0b86b722561",
+              "currency": "USD",
+              "executedAt": "2026-10-19T12:14:11.140Z",
+              "grantId": "grant_live_demo",
+              "paramsHash": "5020e90957bd67e6ef646252be43aecf51336c805f1724b1b46984cce1da5501",
+              "planId": "plan_72cf21acd2354c44931a74a6413fbb0e",
+              "providerBookingRef": "htl_e570b896",
+              "receiptId": "rcpt_2ee41a778b37487dbb5aba3f42fae241",
+              "spendMinor": 12000,
+              "toolName": "book_hotel",
+              "version": "1.0",
+              "gatewayPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAFIjvpy/udS3i03y2hAeYggrr6zLn2xG2iKTcnVeM+NU=\n-----END PUBLIC KEY-----\n",
+              "signature": "f9dd7631abfc19326d76a495638739d108a56112530062f974258c56c1f4977cd8da75956642fdc708bb8d27d5683fbc87de2271bf7e983fe6949e57db15830c"
+            }
+          },
+          {
+            "actionId": "act_3808240368614ae79e3678f6d0a30b8e",
+            "toolName": "book_train",
+            "bookingRef": "trn_d83f555d",
+            "costMinor": 4500,
+            "receipt": {
+              "actionId": "act_3808240368614ae79e3678f6d0a30b8e",
+              "currency": "USD",
+              "executedAt": "2026-10-19T12:14:11.141Z",
+              "grantId": "grant_live_demo",
+              "paramsHash": "c4440b7c2fde54abe664db7530d3e4e61f988bed564c4f11d8f04454e6a8b9a3",
+              "planId": "plan_72cf21acd2354c44931a74a6413fbb0e",
+              "providerBookingRef": "trn_d83f555d",
+              "receiptId": "rcpt_117067cd519b408ba8ac1a58682389eb",
+              "spendMinor": 4500,
+              "toolName": "book_train",
+              "version": "1.0",
+              "gatewayPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAFIjvpy/udS3i03y2hAeYggrr6zLn2xG2iKTcnVeM+NU=\n-----END PUBLIC KEY-----\n",
+              "signature": "5b0a0d0c03349ae81d368d6fb77fc42f2e00f41914c6859534626d1fc706be7f2f8aff07afdac2a39cb4a9a94f7976e8ef05b365e7980b878d9f5418b80ec704"
+            }
+          }
+        ],
+        "compensatedSteps": [],
+        "receipts": [
+          {
+            "actionId": "act_51172babe7414bbaa7aac0b86b722561",
+            "currency": "USD",
+            "executedAt": "2026-10-19T12:14:11.140Z",
+            "grantId": "grant_live_demo",
+            "paramsHash": "5020e90957bd67e6ef646252be43aecf51336c805f1724b1b46984cce1da5501",
+            "planId": "plan_72cf21acd2354c44931a74a6413fbb0e",
+            "providerBookingRef": "htl_e570b896",
+            "receiptId": "rcpt_2ee41a778b37487dbb5aba3f42fae241",
+            "spendMinor": 12000,
+            "toolName": "book_hotel",
+            "version": "1.0",
+            "gatewayPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAFIjvpy/udS3i03y2hAeYggrr6zLn2xG2iKTcnVeM+NU=\n-----END PUBLIC KEY-----\n",
+            "signature": "f9dd7631abfc19326d76a495638739d108a56112530062f974258c56c1f4977cd8da75956642fdc708bb8d27d5683fbc87de2271bf7e983fe6949e57db15830c"
+          },
+          {
+            "actionId": "act_3808240368614ae79e3678f6d0a30b8e",
+            "currency": "USD",
+            "executedAt": "2026-10-19T12:14:11.141Z",
+            "grantId": "grant_live_demo",
+            "paramsHash": "c4440b7c2fde54abe664db7530d3e4e61f988bed564c4f11d8f04454e6a8b9a3",
+            "planId": "plan_72cf21acd2354c44931a74a6413fbb0e",
+            "providerBookingRef": "trn_d83f555d",
+            "receiptId": "rcpt_117067cd519b408ba8ac1a58682389eb",
+            "spendMinor": 4500,
+            "toolName": "book_train",
+            "version": "1.0",
+            "gatewayPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAFIjvpy/udS3i03y2hAeYggrr6zLn2xG2iKTcnVeM+NU=\n-----END PUBLIC KEY-----\n",
+            "signature": "5b0a0d0c03349ae81d368d6fb77fc42f2e00f41914c6859534626d1fc706be7f2f8aff07afdac2a39cb4a9a94f7976e8ef05b365e7980b878d9f5418b80ec704"
+          }
+        ],
+        "spoken_summary": "Your trip is booked and confirmed! Total spend was $165.00."
+      },
+      "content": "Your trip is booked and confirmed! Total spend was $165.00."
+    }
+  ]
+}

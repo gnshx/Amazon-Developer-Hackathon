@@ -38,11 +38,11 @@ npm run verify:evidence
 3. **`npm run test:compare`** tests an intentionally unprotected example server we wrote vs. Warrant under identical attack loads:
    - Unprotected example server fails 0/3 (10 duplicate bookings charged, $120 orphaned hotel residue, budget exceeded).
    - Warrant passes 3/3 (1 deduplicated booking, $0 orphan residue after rollback, budget ceiling enforced).
-4. **`npm run test:latency`** measures gateway processing time on localhost across 50 calls per tool:
-   - Measured on localhost (12th Gen Intel i7, no network/TLS overhead): search p95 **2.81 ms**, propose p95 **1.64 ms**, execute p95 **1.28 ms**.
-5. **`npm run verify:evidence`** cryptographically validates the committed sample bundle in [`examples/evidence/`](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/examples/evidence/):
+4. **`npm run test:latency`** measures gateway processing time on localhost with mock providers across 50 calls per tool:
+   - Measured on localhost (12th Gen Intel i7, gateway processing time on localhost with mock providers): search p95 **3.35 ms**, propose p95 **1.71 ms**, execute p95 **1.20 ms**.
+5. **`npm run verify:evidence`** cryptographically validates the committed sample bundle in [`examples/evidence/`](examples/evidence/INDEX.md):
    - Detached **Ed25519 signature** verified over canonical RFC 8785 action parameters ($I_9$).
-   - In-memory tamper attempt (mutating \$360.00 to \$36.00) is **cryptographically rejected**.
+   - In-memory tamper attempt (mutating $360.00 to $36.00) is **cryptographically rejected**.
    - SHA-256 event chaining verified continuous from genesis ($I_7$).
 
 ---
@@ -53,7 +53,7 @@ npm run verify:evidence
 - **Conforms to MCP Streamable HTTP Spec (`2025-11-25`):** Standard JSON-RPC over Streamable HTTP transport, compatible with Anthropic Claude Desktop, Cursor, and AWS Bedrock Agent MCP bridges.
 - **RFC 9728 OAuth Protected Resource Metadata:** Live `GET /.well-known/oauth-protected-resource` endpoint returning canonical resource identifier and scopes; returns 401 on unauthenticated calls.
 - **User Identity Binding:** Grants and authorizations are bound to authenticated user identity (`userId` / OAuth `sub` claim), not ephemeral client session tokens.
-- **Local Gateway Processing Latency:** 50 consecutive calls on localhost measure search p95 **2.81 ms**, propose p95 **1.64 ms**, execute p95 **1.28 ms** (12th Gen Intel i7, no network/TLS overhead; `npm run test:latency`).
+- **Local Gateway Processing Latency:** 50 consecutive calls on localhost measure search p95 **3.35 ms**, propose p95 **1.71 ms**, execute p95 **1.20 ms** (12th Gen Intel i7, gateway processing time on localhost with mock providers; `npm run test:latency`).
 - **MCP 2025-11-25 Semantic Tool Annotations:** Tools specify standard `readOnlyHint`, `destructiveHint`, and `idempotentHint`, alongside custom metadata like `riskTier` and companion approval URLs.
 - **Cryptographic Parameter Binding ($I_3$):** All high-risk ($T_2$) actions require approvals bound to $\text{SHA-256}(\text{RFC8785Canonical}(\text{args}))$. Changing a single date, price, or ID breaks the approval token.
 - **Multi-Layer Idempotency ($I_1$):** Dual-indexed in SQLite with in-flight state tracking (`PROCESSING` $\to$ `COMPLETED`). Concurrent voice retry storms execute external side effects exactly once.
@@ -61,7 +61,7 @@ npm run verify:evidence
 - **Active Timeout Reconciliation ($I_8$):** Socket disconnects and HTTP timeouts are reconciled against the external provider's truth using the idempotency key, never blindly retried.
 - **Detached Ed25519 Signed Receipts ($I_9$):** Every executed action generates a verifiable signed receipt that anyone can audit offline without trusting the gateway.
 - **Zero Floating-Point Financial Math:** All currency is denominated strictly in non-negative integer minor units (cents/pence: \$150.00 is `15000`).
-- **Amazon Bedrock Converse API Loop:** Autonomous voice agent tool-calling loop with Amazon Nova Pro (`amazon.nova-pro-v1:0`) and deterministic zero-credential fallback stub for CI.
+- **Amazon Bedrock Converse API Loop:** Autonomous voice agent tool-calling loop with Amazon Nova Pro (`us.amazon.nova-pro-v1:0`) and deterministic zero-credential fallback stub for CI.
 
 ### 2. Design
 - **The Voice Dilemma Solved:** Voice assistants cannot present full checkout screens before execution. Warrant solves this by enforcing an out-of-band companion phone approval flow for actions exceeding the household threshold (\$200), with voice-first spoken summaries ($\le 300$ characters).
@@ -109,7 +109,7 @@ npm run verify:evidence
 ## 📊 Comprehensive Verification Summary
 
 > **Exact Verification Breakdown:**  
-> **66 automated unit & integration tests**, **11 adversarial siege attack scenarios** ($S_1 - S_{11}$), **3 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 calls per tool type, p95 < 2.7ms), and **1 comparative benchmark** (3 scenarios).
+> **66 automated unit & integration tests**, **11 adversarial siege attack scenarios** ($S_1 - S_{11}$), **3 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 calls per tool type, p95 < 4ms), and **1 comparative benchmark** (3 scenarios).
 
 | Verification Suite | Type | Verified Scope | Execution Time | Status |
 |:---|:---|:---:|:---:|:---:|
@@ -119,7 +119,7 @@ npm run verify:evidence
 | **`warrant-siege` (CLI)** | Standalone Adversarial Suite | 11 attack scenarios ($S_1 - S_{11}$) | ~1.6s | ✅ 11/11 Passing |
 | **`Mutation Suite`** | Architectural Negative Testing | 3 mutations caught RED | ~2.5s | ✅ 3/3 Caught |
 | **`Agent Skill Suite`** | Skill Boundary Evaluation | 3 rule boundary checks | ~200ms | ✅ 3/3 Passing |
-| **`Gateway Latency Benchmark`** | Local Processing Benchmark | 50 operations/tool (search p95 2.71ms, propose 1.16ms, exec 1.12ms) | ~1.5s | ✅ Local Processing Time Recorded |
+| **`Gateway Latency Benchmark`** | Local Processing Benchmark | 50 operations/tool (search p95 3.35ms, propose 1.71ms, exec 1.20ms; gateway processing time on localhost with mock providers) | ~1.5s | ✅ Local Processing Time Recorded |
 | **`Comparative Benchmark`**| Example Unprotected Server vs. Warrant | 3 comparative attack scenarios | ~600ms | ✅ 3/3 Warrant vs 0/3 Unprotected Example |
 | **`Audit Chain Verifier`** | SHA-256 Ledger Verification | Genesis-to-tip hash continuity | ~200ms | ✅ Cryptographically Continuous |
 | **`Receipt Verifier`** | Ed25519 Offline Validation | Detached signature & tamper check | ~150ms | ✅ Cryptographically Valid |

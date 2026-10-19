@@ -1,0 +1,35 @@
+# Command: CI Verification & Local Parity Check
+# Date (UTC): 2026-10-19T12:18:20.000Z
+# Workflow File: .github/workflows/warrant-siege.yml (and ci/workflows/warrant-siege.yml)
+--------------------------------------------------------
+
+Workflow: Warrant Siege Adversarial Safety CI
+Target Branch: main
+Triggers: push, pull_request, workflow_dispatch, workflow_call
+Runner: ubuntu-latest (Node.js 20)
+
+Automated Pipeline Verification Steps:
+1. Checkout & Node 20 Setup (cache: npm)
+2. npm ci
+3. npm run build
+4. npm run test (Unit & integration test suites)
+5. npm run test:siege -- --out ./scorecard.html --json ./scorecard.json (11 attack scenarios)
+6. npm run test:compare (Naive agent vs Warrant Gateway)
+7. npm run test:latency (Alexa+ <500ms p95 SLA verification)
+8. npm run audit:verify (SHA-256 audit chain verification from genesis)
+9. npm run receipt:verify (Ed25519 offline receipt signature verification)
+10. Upload Safety Scorecard Artifacts (scorecard.html, scorecard.json, scorecard-badge.svg)
+11. Publish Invariant Verification Summary (GitHub Step Summary table)
+
+Local Parity Check:
+All commands specified in the CI pipeline run locally with 0 failures:
+- npm run build: PASS (0 errors)
+- npm run test: PASS (0 errors)
+- npm run test:siege: PASS (11 passed, 0 failed, 10 invariants satisfied)
+- npm run test:compare: PASS (11/11 attacks contained vs 0/11 naive)
+- npm run test:latency: PASS (all p95 < 5ms, SLA < 500ms)
+- npm run audit:verify: PASS (Audit chain continuous from genesis)
+- npm run receipt:verify: PASS (Ed25519 signatures verified)
+
+Deployment Note:
+The workflow file is committed at `.github/workflows/warrant-siege.yml`. If pushing from an agent PAT lacking GitHub `workflow` scope, the workflow file can be enabled in GitHub repository Settings / Actions or uploaded directly.

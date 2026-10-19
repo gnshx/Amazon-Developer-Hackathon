@@ -1,0 +1,25 @@
+# Command: npm run test:demo-flow
+# Date (UTC): 2026-10-19T12:14:11.151Z
+# Git Commit: b214fb3c15a5aee00234c48f69aa0eaa7d081b1d
+# Machine: Linux x64 | 12th Gen Intel(R) Core(TM) i7-12700 (20 cores, 16.4GB RAM)
+# Region: us-east-1
+# Bedrock Model: us.amazon.nova-pro-v1:0
+# Total Flow Duration: 6894ms
+--------------------------------------------------------
+User Prompt: "Book a weekend trip to Seattle with a hotel and train under $300."
+Agent Spoken Response: "<thinking> The plan has been proposed, and the user needs to approve the hotel booking, which is a high-risk action. I will inform the user about the plan and ask them to approve it on their mobile device. </thinking> I have found a plan for your weekend trip to Seattle with a hotel and train for $140. The hotel booking needs your approval, so I sent a request to your phone. Please approve it on your mobile device."
+Plan ID: plan_72cf21acd2354c44931a74a6413fbb0e
+Execution State: COMPLETED
+Receipt ID: rcpt_2ee41a778b37487dbb5aba3f42fae241
+Spoken Summary: "Your trip is booked and confirmed! Total spend was $165.00."
+--------------------------------------------------------
+MCP Real-Time Tool Traces:
+[1] [THINKING]  Received voice prompt: "Book a weekend trip to Seattle with a hotel and train under $300."
+[2] [TOOL_CALL] search_hotels Bedrock Converse invoked tool search_hotels
+[3] [TOOL_RESULT] search_hotels Found 2 hotels in Seattle starting at $95.00 per night.
+[4] [TOOL_CALL] search_trains Bedrock Converse invoked tool search_trains
+[5] [TOOL_RESULT] search_trains Found 2 trains from User's current location to Seattle starting at $45.00.
+[6] [TOOL_CALL] propose_plan Bedrock Converse invoked tool propose_plan
+[7] [TOOL_RESULT] propose_plan I prepared a plan with 2 steps totaling $140.00. 1 step requires your approval on your phone.
+[8] [APPROVAL]  User confirmed action book_hotel on companion phone card. Issued approval token.
+[9] [TOOL_RESULT] execute_plan Your trip is booked and confirmed! Total spend was $165.00.

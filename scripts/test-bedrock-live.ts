@@ -12,35 +12,35 @@ async function main() {
   const secretKey = process.env.AWS_SECRET_ACCESS_KEY;
   const sessionToken = process.env.AWS_SESSION_TOKEN;
   const region = process.env.AWS_REGION || "us-east-1";
-  const modelId = process.env.BEDROCK_MODEL_ID || "amazon.nova-pro-v1:0";
+  const modelId = process.env.BEDROCK_MODEL_ID || "us.amazon.nova-pro-v1:0";
 
-  if (!accessKey || !secretKey) {
-    console.log("ℹ️  No live AWS credentials detected in environment.");
-    console.log("   AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY are not set.\n");
-    console.log("   To run against live Amazon Bedrock in your account, export:");
-    console.log('   export AWS_ACCESS_KEY_ID="your_access_key"');
-    console.log('   export AWS_SECRET_ACCESS_KEY="your_secret_key"');
-    console.log(`   export AWS_REGION="${region}"`);
-    console.log(`   export BEDROCK_MODEL_ID="${modelId}"  # or us.anthropic.claude-3-5-haiku-20241022-v1:0`);
-    console.log("   npm run test:bedrock\n");
-    console.log("   Warrant will continue using its deterministic offline stub fallback");
-    console.log("   which simulates complete agent conversation and tool execution.\n");
-    console.log("========================================================\n");
-    process.exit(0);
-  }
+  const hasEnvCreds = !!(accessKey && secretKey);
+
+  const client = hasEnvCreds
+    ? new BedrockRuntimeClient({
+        region,
+        credentials: {
+          accessKeyId: accessKey,
+          secretAccessKey: secretKey,
+          sessionToken
+        }
+      })
+    : new BedrockRuntimeClient({ region });
 
   console.log(`Target Region:  ${region}`);
   console.log(`Target Model:   ${modelId}`);
-  console.log(`Access Key:     ${accessKey.substring(0, 4)}...${accessKey.substring(accessKey.length - 4)}`);
+  if (hasEnvCreds) {
+    console.log(`Access Key:     ${accessKey.substring(0, 4)}...${accessKey.substring(accessKey.length - 4)}`);
+  } else {
+    console.log("Access Key:     [Using AWS Default Credential Provider Chain]");
+  }
 
-  const client = new BedrockRuntimeClient({
-    region,
-    credentials: {
-      accessKeyId: accessKey,
-      secretAccessKey: secretKey,
-      sessionToken
-    }
-  });
+  let sdkVersion = "3.1152.0";
+  try {
+    const pkgPath = require.resolve("@aws-sdk/client-bedrock-runtime/package.json");
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+    sdkVersion = pkg.version || sdkVersion;
+  } catch {}
 
   console.log("\nSending test Converse command with sample travel tool...");
   const start = Date.now();
@@ -84,23 +84,31 @@ async function main() {
     const toolUseBlock = content.find((c: any) => c.toolUse);
 
     console.log(`\n✅ LIVE BEDROCK CONVERSE CALL SUCCEEDED! (${duration}ms)`);
-    console.log(`   Model:   ${modelId}`);
-    console.log(`   Status:  HTTP ${response.$metadata.httpStatusCode}`);
+    console.log(`   Model:       ${modelId}`);
+    console.log(`   SDK Version: ${sdkVersion}`);
+    console.log(`   Request ID:  ${response.$metadata.requestId}`);
+    console.log(`   Stop Reason: ${response.stopReason}`);
+    console.log(`   Latency:     ${duration}ms`);
+    console.log(`   Token Usage: ${JSON.stringify(response.usage)}`);
 
     if (toolUseBlock?.toolUse) {
-      console.log(`   Tool:    Model invoked '${toolUseBlock.toolUse.name}'`);
-      console.log(`   Args:    ${JSON.stringify(toolUseBlock.toolUse.input)}`);
+      console.log(`   Tool:        Model invoked '${toolUseBlock.toolUse.name}'`);
+      console.log(`   Args:        ${JSON.stringify(toolUseBlock.toolUse.input)}`);
     } else {
       const text = content.find((c: any) => c.text)?.text;
-      console.log(`   Text:    ${text?.substring(0, 80)}...`);
+      console.log(`   Text:        ${text?.substring(0, 80)}...`);
     }
 
     const proofData = {
       timestamp: new Date().toISOString(),
       region,
       modelId,
+      sdkVersion,
       status: "SUCCESS",
       httpStatusCode: response.$metadata.httpStatusCode,
+      requestId: response.$metadata.requestId,
+      stopReason: response.stopReason,
+      usage: response.usage,
       durationMs: duration,
       toolInvoked: toolUseBlock?.toolUse?.name || null,
       toolArgs: toolUseBlock?.toolUse?.input || null,
@@ -110,7 +118,41 @@ async function main() {
     const proofPath = path.join(process.cwd(), "docs", "bedrock-live-proof.json");
     fs.writeFileSync(proofPath, JSON.stringify(proofData, null, 2));
 
+    const evidenceDir = path.resolve(process.cwd(), "examples/evidence/bedrock-live");
+    fs.mkdirSync(evidenceDir, { recursive: true });
+    fs.writeFileSync(path.join(evidenceDir, "converse-proof.json"), JSON.stringify(proofData, null, 2));
+
+    let commit = "unknown";
+    try {
+      commit = require("child_process").execSync("git rev-parse HEAD", { encoding: "utf8" }).trim();
+    } catch {}
+
+    const os = require("os");
+    const textHeader = [
+      `# Command: npm run test:bedrock`,
+      `# Date (UTC): ${new Date().toISOString()}`,
+      `# Git Commit: ${commit}`,
+      `# Machine: ${os.type()} ${os.arch()} | ${os.cpus()[0]?.model} (${os.cpus().length} cores, ${(os.totalmem() / 1e9).toFixed(1)}GB RAM)`,
+      `# Region: ${region}`,
+      `# Model ID: ${modelId}`,
+      `# SDK Version: @aws-sdk/client-bedrock-runtime@${sdkVersion}`,
+      `# Bedrock Request ID: ${response.$metadata.requestId}`,
+      `# Stop Reason: ${response.stopReason}`,
+      `# Latency: ${duration}ms`,
+      `# Token Usage: input=${response.usage?.inputTokens}, output=${response.usage?.outputTokens}, total=${response.usage?.totalTokens}`,
+      `--------------------------------------------------------`,
+      `Status: HTTP ${response.$metadata.httpStatusCode}`,
+      `Tool Invocation: ${toolUseBlock?.toolUse?.name || "none"}`,
+      `Tool Input: ${JSON.stringify(toolUseBlock?.toolUse?.input || {})}`,
+      `Raw Content:`,
+      JSON.stringify(content, null, 2)
+    ].join("\n");
+
+    fs.writeFileSync(path.join(evidenceDir, "converse.txt"), textHeader + "\n");
+
     console.log(`\n📄 Execution proof saved to: ${proofPath}`);
+    console.log(`📄 Evidence file saved to:   examples/evidence/bedrock-live/converse-proof.json`);
+    console.log(`📄 Raw text saved to:        examples/evidence/bedrock-live/converse.txt`);
     console.log("\n========================================================");
     console.log("🎉 Bedrock Converse API verified live and ready for voice agent!");
     console.log("========================================================\n");

@@ -1,0 +1,23 @@
+# Command: npm run check:bedrock-models
+# Date (UTC): 2026-10-19T12:07:33.468Z
+# Git Commit: b214fb3c15a5aee00234c48f69aa0eaa7d081b1d
+# Machine: Linux x64 | 12th Gen Intel(R) Core(TM) i7-12700 (20 cores, 16.4GB RAM)
+# AWS Region: us-east-1
+# AWS Credential Source: default provider chain (~/.aws/credentials)
+# Redacted: Account IDs and secrets omitted
+--------------------------------------------------------
+
+========================================================
+🔍  AMAZON BEDROCK: Model Lifecycle & Availability Audit
+========================================================
+
+Querying Bedrock control plane in region: us-east-1...
+
+Checking us.amazon.nova-pro-v1:0                        ... [ACTIVE] (type: SYSTEM_DEFINED, name: US Nova Pro)
+Checking us.amazon.nova-lite-v1:0                       ... [ACTIVE] (type: SYSTEM_DEFINED, name: US Nova Lite)
+Checking amazon.nova-pro-v1:0                           ... [ACTIVE] (output: TEXT)
+Checking amazon.nova-lite-v1:0                          ... [ACTIVE] (output: TEXT)
+Checking us.anthropic.claude-3-haiku-20240307-v1:0      ... [ACTIVE] (type: SYSTEM_DEFINED, name: US Anthropic Claude 3 Haiku)
+Checking anthropic.claude-haiku-4-5-20251001-v1:0       ... [ACTIVE] (output: TEXT)
+
+========================================================

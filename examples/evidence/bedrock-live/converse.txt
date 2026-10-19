@@ -1,0 +1,32 @@
+# Command: npm run test:bedrock
+# Date (UTC): 2026-10-19T12:08:12.482Z
+# Git Commit: b214fb3c15a5aee00234c48f69aa0eaa7d081b1d
+# Machine: Linux x64 | 12th Gen Intel(R) Core(TM) i7-12700 (20 cores, 16.4GB RAM)
+# Region: us-east-1
+# Model ID: us.amazon.nova-pro-v1:0
+# SDK Version: @aws-sdk/client-bedrock-runtime@3.1152.0
+# Bedrock Request ID: 3a64d677-e33b-4806-b13d-c21373a036f8
+# Stop Reason: tool_use
+# Latency: 1853ms
+# Token Usage: input=428, output=104, total=532
+--------------------------------------------------------
+Status: HTTP 200
+Tool Invocation: search_trains
+Tool Input: {"maxPriceMinor":5000,"origin":"Portland","destination":"Seattle"}
+Raw Content:
+[
+  {
+    "text": "<thinking> To find a train from Portland to Seattle under $50, I need to use the `search_trains` tool with the origin set to \"Portland\", the destination set to \"Seattle\", and the maxPriceMinor set to 5000 (since the price is in minor units, i.e., cents). </thinking>\n"
+  },
+  {
+    "toolUse": {
+      "toolUseId": "tooluse_5b9CUNKRDXg7EwiZx9sr1X",
+      "name": "search_trains",
+      "input": {
+        "maxPriceMinor": 5000,
+        "origin": "Portland",
+        "destination": "Seattle"
+      }
+    }
+  }
+]

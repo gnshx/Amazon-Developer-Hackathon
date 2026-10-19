@@ -52,6 +52,7 @@ No AWS keys are needed. To run the full app with the simulated Alexa+ client, us
 ## More
 
 - [JUDGES.md](JUDGES.md): the short evaluation path
+- [examples/evidence/](examples/evidence/INDEX.md): empirical proof index, live Bedrock transcripts, and benchmarks
 - [docs/](docs/): product requirements, design, test plan and demo script
 - [packages/warrant-siege](packages/warrant-siege/): the standalone harness, MIT license
 - [skills/warrant-safe-actions](skills/warrant-safe-actions/): the Agent Skill
@@ -115,7 +116,7 @@ Apache 2.0 for the gateway and client. MIT for warrant-siege.
 ### The 5 Core Pillars
 
 1. **Simulated Alexa+ Client (Next.js 14):** Modern dark-mode UI with glassmorphic cards, voice synthesis of `spoken_summary` fields ($\le 300$ chars), real-time MCP tool call inspection, receipt inspector modal, undo grace countdown bar, and an out-of-band phone approval portal displaying exact RFC 8785 parameter hashes.
-2. **Bedrock Voice Agent:** Autonomous agent loop using the AWS Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`). Configured for Amazon Nova Pro (`amazon.nova-pro-v1:0`) or Claude cross-region inference profiles, with a deterministic zero-credential fallback stub for offline testing and automated CI.
+2. **Bedrock Voice Agent:** Autonomous agent loop using the AWS Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`). Configured for Amazon Nova Pro (`us.amazon.nova-pro-v1:0`) or Claude cross-region inference profiles, with a deterministic zero-credential fallback stub for offline testing and automated CI.
 3. **Warrant Gateway (MCP Server):** TypeScript MCP server running over Streamable HTTP (spec version `2025-11-25+`) with an SQLite WAL repository, pure deterministic policy engine, RFC 8785 canonical JSON serializer, Ed25519 receipt signer, and chained SHA-256 audit ledger with Merkle root checkpointing.
 4. **Mock Providers with Fault Injection:** Autonomous mock Hotel, Train, and Restaurant providers maintaining independent booking state queryable via `GET /admin/providers/:name/bookings`, with fault injection endpoints for `TIMEOUT`, `DECLINE`, and `SUCCEEDED_BUT_DISCONNECTED`.
 5. **Warrant Siege Adversarial Harness:** Standalone testing CLI package (`packages/warrant-siege`) with its own MIT License that executes 11 attack scenarios against the gateway and produces machine-verifiable `scorecard.json`, interactive `scorecard.html` reports, and SVG badges.
@@ -157,7 +158,7 @@ Every user story and safety requirement maps directly to an architectural invari
 ### Comprehensive Verification Summary
 
 > **Exact Verification Breakdown:**  
-> **66 automated unit & integration tests**, **11 adversarial siege attack scenarios** ($S_1 - S_{11}$), **3 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 calls per tool type, p95 < 2.7ms), and **1 comparative benchmark** (3 scenarios).
+> **66 automated unit & integration tests**, **11 adversarial siege attack scenarios** ($S_1 - S_{11}$), **3 architectural mutation tests**, **3 agent skill boundary checks**, **1 latency SLA benchmark** (50 calls per tool type, p95 < 4ms), and **1 comparative benchmark** (3 scenarios).
 
 | Verification Suite | Type | Verified Scope | Execution Time | Status |
 |:---|:---|:---:|:---:|:---:|
@@ -167,7 +168,7 @@ Every user story and safety requirement maps directly to an architectural invari
 | **`warrant-siege` (CLI)** | Standalone Adversarial Suite | 11 attack scenarios ($S_1 - S_{11}$) | ~1.6s | ✅ 11/11 Passing |
 | **`Mutation Suite`** | Architectural Negative Testing | 3 mutations caught RED | ~2.5s | ✅ 3/3 Caught |
 | **`Agent Skill Suite`** | Skill Boundary Evaluation | 3 rule boundary checks | ~200ms | ✅ 3/3 Passing |
-| **`Gateway Latency Benchmark`** | Local Processing Benchmark | 50 operations/tool (search p95 2.71ms, propose 1.16ms, exec 1.12ms) | ~1.5s | ✅ Local Processing Time Recorded |
+| **`Gateway Latency Benchmark`** | Local Processing Benchmark | 50 operations/tool (search p95 3.35ms, propose 1.71ms, exec 1.20ms; gateway processing time on localhost with mock providers) | ~1.5s | ✅ Local Processing Time Recorded |
 | **`Comparative Benchmark`**| Example Unprotected Server vs. Warrant | 3 comparative attack scenarios | ~600ms | ✅ 3/3 Warrant vs 0/3 Unprotected Example |
 | **`Audit Chain Verifier`** | SHA-256 Ledger Verification | Genesis-to-tip hash continuity | ~200ms | ✅ Cryptographically Continuous |
 | **`Receipt Verifier`** | Ed25519 Offline Validation | Detached signature & tamper check | ~150ms | ✅ Cryptographically Valid |
@@ -296,7 +297,7 @@ npm run test:compare
 ```
 
 ### 9. Run Agent Skill Boundary Evaluation
-Evaluates model obedience to `warrant-safe-actions` across prompt injection, timeout recovery, and budget boundaries. Executes live against Amazon Bedrock Converse API (`amazon.nova-pro-v1:0`) when AWS credentials are set, or deterministically against the offline agent stub:
+Evaluates model obedience to `warrant-safe-actions` across prompt injection, timeout recovery, and budget boundaries. Executes live against Amazon Bedrock Converse API (`us.amazon.nova-pro-v1:0`) when AWS credentials are set, or deterministically against the offline agent stub:
 ```bash
 npm run test:skill
 ```
@@ -358,7 +359,7 @@ The three most defensible and foundational ideas in Warrant are:
 
 - **Model Context Protocol (MCP) in Actual Code:** Conforms strictly to MCP Streamable HTTP specification `2025-11-25+` via `@modelcontextprotocol/sdk`. Both the Alexa+ client and the Siege CLI communicate over real JSON-RPC 2.0 HTTP endpoints.
 - **Additional Open Source Project Mini-Challenge:** `warrant-siege` is released as a standalone open-source repository at [`github.com/gnshx/warrant-siege`](https://github.com/gnshx/warrant-siege) under the MIT License (`packages/warrant-siege/LICENSE`), allowing any developer building MCP tools to test voice safety and generate verifiable scorecards.
-- **AWS Builder Mini-Challenge:** Uses the AWS Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`) with default model `amazon.nova-pro-v1:0` for conversational reasoning and structured tool dispatch, featuring an offline deterministic fallback for environments without live AWS credentials.
+- **AWS Builder Mini-Challenge:** Uses the AWS Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`) with default model `us.amazon.nova-pro-v1:0` for conversational reasoning and structured tool dispatch, featuring an offline deterministic fallback for environments without live AWS credentials.
 - **Developer Friction Log & Product Feedback:** Comprehensive analysis of Bedrock Converse API error ergonomics, empty tool schema validation, and MCP transport authentication documented in [`docs/FRICTION_LOG.md`](file:///home/gojo/Desktop/Amazon-Developer-Hackathon/docs/FRICTION_LOG.md) (earning up to a 10% judging bonus).
 
 ---

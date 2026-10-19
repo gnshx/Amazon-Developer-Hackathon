@@ -1,0 +1,34 @@
+Command: npm run check:alexa-tooling
+Timestamp (UTC): 2026-10-19T12:17:35.693Z
+Git Commit: b214fb3c15a5aee00234c48f69aa0eaa7d081b1d
+Machine: Linux x64 | 12th Gen Intel(R) Core(TM) i7-12700 (20 cores, 16.4GB RAM)
+Node: v22.23.3
+--------------------------------------------------------
+
+--- Probe 1: Checking for `alexa-ai` binary in PATH ---
+Result: NOT_FOUND
+Output: alexa-ai is not installed in the current environment PATH.
+Exit Code: 1
+
+--- Probe 2: Checking for Alexa Skills Kit CLI (`ask`) in PATH ---
+Result: NOT_FOUND
+Output: ask CLI is not installed in PATH.
+Exit Code: 1
+
+--- Probe 3: Global npm CLI Packages (`npm list -g --depth=0`) ---
+/home/gojo/.nodejs/node-v22.23.3-linux-x64/lib
+├── @deepseek-ai/dsh@0.2.0-rc.2
+├── corepack@0.36.0
+├── npm@10.9.9
+└── pnpm@12.14.0
+
+--------------------------------------------------------
+Assessment per Alexa+ MCP Quickstart Requirements:
+- `alexa-ai` CLI: Unavailable in local development environment.
+  (Alexa+ developer preview CLI is distributed via restricted Amazon channels or pre-release SDK).
+- Fallback / Direct Testing Strategy:
+  1. Warrant Trust Gateway implements standard MCP 2025-11-25 Streamable HTTP transport.
+  2. End-to-end verification runs live against Amazon Bedrock Converse API (`us.amazon.nova-pro-v1:0`).
+  3. Warrant provides an interactive Simulated Alexa+ Client (`packages/alexa-client`) and phone approval portal.
+--------------------------------------------------------
+

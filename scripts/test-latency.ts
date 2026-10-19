@@ -194,12 +194,36 @@ async function runLatencyBenchmark() {
     if (!fs.existsSync(evidenceDir)) {
       fs.mkdirSync(evidenceDir, { recursive: true });
     }
+    let commit = "unknown";
+    try {
+      commit = require("child_process").execSync("git rev-parse HEAD", { encoding: "utf8" }).trim();
+    } catch {}
+
+    const rawText = [
+      `# Command: npm run test:latency`,
+      `# Date (UTC): ${new Date().toISOString()}`,
+      `# Git Commit: ${commit}`,
+      `# Machine: ${machine.cpuModel} (${machine.cpuCores} cores, ${machine.arch}, ${machine.platform}, ${machine.totalMemoryGb} GB RAM)`,
+      `# Note: Gateway processing time on localhost with mock providers (50 sequential calls per tool)`,
+      `# Platform SLA Ceiling: 500ms p95`,
+      `----------------------------------------------------------------------------------`,
+      `| Tool / Operation              | Calls | Avg (ms) | p50 (ms) | p95 (ms) | Max (ms) | Status |`,
+      `|-------------------------------|-------|----------|----------|----------|----------|--------|`,
+      `| search_hotels (T0 Read-Only)  | ${N}    | ${searchStats.avg.toFixed(2).padStart(8)} | ${searchStats.p50.toFixed(2).padStart(8)} | ${searchStats.p95.toFixed(2).padStart(8)} | ${searchStats.max.toFixed(2).padStart(8)} | ${searchStats.p95 < 500 ? "✅ PASS" : "❌ FAIL"} |`,
+      `| propose_plan (T1 Policy Check)| ${N}    | ${proposeStats.avg.toFixed(2).padStart(8)} | ${proposeStats.p50.toFixed(2).padStart(8)} | ${proposeStats.p95.toFixed(2).padStart(8)} | ${proposeStats.max.toFixed(2).padStart(8)} | ${proposeStats.p95 < 500 ? "✅ PASS" : "❌ FAIL"} |`,
+      `| execute_plan (8s Undo Window) | ${N}    | ${executeStats.avg.toFixed(2).padStart(8)} | ${executeStats.p50.toFixed(2).padStart(8)} | ${executeStats.p95.toFixed(2).padStart(8)} | ${executeStats.max.toFixed(2).padStart(8)} | ${executeStats.p95 < 500 ? "✅ PASS" : "❌ FAIL"} |`,
+      `----------------------------------------------------------------------------------`,
+      `Overall Status: ${allPassed ? "PASS" : "FAIL"}`
+    ].join("\n");
+
     fs.writeFileSync(
       path.join(evidenceDir, "latency.json"),
       JSON.stringify(benchmarkReport, null, 2)
     );
-
     console.log(`\n📄 Measured numbers written to: examples/evidence/latency.json`);
+
+    fs.writeFileSync(path.join(evidenceDir, "latency-raw.txt"), rawText + "\n");
+    console.log(`📄 Raw output written to: examples/evidence/latency-raw.txt`);
 
     if (allPassed) {
       console.log(`\n🎉 [PASS] Alexa+ <500ms Latency SLA Gate Satisfied across all operations.`);
