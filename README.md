@@ -68,6 +68,24 @@ Apache 2.0 for the gateway and client. MIT for warrant-siege.
 
 ---
 
+## What we learned about Alexa+ MCP
+
+Building Warrant against the official Alexa+ Developer Documentation and MCP 2025-11-25 specification revealed five core architectural realities for voice safety:
+1. **Step-up authorization is not yet supported in Alexa+ MCP:** The Alexa+ quickstart notes that step-up authorization is not yet supported. Warrant solves this by routing high-value approvals out-of-band to a companion phone card via an elicitation URL and the internal Admin REST API, pausing agent execution until the cryptographic token returns.
+2. **Session identity vs. persistent user identity:** In Alexa+, sessions lack explicit stable IDs passed to tool handlers; requests arrive with identity in the HTTP `Authorization: Bearer <token>` header. Warrant derives authority strictly from the authenticated bearer token, ensuring spend caps and grants persist across conversations and device boundaries.
+3. **The 500 ms latency requirement:** Voice interaction requires sub-second response times. Alexa+ tools must respond within 500 ms for natural audio turn-taking. Warrant's gateway processes requests in under 4 ms p95 on localhost (search: 3.35 ms, propose: 1.71 ms, execute: 1.20 ms; [`examples/evidence/latency.json`](examples/evidence/latency.json)).
+4. **Checkout and booking require explicit idempotency:** Voice retries and transient socket drops risk double-charges. Warrant enforces RFC 8785 canonical argument hashing with idempotency keys, guaranteeing that replayed requests return cached confirmations with zero duplicate provider effects.
+5. **Voice outputs require concise spoken summaries ($\le 300$ chars):** LLMs generate verbose text unsuitable for audio. Every state-changing tool in Warrant returns structured JSON for visual screens alongside a natural `spoken_summary` restricted to $\le 300$ characters.
+
+---
+
+## Who Warrant is for (Adoption Story)
+
+1. **The Brand / Enterprise:** A developer or merchant building an Alexa+ add-on that moves money (hotels, travel, tickets, retail). They cannot risk double-charging customers or facing liability when an LLM hallucination alters a booking parameter. They use Warrant as an MCP gateway and run `warrant-siege` in CI to certify their server against standard safety invariants before deploying.
+2. **The Household:** A family using an Alexa+ assistant. The account holder sets out-of-band limits on their phone: a $150 total budget, mandatory phone approval above $50, category locks, and an 8-second undo window. The assistant can execute routine actions autonomously, but cannot exceed household limits regardless of voice prompts or prompt injections.
+
+---
+
 ## 2. Architecture Overview
 
 ```
