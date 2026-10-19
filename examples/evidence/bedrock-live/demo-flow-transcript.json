@@ -118,8 +118,8 @@
         "destination": "Seattle",
         "hotels": [
           {
-            "id": "hotel_grand",
-            "name": "Grand Plaza Hotel",
+            "id": "hotel_harbor",
+            "name": "Harbor Inn Hotel",
             "priceMinor": 12000,
             "rating": 4.8
           },

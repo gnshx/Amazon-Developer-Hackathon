@@ -35,6 +35,8 @@ async function runClaimsCheck() {
     "README.md",
     "JUDGES.md",
     "docs/SUBMISSION.md",
+    "docs/DEMO_SCRIPT.md",
+    "DEMO_SCRIPT.md",
     "docs/PRD.md",
     "docs/HLD.md",
     "docs/TEST_PLAN.md"
@@ -42,13 +44,14 @@ async function runClaimsCheck() {
 
   // 3. Forbidden words and patterns
   const forbiddenPatterns = [
-    { regex: /\bmathematical\b/i, name: "Forbidden term 'mathematical' (overstatement without formal proof)" },
+    { regex: /\bmathematical(ly)?\b/i, name: "Forbidden term 'mathematical' / 'mathematically'" },
     { regex: /alexa-dev-1/i, name: "Fabricated reviewer username 'alexa-dev-1'" },
     { regex: /amazon-eval-1/i, name: "Fabricated reviewer username 'amazon-eval-1'" },
     { regex: /explicitly state/i, name: "Fabricated direct quote 'explicitly state'" },
     { regex: /chance of winning/i, name: "Forbidden speculative phrase 'chance of winning'" },
     { regex: /\/\s*100\b/i, name: "Forbidden fabricated score '/ 100'" },
-    { regex: /Overall Score/i, name: "Forbidden fabricated evaluation phrase 'Overall Score'" }
+    { regex: /Overall Score/i, name: "Forbidden fabricated evaluation phrase 'Overall Score'" },
+    { regex: /Grand Plaza/i, name: "Disallowed legacy entity 'Grand Plaza' (use Harbor Inn)" }
   ];
 
   console.log("1. Scanning documentation for forbidden buzzwords and fabricated quotes...");

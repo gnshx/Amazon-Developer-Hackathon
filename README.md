@@ -218,16 +218,20 @@ Warrant's first commit was Oct 16, 2026. The system was designed, built, and tes
 
 ---
 
-## 5. Demo Video Script (2:45 Target)
+## 5. Demo Video Script (2:42 Target)
 
-| Timestamp | Scene | Key Actions & Speaking Points |
-|---|---|---|
-| **0:00 – 0:12** | **The Hook** | *"Voice assistants are starting to book and buy for us, with no screen to check first. Warrant makes every action limited, approved, and undoable."* Displays persistent on-screen prototype caption. |
-| **0:12 – 1:00** | **Happy Path & Approval Binding** | User requests weekend trip. Live MCP trace shows Bedrock tool dispatch. Phone approval card displays exact parameters and **RFC 8785 Canonical Hash**. User approves; booking commits; Alexa speaks natural summary ($\le 300$ chars); displays detached **Ed25519 signed action receipt** and **8-second grace hold undo window**. |
-| **1:00 – 1:35** | **Mid-Plan Failure & Rollback** | Mock Train service injected with `DECLINE`. Agent attempts trip booking. Hotel books, train fails. Saga Orchestrator halts forward progress and automatically cancels hotel in reverse order. Zero residue left on providers. Audit chain validates green. |
-| **1:35 – 2:15** | **Adversarial Proof & Mutation Moment** | Run `npm run test:siege` in terminal showing all 11 adversarial attack scenarios pass green. Then run `npm run test:mutation`: intentionally disable approval hash check, watch Scenario S4 turn RED, restore protection, and return to 100% green. |
-| **2:15 – 2:35** | **Scorecard & Open Source Deliverables** | Open interactive `scorecard.html` showing 11/11 green badges, SVG badge, and cryptographic audit proof. Highlight standalone open-source repo for the mini-challenge. |
-| **2:35 – 2:45** | **Roadmap Ahead (Future Work)** | Highlight 3 future post-hackathon directions: public transparency logs, attenuated capability tokens (Macaroons) for agent delegation, and hardware-secured biometric passkeys. |
+Full production guidelines and cue notes: [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).
+
+| Time | Screen | Caption | Spoken Line |
+|---|---|---|---|
+| **0:00 – 0:12** | Assistant console, live request, tool trace | Limited. Approved. Undoable. | Voice assistants are starting to book and buy for us, with no screen to check first. Warrant keeps every action limited, approved and undoable. |
+| **0:12 – 0:50** | Plan, phone approval card, booking, receipt; the undo countdown plays silently | Approval locked to exact details | Anything above your limit needs approval on your phone. The approval is tied to a hash of the exact details, so if a date or price changes afterwards, it stops working. Every action gets a signed receipt anyone can verify offline. |
+| **0:50 – 1:10** | One real tamper attempt rejected | Changed after approval? Rejected. | Here an agent tries to change the price after approval. The gateway rejects it. |
+| **1:10 – 1:40** | Train declines, hotel cancelled, provider list empty | Step two failed. Step one undone. | When the train declines, the hotel booking is cancelled automatically. Nothing is charged and no booking is left. |
+| **1:40 – 2:15** | Pre-recorded terminal: `test:siege` green, then `test:mutation` shows S4 red | Break a protection. The test goes red. | How do we know the protections work? Warrant Siege runs 11 attack scenarios. Switch off the approval check and the scorecard turns red. Switch it back on and it's green. |
+| **2:15 – 2:30** | tools/list output or the README checklist | Built to Alexa+ MCP requirements | It speaks MCP over Streamable HTTP, ties limits to the signed-in user, and anyone can run the harness against their own server. |
+| **2:30 – 2:42** | Title card with both repos and Simulated note | Limits you set. Proof you can check. | Warrant: limits you set, approval tied to the exact action, and receipts anyone can verify. |
+
 
 ---
 

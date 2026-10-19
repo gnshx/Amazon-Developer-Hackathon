@@ -49,6 +49,13 @@ async function computeSha256(canonicalStr: string): Promise<string> {
 
 export default function WarrantApplication() {
   const [activeScreen, setActiveScreen] = useState<ScreenTab>("console");
+  const [bedrockStatus, setBedrockStatus] = useState<{
+    live: boolean;
+    modelId: string | null;
+  }>({
+    live: false,
+    modelId: null
+  });
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -56,6 +63,21 @@ export default function WarrantApplication() {
       const tabParam = params.get("tab") as ScreenTab;
       if (tabParam && ["console", "approval", "failure", "scorecard", "limits"].includes(tabParam)) {
         setActiveScreen(tabParam);
+      }
+      const bedrockParam = params.get("bedrock");
+      if (bedrockParam === "live") {
+        setBedrockStatus({ live: true, modelId: "us.amazon.nova-pro-v1:0" });
+      } else if (bedrockParam === "stub") {
+        setBedrockStatus({ live: false, modelId: null });
+      } else {
+        fetch("/api/status")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data && typeof data.bedrockLive === "boolean") {
+              setBedrockStatus({ live: data.bedrockLive, modelId: data.modelId });
+            }
+          })
+          .catch(() => {});
       }
     }
   }, []);
@@ -382,9 +404,62 @@ export default function WarrantApplication() {
             </div>
           )}
 
-          {/* Prototype Badge */}
+          {/* Bedrock Live vs Offline Stub Status Badge */}
+          {bedrockStatus.live ? (
+            <span
+              className="pill-badge pill-badge-teal"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                border: "1px solid rgba(15, 118, 110, 0.3)",
+                fontWeight: 600
+              }}
+              title="Connected to Amazon Bedrock with live AWS credentials"
+            >
+              <span
+                style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  backgroundColor: "#10b981",
+                  display: "inline-block",
+                  boxShadow: "0 0 6px rgba(16, 185, 129, 0.6)"
+                }}
+              />
+              <span>Bedrock Live (Nova Pro)</span>
+            </span>
+          ) : (
+            <span
+              className="pill-badge"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
+                border: "1px solid rgba(168, 162, 158, 0.3)",
+                color: "var(--text-muted)",
+                fontWeight: 600
+              }}
+              title="Running with deterministic offline simulator"
+            >
+              <span
+                style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  backgroundColor: "#a8a29e",
+                  display: "inline-block"
+                }}
+              />
+              <span>Offline Stub</span>
+            </span>
+          )}
+
+          {/* Prototype Watermark */}
           <span className="pill-badge">
-            Simulated Alexa+ client · demo data
+            {bedrockStatus.live
+              ? "Simulated Alexa+ client and providers · Amazon Bedrock (Nova Pro)"
+              : "Simulated Alexa+ client and providers"}
           </span>
         </div>
       </header>

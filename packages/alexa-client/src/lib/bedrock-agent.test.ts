@@ -17,7 +17,7 @@ describe("BedrockVoiceAgent & MCP Client", () => {
       if (name === "search_hotels") {
         return {
           data: { hotels: [{ id: "h1", priceMinor: 12000 }] },
-          spoken_summary: "Found Grand Plaza Hotel for $120.00."
+          spoken_summary: "Found Harbor Inn Hotel for $120.00."
         };
       }
       if (name === "propose_plan") {

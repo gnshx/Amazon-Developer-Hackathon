@@ -23,7 +23,7 @@ export class MockHotelProvider implements IMockProvider {
 
   public async searchHotels(destination: string) {
     return [
-      { id: "grand_plaza", name: "Grand Plaza Hotel", priceMinor: 12000, destination },
+      { id: "harbor_inn", name: "Harbor Inn Hotel", priceMinor: 12000, destination },
       { id: "harbor_view", name: "Harbor View Inn", priceMinor: 9500, destination }
     ];
   }

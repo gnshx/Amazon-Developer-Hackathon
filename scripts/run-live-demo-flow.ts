@@ -80,10 +80,10 @@ async function main() {
         },
         {
           toolName: "book_hotel",
-          params: { hotel_id: "grand_plaza", nights: 2, price: 12000 },
+          params: { hotel_id: "harbor_inn", nights: 2, price: 12000 },
           estimatedCostMinor: 12000,
           compensationTool: "cancel_hotel",
-          compensationParams: { hotel_id: "grand_plaza" }
+          compensationParams: { hotel_id: "harbor_inn" }
         }
       ]
     });

@@ -543,7 +543,7 @@ export function createGatewayApp(options: GatewayServerOptions = {}) {
         if (toolName === "search_hotels") {
           const destination = toolArgs.destination || "City Center";
           const hotels = [
-            { id: "hotel_grand", name: "Grand Plaza Hotel", priceMinor: 12000, rating: 4.8 },
+            { id: "hotel_harbor", name: "Harbor Inn Hotel", priceMinor: 12000, rating: 4.8 },
             { id: "hotel_boutique", name: "Harbor Boutique Inn", priceMinor: 9500, rating: 4.6 }
           ];
           toolResult = {
