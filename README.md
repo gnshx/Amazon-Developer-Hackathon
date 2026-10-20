@@ -75,7 +75,7 @@ Building Warrant against the official Alexa+ Developer Documentation and MCP 202
 2. **Session identity vs. persistent user identity:** In Alexa+, sessions lack explicit stable IDs passed to tool handlers; requests arrive with identity in the HTTP `Authorization: Bearer <token>` header. Warrant derives authority strictly from the authenticated bearer token, ensuring spend caps and grants persist across conversations and device boundaries.
 3. **The 500 ms latency requirement:** Voice interaction requires sub-second response times. Alexa+ tools must respond within 500 ms for natural audio turn-taking. Warrant's gateway processes requests in under 4 ms p95 on localhost (search: 3.35 ms, propose: 1.71 ms, execute: 1.20 ms; [`examples/evidence/latency.json`](examples/evidence/latency.json)).
 4. **Checkout and booking require explicit idempotency:** Voice retries and transient socket drops risk double-charges. Warrant enforces RFC 8785 canonical argument hashing with idempotency keys, guaranteeing that replayed requests return cached confirmations with zero duplicate provider effects.
-5. **Voice outputs require concise spoken summaries ($\le 300$ chars):** LLMs generate verbose text unsuitable for audio. Every state-changing tool in Warrant returns structured JSON for visual screens alongside a natural `spoken_summary` restricted to $\le 300$ characters.
+5. **Voice outputs need concise spoken summaries:** LLMs generate verbose text that is difficult to process over voice without a screen. As Warrant's own architectural design choice, every state-changing tool returns structured JSON for visual displays alongside a natural `spoken_summary` restricted to $\le 300$ characters.
 
 ---
 
@@ -229,7 +229,7 @@ Full production guidelines and cue notes: [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRI
 | **0:50 – 1:10** | One real tamper attempt rejected | Changed after approval? Rejected. | Here an agent tries to change the price after approval. The gateway rejects it. |
 | **1:10 – 1:40** | Train declines, hotel cancelled, provider list empty | Step two failed. Step one undone. | When the train declines, the hotel booking is cancelled automatically. Nothing is charged and no booking is left. |
 | **1:40 – 2:15** | Pre-recorded terminal: `test:siege` green, then `test:mutation` shows S4 red | Break a protection. The test goes red. | How do we know the protections work? Warrant Siege runs 11 attack scenarios. Switch off the approval check and the scorecard turns red. Switch it back on and it's green. |
-| **2:15 – 2:30** | tools/list output or the README checklist | Built to Alexa+ MCP requirements | It speaks MCP over Streamable HTTP, ties limits to the signed-in user, and anyone can run the harness against their own server. |
+| **2:15 – 2:30** | README checklist showing Done and Not done rows, or tools/list output | Tested against Alexa+ MCP checklist | It speaks MCP over Streamable HTTP, ties limits to the signed-in user, and anyone can run the harness against their own server. |
 | **2:30 – 2:42** | Title card with both repos and Simulated note | Limits you set. Proof you can check. | Warrant: limits you set, approval tied to the exact action, and receipts anyone can verify. |
 
 

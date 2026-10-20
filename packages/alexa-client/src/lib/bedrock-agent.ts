@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { BedrockRuntimeClient, ConverseCommand } from "@aws-sdk/client-bedrock-runtime";
 import { WarrantMcpClient } from "./mcp-client.js";
+import { recordBedrockSuccess, recordBedrockFallback } from "./bedrock-state.js";
 
 export interface AgentStepTrace {
   timestamp: string;
@@ -90,12 +91,15 @@ export class BedrockVoiceAgent {
       try {
         return await this.runLiveBedrockLoop(userPrompt, traces);
       } catch (err: any) {
+        recordBedrockFallback(`Bedrock Converse error (${err.message}). Falling back to simulated runner.`);
         traces.push({
           timestamp: new Date().toISOString(),
           type: "ERROR",
           content: `Bedrock Converse error (${err.message}). Falling back to simulated Bedrock runner.`
         });
       }
+    } else {
+      recordBedrockFallback("AWS credentials not configured. Running in offline stub mode.");
     }
 
     // Deterministic Bedrock Agent Simulator (Offline mode)
@@ -328,7 +332,11 @@ export class BedrockVoiceAgent {
         toolConfig: { tools: bedrockTools }
       });
 
+      const startCallMs = Date.now();
       const response = await this.bedrockClient!.send(command);
+      const callLatencyMs = Date.now() - startCallMs;
+      recordBedrockSuccess(this.modelId, callLatencyMs);
+
       const outputMsg = response.output?.message;
       if (!outputMsg) break;
 

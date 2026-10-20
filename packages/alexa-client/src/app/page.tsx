@@ -240,6 +240,16 @@ export default function WarrantApplication() {
     const prompt = text || inputText;
     if (!prompt.trim()) return;
 
+    // Refresh live Bedrock status from backend
+    fetch("/api/status")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && typeof data.bedrockLive === "boolean") {
+          setBedrockStatus({ live: data.bedrockLive, modelId: data.modelId });
+        }
+      })
+      .catch(() => {});
+
     const userMsg: Message = {
       id: `u_${Date.now()}`,
       sender: "user",
@@ -415,19 +425,18 @@ export default function WarrantApplication() {
                 border: "1px solid rgba(15, 118, 110, 0.3)",
                 fontWeight: 600
               }}
-              title="Connected to Amazon Bedrock with live AWS credentials"
+              title={`Last Converse call succeeded (${bedrockStatus.modelId || "Nova Pro"})`}
             >
               <span
                 style={{
-                  width: "8px",
-                  height: "8px",
+                  width: "7px",
+                  height: "7px",
                   borderRadius: "50%",
-                  backgroundColor: "#10b981",
-                  display: "inline-block",
-                  boxShadow: "0 0 6px rgba(16, 185, 129, 0.6)"
+                  backgroundColor: "#0f766e",
+                  display: "inline-block"
                 }}
               />
-              <span>Bedrock Live (Nova Pro)</span>
+              <span>Bedrock Live ({bedrockStatus.modelId || "Nova Pro"})</span>
             </span>
           ) : (
             <span
@@ -444,14 +453,14 @@ export default function WarrantApplication() {
             >
               <span
                 style={{
-                  width: "8px",
-                  height: "8px",
+                  width: "7px",
+                  height: "7px",
                   borderRadius: "50%",
-                  backgroundColor: "#a8a29e",
+                  backgroundColor: "#78716c",
                   display: "inline-block"
                 }}
               />
-              <span>Offline Stub</span>
+              <span>Offline stub</span>
             </span>
           )}
 

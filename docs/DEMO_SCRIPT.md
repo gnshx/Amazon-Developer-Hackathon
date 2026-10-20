@@ -2,7 +2,7 @@
 
 **Target Runtime:** 2 minutes 42 seconds (162 seconds)  
 **Track:** Amazon Developer Hackathon, Alexa+ Track  
-**Pacing:** Natural, measured speech (130–145 words per minute)  
+**Pacing:** Deliberate, measured speech with pauses for on-screen action (~87 words per minute overall)  
 **Total Word Count:** 234 words  
 **Persistent Watermark (All Screens):**  
 `Simulated Alexa+ client and providers · Amazon Bedrock (Nova Pro)`
@@ -18,7 +18,7 @@
 | **0:50 – 1:10** | Terminal / Inspector: one real tamper attempt submitted | Changed after approval? Rejected. | Here an agent tries to change the price after approval. The gateway rejects it. |
 | **1:10 – 1:40** | Provider panel: Train declines, hotel automatically cancelled, provider bookings list empty | Step two failed. Step one undone. | When the train declines, the hotel booking is cancelled automatically. Nothing is charged and no booking is left. |
 | **1:40 – 2:15** | Pre-recorded terminal: `npm run test:siege` green (11/11), then `npm run test:mutation` shows Scenario S4 red | Break a protection. The test goes red. | How do we know the protections work? Warrant Siege runs 11 attack scenarios. Switch off the approval check and the scorecard turns red. Switch it back on and it's green. |
-| **2:15 – 2:30** | MCP `tools/list` response payload or README compliance checklist | Built to Alexa+ MCP requirements | It speaks MCP over Streamable HTTP, ties limits to the signed-in user, and anyone can run the harness against their own server. |
+| **2:15 – 2:30** | README compliance checklist showing Done and Not done rows, or MCP tools/list payload | Tested against Alexa+ MCP checklist | It speaks MCP over Streamable HTTP, ties limits to the signed-in user, and anyone can run the harness against their own server. |
 | **2:30 – 2:42** | Title card with GitHub links and Simulated note | Limits you set. Proof you can check. | Warrant: limits you set, approval tied to the exact action, and receipts anyone can verify. |
 
 ---
