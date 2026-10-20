@@ -72,6 +72,11 @@ export class BedrockVoiceAgent {
     } else if (process.env.AWS_PROFILE || fs.existsSync(path.join(process.env.HOME || "", ".aws/credentials"))) {
       this.bedrockClient = new BedrockRuntimeClient({ region });
     }
+
+    // In unit test environment, use offline deterministic simulator unless BEDROCK_LIVE=true
+    if (process.env.NODE_ENV === "test" && process.env.BEDROCK_LIVE !== "true") {
+      this.bedrockClient = null;
+    }
   }
 
   /**

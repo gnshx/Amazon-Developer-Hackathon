@@ -32,4 +32,5 @@ All commands specified in the CI pipeline run locally with 0 failures:
 - npm run receipt:verify: PASS (Ed25519 signatures verified)
 
 Deployment Note:
-The workflow file is committed at `.github/workflows/warrant-siege.yml`. If pushing from an agent PAT lacking GitHub `workflow` scope, the workflow file can be enabled in GitHub repository Settings / Actions or uploaded directly.
+The workflow template is provided at `ci/workflows/warrant-siege.yml` for activation at `.github/workflows/warrant-siege.yml`.
+

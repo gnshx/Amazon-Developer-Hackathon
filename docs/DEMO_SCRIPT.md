@@ -30,4 +30,5 @@
 3. **Muted Legibility:** Ensure on-screen captions use large bold type (high contrast white text on dark pill background) so the core message is understood with the sound off.
 4. **Resolution & Sizing:** Use 125% to 150% browser zoom in Chrome/Firefox. Hide browser bookmarks bar, notification popups, and OS taskbar icons.
 5. **Mutation Scene (Take 2):** Pre-record `npm run test:mutation` in terminal with a clean font (size 16pt+). Do at least two takes to guarantee clean capture of the RED S4 detection.
+6. **Cadence & Trimming:** If your narration finishes earlier than the allotted timestamp range during stopwatch rehearsal, trim the visual scene length to keep pacing brisk rather than leaving extended silent pauses.
 
