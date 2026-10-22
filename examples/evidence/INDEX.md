@@ -48,7 +48,7 @@ This directory contains empirical evidence artifacts, cryptographic proofs, benc
 | Evidence File | Generating Command | Description & Verified Metrics |
 |:---|:---|:---|
 | [`alexa-tooling/cli-check.txt`](alexa-tooling/cli-check.txt) | `npm run check:alexa-tooling` | Probes local availability of `alexa-ai` CLI and documents fallback via simulated client and Bedrock Converse. |
-| [`ci/status.txt`](ci/status.txt) | `tsx scripts/check-claims.ts` | Verification status and command mapping for `.github/workflows/warrant-siege.yml`. |
+| [`ci/status.txt`](ci/status.txt) | `tsx scripts/check-claims.ts` | Verification status and local command parity for `ci/workflows/warrant-siege.yml` (documents that remote CI is not yet active). |
 
 ---
 
