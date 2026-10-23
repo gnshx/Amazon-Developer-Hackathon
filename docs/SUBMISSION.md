@@ -12,7 +12,7 @@
 - **Elevator Pitch (1 sentence):** Warrant is a transactional safety layer for agents that act in the real world: bounded authority, exact-action approval, no double-charges, automatic rollback, and receipts anyone can verify, tested by attacks that fail when a protection is removed.
 - **Track Selection:** Alexa+ Track
 - **Mini-Challenge Selections:**
-  1. **Additional Open Source Project Mini-Challenge:** `@warrant/siege` is a modular, standalone open-source testing CLI (MIT License) that attacks any MCP server with 11 standard adversarial scenarios and generates an automated safety scorecard.
+  1. **Additional Open Source Project Mini-Challenge:** `@warrant/siege` is a modular, standalone open-source testing CLI (MIT License) that runs 11 attack scenarios against Warrant's tool interface and produces a scorecard. Running it against arbitrary MCP servers is future work.
   2. **AWS Builder Mini-Challenge:** Native integration with Amazon Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`) for autonomous voice agent tool calling, with offline deterministic stub fallback and in-depth developer feedback.
 
 ---
@@ -25,7 +25,7 @@ To satisfy all requirements for the Additional Open Source Project Mini-Challeng
 - **Open Source Contribution URL:** `https://github.com/gnshx/warrant-siege`
 - **GitHub Username:** `gnshx`
 - **Project License:** [MIT License](https://github.com/gnshx/warrant-siege/blob/main/LICENSE)
-- **Short Description:** `warrant-siege` is an independent, reusable security and adversarial test harness for Model Context Protocol (MCP) servers. It executes 11 attack scenarios (concurrency storms, parameter tampering, spend cap exhaustion, prompt injection, expired tokens, ambiguous timeouts, receipt fraud, cancellation races, and cross-user isolation) over Streamable HTTP and generates interactive HTML and JSON scorecards and SVG badges.
+- **Short Description:** `warrant-siege` is an independent, reusable security and adversarial test harness for Model Context Protocol (MCP) servers. It executes 11 attack scenarios against Warrant's tool interface (concurrency storms, parameter tampering, spend cap exhaustion, prompt injection, expired tokens, ambiguous timeouts, receipt fraud, cancellation races, and cross-user isolation) over Streamable HTTP and generates interactive HTML and JSON scorecards and SVG badges.
 - **Standalone Verification:** Completely decoupled from monorepo dependencies. Verified standalone via:
   ```bash
   git clone https://github.com/gnshx/warrant-siege.git
@@ -34,7 +34,7 @@ To satisfy all requirements for the Additional Open Source Project Mini-Challeng
   ```
   Evaluates all 11 core adversarial scenarios ($S_1 - S_{11}$) with 11/11 green scorecard output.
 - **Pre-Hackathon Non-Existence Confirmation:**  
-  *Warrant's first commit was Oct 16, 2026. All packages in this repository (`@warrant/gateway`, `@warrant/siege`, `@warrant/alexa-client`) were created from scratch during the hackathon period.*
+  *Warrant is a new codebase; its first commit was on Oct 16, 2026. No code was copied from our earlier hackathon project AgentTrust, where we first explored limiting what an agent may spend.*
 
 ---
 
@@ -48,7 +48,7 @@ To satisfy all requirements for the Additional Open Source Project Mini-Challeng
 > 4. **Model Plan Generation vs. Gateway Damage Limitation:** LLMs can still hallucinate or generate inefficient plans; Warrant's role is not to guarantee LLM conversational brilliance, but to deterministically guarantee that no action executes outside policy bounds, spend caps, or unapproved parameters.
 > 5. **Structural Defense vs. Text Heuristics:** Warrant defends against prompt injection structurally (by separating data plane from out-of-band control plane and validating canonical parameter hashes), rather than relying on brittle regex or heuristic sentiment/prompt-guard classifiers.
 > 6. **Storage Architecture & Scalability:** Uses SQLite in WAL mode with a decoupled repository interface; while ideal for single-node / edge deployment, distributed production environments would swap the repository implementation for PostgreSQL or Amazon DynamoDB.
-> 7. **No External Third-Party Audit & Prior Work Disclosure:** While verified against 11 automated attack scenarios, property tests, and 3 mutation tests, Warrant has not undergone a formal third-party commercial pen-test. The author previously explored economic agent bounding in an open-source research project on Monad (`AgentTrust`, MIT License), which was EVM smart-contract based. No code was reused from AgentTrust. Warrant was conceptualized, architected, and built entirely anew in TypeScript for the Model Context Protocol (MCP 2025-11-25 Streamable HTTP), Amazon Bedrock Converse API, and Alexa+ ecosystem.
+> 7. **No External Third-Party Audit & Prior Work Disclosure:** While verified against 11 automated attack scenarios, property tests, and 3 mutation tests, Warrant has not undergone a formal third-party commercial pen-test. The author previously explored economic agent bounding in an open-source research project on Monad (`AgentTrust`, MIT License), which was EVM smart-contract based. No code was copied from our earlier hackathon project AgentTrust, where we first explored limiting what an agent may spend. Warrant was conceptualized, architected, and built entirely anew in TypeScript for the Model Context Protocol (MCP 2025-11-25 Streamable HTTP), Amazon Bedrock Converse API, and Alexa+ ecosystem.
 > 
 > *For an instant evaluation path and full scoring rubric mapping, see [**`JUDGES.md`**](../JUDGES.md).*
 
@@ -90,11 +90,11 @@ To satisfy all requirements for the Additional Open Source Project Mini-Challeng
 Voice assistants are starting to book and buy for us, with no screen to check first. A wrong guess, a retry, or one malicious line in a hotel description can turn into a real charge.
 
 #### What it does
-You set limits on your phone: a total budget, the amount above which the assistant must ask you, which actions are allowed, and when access expires. The assistant can read these limits but can never change them.
+You set limits on your phone: a total budget, the amount above which the assistant must ask you, which actions are allowed, and when access expires. The assistant can read these limits but cannot change them through any tool it has.
 
-When it plans a trip, anything above your threshold needs your approval on your phone. That approval is tied to the exact details, so if anything changes afterwards, it stops working. If the second step fails, the first is undone automatically. A retry never books twice. After each action you get a signed receipt you can verify offline, and a short window to undo.
+When it plans a trip, anything above your threshold needs your approval on your phone. That approval is tied to the exact details, so if anything changes afterwards, it stops working. If the second step fails, the first is undone automatically. A retry does not book twice (tested). After each action you get a signed receipt you can verify offline, and a short window to undo.
 
-For brands, Warrant is an MCP server over Streamable HTTP (spec 2025-11-25) plus an Agent Skill that teaches an assistant how to use it safely. A separate open-source tool, warrant-siege, attacks any MCP server with 11 scenarios and produces a scorecard.
+For brands, Warrant is an MCP server over Streamable HTTP (spec 2025-11-25) plus an Agent Skill that teaches an assistant how to use it safely. A separate open-source tool, warrant-siege, runs 11 attack scenarios against Warrant's tool interface and produces a scorecard. Running it against arbitrary MCP servers is future work.
 
 #### How we built it
 • A TypeScript MCP gateway with a deterministic policy engine, SQLite storage, and money held as integer cents  
@@ -114,7 +114,7 @@ For brands, Warrant is an MCP server over Streamable HTTP (spec 2025-11-25) plus
 The gateway behaves the way Alexa+ MCP quickstart describes: unauthenticated calls get a 401, it serves protected resource metadata, tokens are accepted only in the Authorization header, and grants are tied to the signed-in user, not to a session. Tool annotations and 300-character spoken summaries are tested. Not yet done: a public HTTPS endpoint and a run on a real Alexa+ device.
 
 #### Honest scope
-The Alexa+ client and the providers are simulated, because we did not have access to a real Alexa+ device or add-on environment. No real money moves. The OAuth server is a demo and is not Alexa+ certified. The model can still propose a bad plan; the gateway limits the damage it can do. There has been no external security audit. No code was reused from AgentTrust; Warrant is an entirely new codebase written from scratch for this hackathon.
+The Alexa+ client and the providers are simulated, because we did not have access to a real Alexa+ device or add-on environment. No real money moves. The OAuth server is a demo and is not Alexa+ certified. The model can still propose a bad plan; the gateway limits the damage it can do. There has been no external security audit. Warrant is a new codebase; its first commit was on Oct 16, 2026. No code was copied from our earlier hackathon project AgentTrust, where we first explored limiting what an agent may spend.
 
 #### What's next
 • Passkey-signed approvals  
@@ -132,7 +132,7 @@ TypeScript, Node.js, Express, Model Context Protocol, Amazon Bedrock, AWS SDK fo
 *(Hackathon rules mandate structured feedback on all tools, APIs, and SDKs utilized in the submission.)*
 
 ### 1. Amazon Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`)
-- **What it was used for:** Wiring the simulated Alexa+ voice assistant loop in `packages/alexa-client/src/lib/bedrock-agent.ts`, converting user travel requests into structured MCP tool calls (`propose_plan`, `execute_plan`) and natural spoken summaries.
+- **What it was used for:** Invoking Amazon Bedrock (`us.amazon.nova-pro-v1:0` through a cross-region inference profile in `us-east-1`) to drive the simulated Alexa+ voice assistant loop in `packages/alexa-client/src/lib/bedrock-agent.ts`. In our end-to-end demo flow (`npm run test:demo-flow`), Bedrock autonomously executed a two-turn travel planning workflow: in Turn 1, it analyzed a natural spoken prompt and called `search_hotels` and `search_trains`; in Turn 2, it processed candidate listings and proposed a two-step booking plan with reverse compensations (`propose_plan`) strictly within household spend caps. Complete raw execution proof, timestamps, tool-use IDs, and token metrics are documented in `examples/evidence/bedrock-live/` (`converse-proof.json`, `demo-flow-transcript.json`, `demo-flow-trace.txt`, `skill-test.txt`).
 - **What worked:** The unified Converse API interface (`ConverseCommand`) cleanly separates tool specifications (`toolConfig`) from message history, making it straightforward to pass JSON schema definitions for our travel tools.
 - **What needs work:** For local development and automated CI testing without live AWS credentials, developers must construct custom mock/stub implementations. An official local mock runner or client stub in `@aws-sdk/client-bedrock-runtime` would greatly ease developer onboarding and testing.
 - **Onboarding experience:** The TypeScript SDK types are comprehensive, though accessing nested tool parameters requires multiple optional chaining guards (`output?.message?.content?.[0]?.toolUse`).

@@ -948,7 +948,7 @@ export default function WarrantApplication() {
                   Your assistant's limits
                 </h1>
                 <p style={{ fontSize: "16px", color: "var(--text-muted)" }}>
-                  You set these on your phone. The assistant can read them but can never change them.
+                  You set these on your phone. The assistant can read them but cannot change them through any tool it has.
                 </p>
               </div>
               <span className="pill-badge pill-badge-teal">Live Household Policy</span>
