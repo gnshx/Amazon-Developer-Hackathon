@@ -134,7 +134,7 @@ TypeScript, Node.js, Express, Model Context Protocol, Amazon Bedrock, AWS SDK fo
 ### 1. Amazon Bedrock Converse API (`@aws-sdk/client-bedrock-runtime`)
 - **What it was used for:** Invoking Amazon Bedrock (`us.amazon.nova-pro-v1:0` through a cross-region inference profile in `us-east-1`) to drive the simulated Alexa+ voice assistant loop in `packages/alexa-client/src/lib/bedrock-agent.ts`. In our end-to-end demo flow (`npm run test:demo-flow`), Bedrock autonomously executed a two-turn travel planning workflow: in Turn 1, it analyzed a natural spoken prompt and called `search_hotels` and `search_trains`; in Turn 2, it processed candidate listings and proposed a two-step booking plan with reverse compensations (`propose_plan`) strictly within household spend caps. Complete raw execution proof, timestamps, tool-use IDs, and token metrics are documented in `examples/evidence/bedrock-live/` (`converse-proof.json`, `demo-flow-transcript.json`, `demo-flow-trace.txt`, `skill-test.txt`).
 - **What worked:** The unified Converse API interface (`ConverseCommand`) cleanly separates tool specifications (`toolConfig`) from message history, making it straightforward to pass JSON schema definitions for our travel tools.
-- **What needs work:** For local development and automated CI testing without live AWS credentials, developers must construct custom mock/stub implementations. An official local mock runner or client stub in `@aws-sdk/client-bedrock-runtime` would greatly ease developer onboarding and testing.
+- **Feature wish:** An official local mock runner or client stub in `@aws-sdk/client-bedrock-runtime` would ease local testing and CI when credentials are not configured.
 - **Onboarding experience:** The TypeScript SDK types are comprehensive, though accessing nested tool parameters requires multiple optional chaining guards (`output?.message?.content?.[0]?.toolUse`).
 - **Would you use it again?** Yes. For structured agent tool calling on AWS, the Converse API provides a clean multi-model contract.
 
@@ -148,35 +148,34 @@ TypeScript, Node.js, Express, Model Context Protocol, Amazon Bedrock, AWS SDK fo
 ### 3. Model Context Protocol (MCP) TypeScript SDK (`@modelcontextprotocol/sdk`)
 - **What it was used for:** Implementing the Warrant Trust Gateway over Streamable HTTP (spec 2025-11-25) and client MCP connections.
 - **What worked:** Standardized JSON-RPC 2.0 tool discovery (`tools/list`) and invocation (`tools/call`) allowed clean separation between agent reasoning and tool execution.
-- **What needs work:** Streamable HTTP specification transitions have created version divergence between older Stdio transports and newer HTTP SSE endpoints. Better official reference examples for long-lived Express server hosting would help developers.
-- **Onboarding experience:** Initial concepts are clear, but rapid spec iterations require checking GitHub discussions for authoritative schemas.
+- **What needs work:** The SDK's server handler does not pass the incoming HTTP request context (headers, remote address) into individual tool closures, requiring custom transport context plumbing to read bearer tokens.
+- **Onboarding experience:** The JSON-RPC abstractions are clear once set up, though Streamable HTTP documentation is still evolving.
 - **Would you use it again?** Yes, MCP is rapidly emerging as the universal bridge for agent tooling.
 
-### 4. Next.js 14 App Router
+### 4. Alexa+ MCP Documentation
+- **What it was used for:** Used as the requirements checklist for our MCP server implementation (unauthenticated 401s, Authorization header token extraction, protected resource metadata). The Alexa+ CLI itself was untested as hackathon participant access was unavailable.
+- **What worked:** Clear guidance on transport expectations, 401 challenge semantics, and token-based bearer authentication.
+- **What needs work:** Clarifying in the docs whether hackathon developers can install and use `@alexa-ai/cli` or whether it requires partner role delegation.
+- **Would you use it again?** Yes, it was our primary reference for aligning Warrant with Alexa+ transport standards.
+
+### 5. Next.js 14 App Router
 - **What it was used for:** Front-end simulated Alexa+ assistant interface, phone approval card view, live tool trace telemetry, and audit trail visualization.
 - **What worked:** React Server Components combined with client components provided high performance. Fast refresh and built-in CSS styling enabled rapid iteration on glassmorphic design. Web Speech API integration provides natural voice playback without external audio services.
 - **What needs work:** Hydration mismatches can occur when rendering timestamps or client-side crypto keys if not carefully guarded with `mounted` state checks.
 - **Onboarding experience:** Flawless. Standard `npx create-next-app` provides an immediate working dev environment.
 - **Would you use it again?** Absolutely.
 
-### 5. SQLite with `better-sqlite3`
+### 6. SQLite with `better-sqlite3`
 - **What it was used for:** In-process ACID transactional storage for grants, active plans, idempotency locks, approvals, Ed25519 action receipts, and SHA-256 audit events.
 - **What worked:** Synchronous execution model in WAL mode makes atomic database transactions trivial without async race conditions. Zero external service dependencies makes local evaluation instantaneous.
 - **What needs work:** C++ native compilation can require `build-essential` on some minimal Linux environments, and rebuilding native addons when Node versions change (`npm rebuild better-sqlite3`).
 - **Onboarding experience:** Excellent. Very fast setup and reliable.
 - **Would you use it again?** Yes, the ideal embedded engine for gateways and local agents.
 
-### 6. Alexa+ Developer Preview & Model Context Protocol (MCP) Ecosystem
-- **What it was used for:** Architectural target for voice agent safety, companion approvals, and tool orchestration over the official MCP Streamable HTTP specification (`2025-11-25+`).
-- **What worked:** The concept of connecting LLM reasoning engines (like Bedrock Converse API) to standardized tool endpoints over MCP eliminates custom, brittle integrations. Ambient voice-first commerce is the most exciting frontier for autonomous agents.
-- **What needs work:** The genuine Alexa+ developer preview is currently restricted to select partners, which required us to build high-fidelity simulated models of the voice assistant interface, phone approval push flow, and travel service providers. Clearer documentation on how external MCP Streamable HTTP servers will bridge to future Alexa+ skills and partner accounts is needed.
-- **Onboarding experience:** The MCP TypeScript SDK has evolved rapidly between stdio transports and newer Streamable HTTP SSE endpoints; providing official production reference architectures for long-lived Express server hosting would accelerate adoption.
-- **Would you use it again?** Absolutely. Warrant was engineered specifically to be the foundational security layer for the Alexa+ ecosystem.
-
-### 7. Agent Skills Specification (`skills/warrant-safe-actions/SKILL.md`)
-- **What it was used for:** Authoring the portable `warrant-safe-actions` agent skill, guiding conversational models (Amazon Nova Pro, Claude Code, Alexa+) on safe action sequencing, out-of-band approval expectations, idempotency key persistence, provider prompt injection immunity, and concise spoken summaries.
+### 7. Agent Skills Format (`skills/warrant-safe-actions/SKILL.md`)
+- **What it was used for:** Authoring the portable `warrant-safe-actions` agent skill, guiding conversational models (Amazon Nova Pro, Claude Code, Alexa+) on safe action sequencing, out-of-band approval expectations, idempotency key persistence, and concise spoken summaries.
 - **What worked:** Clean Markdown frontmatter with clear behavioral rules, failure case handling, and voice-first spoken guidelines. Easy to load directly into the Bedrock Converse API `system` prompt array or pass into autonomous agent frameworks.
-- **What needs work:** Currently, Agent Skills rely on model compliance rather than cryptographic enforcement at runtime. Warrant solves this by combining the Agent Skill with an MCP trust gateway that deterministically validates every parameter, approval token, and spend cap.
+- **What needs work:** Agent Skills rely on model compliance rather than cryptographic enforcement at runtime. Warrant solves this by combining the Agent Skill with an MCP trust gateway that deterministically validates every parameter, approval token, and spend cap.
 - **Onboarding experience:** Simple and expressive.
 - **Would you use it again?** Yes. Pairing an MCP server with an Agent Skill creates defense-in-depth: the skill guides the agent's cooperative intent, and the gateway enforces the hard security boundary.
 
@@ -184,26 +183,23 @@ TypeScript, Node.js, Express, Model Context Protocol, Amazon Bedrock, AWS SDK fo
 
 ## 7. Official Feature Requests for the Alexa+ & AWS Teams
 
-*(To demonstrate ecosystem depth and satisfy hackathon criteria, we propose four concrete platform enhancements grounded directly in our hackathon development experience and published platform documentation)*
+*(Grounding enhancements directly in our development experience and published platform documentation)*
 
 | Request ID | Urgency Level | Proposed Feature | Problem Solved | Recommended Implementation |
 |---|:---:|---|---|---|
 | **FR-1** | **🚨 CRITICAL** | **Native Companion App Out-of-Band Step-Up Approval Protocol** | Alexa+'s MCP quickstart lists step-up authorization as not yet supported, so Warrant routes high-value approvals to a companion phone page. | Provide an official Alexa Skill / Bedrock Agent primitive that dispatches an interactive push card to the user's Alexa smartphone app with cryptographic parameter binding (e.g., WebAuthn biometric assertion or signed hash confirmation), pausing agent execution until the companion token returns. |
-| **FR-2** | **⚠️ IMPORTANT** | **First-Class Support for MCP Tool Semantic Annotations in Bedrock Converse API** | Bedrock Converse API `toolConfig` treats all tool definitions as generic JSON schemas, preventing the runtime from differentiating read-only queries from irreversible financial transfers before execution. | Allow tool definitions in Bedrock Converse API to include MCP-aligned annotations (`destructive: true`, `idempotent: true`, alongside custom metadata like `riskTier: "T2"`). This enables the LLM runtime to automatically require confirmation before proposing destructive calls. |
-| **FR-3** | **⚠️ IMPORTANT** | **Enforced Voice-First Spoken Summary Budget Guidelines ($\le 300$ characters)** | LLMs frequently return verbose, paragraph-length responses after tool calls that sound unnatural and tedious when read aloud by Alexa. | Introduce a token/character budget constraint in Converse API tool-use responses specifically designated for speech synthesis (e.g., maximum 300 characters of natural spoken summary alongside rich JSON data). |
-| **FR-4** | **💡 NICE-TO-HAVE** | **Standardized MCP Application Error Codes for Voice-Assistant Interventions** | When an MCP tool call fails due to policy (e.g. approval required, budget exceeded, or session expired), there is no standardized JSON-RPC error code convention in MCP or Bedrock, forcing agents to parse unstructured error strings. | Standardize JSON-RPC application error codes (e.g., `-32001` for `APPROVAL_REQUIRED`, `-32002` for `BUDGET_EXCEEDED`) so agents can react deterministically without brittle string parsing. |
+| **FR-2** | **⚠️ IMPORTANT** | **First-Class Support for MCP Tool Semantic Annotations in Bedrock Converse API** | As far as we could tell, Bedrock Converse API `toolConfig` treats all tool definitions as generic JSON schemas, preventing the runtime from differentiating read-only queries from irreversible financial transfers before execution. | Allow tool definitions in Bedrock Converse API to include MCP-aligned annotations (`destructive: true`, `idempotent: true`, alongside custom metadata like `riskTier: "T2"`). This enables the LLM runtime to automatically require confirmation before proposing destructive calls. |
+| **FR-3** | **💡 NICE-TO-HAVE** | **Standardized MCP Application Error Codes for Voice-Assistant Interventions** | When an MCP tool call fails due to policy (e.g. approval required, budget exceeded, or session expired), there is no standardized JSON-RPC error code convention in MCP or Bedrock, forcing agents to parse unstructured error strings. | Standardize JSON-RPC application error codes (e.g., `-32001` for `APPROVAL_REQUIRED`, `-32002` for `BUDGET_EXCEEDED`) so agents can react deterministically without brittle string parsing. |
 
 ---
 
 ## 8. Developer Friction Log (10% Bonus Documentation)
 
-| # | Task | Steps Taken | Expected Result | Actual Result | Severity | Workaround Applied | Suggestion for AWS / MCP Teams |
+| # | Task | Steps Taken | Expected Result | Actual Result | Severity | Workaround Applied | Suggestion for AWS / Alexa Teams |
 |---|---|---|---|---|---|---|---|
-| **FL-1** | Streamable HTTP Session Token Extraction | Evaluated passing grant session token via standard MCP tool parameters. | Caller identity passed inside tool parameters. | Tool call arguments cannot be trusted for user identity because an agent can drop, alter, or hallucinate them. | **High** | Extracted caller identity strictly from HTTP `Authorization: Bearer <token>` header, ignoring tool arguments. | Formalize HTTP authorization header handling in MCP Streamable HTTP specification. |
-| **FL-2** | Cross-Platform Parameter Hash Mismatch | Evaluated JSON hashes of tool arguments between client and gateway. | `JSON.stringify(args)` should produce identical hashes across runtimes. | Key order divergence (e.g. `{a:1, b:2}` vs `{b:2, a:1}`) caused approval verification to fail. | **Critical** | Enforced RFC 8785 Canonical JSON serialization with lexicographical key sorting. | Provide an official canonical hashing utility inside the core MCP SDK. |
-| **FL-3** | Multi-Package SQLite Test Isolation | Ran concurrent Vitest test suites across workspace packages against a shared SQLite database file. | Tests execute in parallel without file interference. | Vitest concurrency caused file locking and table conflicts (`database is locked`). | **High** | Configured isolated in-memory SQLite instances per test runner and enabled WAL mode for file-based execution. | Include test concurrency guidelines for embedded databases in monorepo starter kits. |
-| **FL-4** | Non-Integer Currency Precision Risks | Evaluated monetary calculation for multi-step booking items in standard JavaScript numbers. | Floating-point additions and subtractions should be exact. | IEEE 754 precision issues introduce rounding risks on cumulative budget deductions. | **High** | Standardized all spend caps, prices, and balances strictly in integer minor units (e.g. cents: $150.00 is `15000`). | Include minor-unit currency formatting conventions in agent commerce guidelines. |
-| **FL-5** | Ambiguous Network Timeouts During Booking | Injected 10-second network drop on train booking request. | Gateway should know if booking succeeded or failed. | Blind retry risks duplicate bookings if the request succeeded before the socket dropped. | **High** | Implemented active provider reconciliation: query external provider truth by idempotency key prior to retry or compensation. | Add active reconciliation pattern guidance to distributed agent tool architectures. |
+| **FL-1** | Alexa+ Tooling Access | Read Alexa+ MCP quickstart, then checked for `alexa-ai` in PATH and ran install check. | A clear setup path for hackathon participants. | We couldn't tell from the public docs whether participants can use the CLI, so we ran the PATH check (`alexa-ai` not found, public registry 404) and built a simulated client (`examples/evidence/alexa-tooling/cli-check.txt`). | **Medium** | Built a simulated Alexa+ client and test harness (`packages/alexa-client`) to validate the MCP interaction model. | Add a "hackathon participants start here" note stating which tooling is available. |
+| **FL-2** | No Explicit Session ID in Alexa+ | Store per-user grants and spending caps in the MCP server. | Key state on an MCP session ID, as in many Streamable HTTP examples. | The Alexa+ docs note sessions follow conversation history rather than an explicit identifier, so state cannot safely key on session IDs alone. | **Medium** | Rebuilt grants and spend caps strictly around the authenticated bearer token subject, and added cross-user test scenario S11. | Document the recommended per-user state storage pattern for multi-tenant MCP servers. |
+| **FL-3** | GitHub Token and Workflow Files | Activate CI workflow via git push of `.github/workflows/warrant-siege.yml`. | Standard Personal Access Token pushes workflow files. | Git remote rejected push because the PAT lacked the `workflow` scope. | **Low** | Staged workflow template in `ci/workflows/warrant-siege.yml` and documented adding via GitHub web or updating token scope. | Document token scope requirements for CI templates in project starter guides. |
 
 ---
 

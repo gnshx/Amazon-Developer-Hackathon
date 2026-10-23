@@ -1,81 +1,62 @@
-# Warrant: Developer Friction Log & AWS / MCP Product Feedback
+# Warrant: Developer Friction Log & Platform Feedback
 
 **Event:** Amazon Developer Hackathon, Alexa+ Track  
 **Category:** Developer Experience, Mini Challenge Bonus (Product Feedback & Friction Log)  
 **Authors:** Warrant Engineering Team  
-**Last Updated:** 16 October 2026  
+**Last Updated:** 23 October 2026  
 
 ---
 
 ## 1. Overview & Evaluation Target
 
-This document logs architectural feedback, ergonomics, failure modes, and developer friction encountered while building **Warrant** across:
+This document logs practical architectural feedback, ergonomics, failure modes, and developer friction encountered while building **Warrant** across:
 1. **Amazon Bedrock Converse API** (`@aws-sdk/client-bedrock-runtime`)
 2. **Model Context Protocol (MCP)** Streamable HTTP Transport & TypeScript SDK (`@modelcontextprotocol/sdk`)
-3. **Simulated Alexa+ Interaction Architecture** (Voice-first streaming & tool routing)
+3. **Alexa+ Developer Documentation & Interaction Architecture**
 
 ---
 
 ## 2. Amazon Bedrock Converse API Feedback
 
 ### 2.1 Strengths & Wins
-- **Unified Tool Calling Interface:** The Bedrock Converse API (`converseStream` / `converse`) standardizes message formatting and tool definitions across model providers (Anthropic Claude 3.5 Sonnet, Amazon Titan, Meta Llama 3).
+- **Unified Tool Calling Interface:** The Bedrock Converse API (`ConverseCommand`) cleanly standardizes message formatting and tool definitions across model providers.
 - **Tool Use Metadata:** Structured `toolUse` blocks with unique `toolUseId` make tracing and correlating multi-step tool calls straightforward.
-- **Low Latency Streaming:** Streaming deltas (`contentBlockDelta`) enable real-time UI feedback for voice synthesis before the full model response completes.
+- **Reliable Structured Tool Selection:** In live testing (`us.amazon.nova-pro-v1:0` via us-east-1 cross-region inference), the model consistently selected the correct search tools on turn 1 and proposed multi-step plans on turn 2.
 
-### 2.2 Friction Points & Specific Recommendations
-
-#### Friction 1: Error Normalization across Regional Endpoints
-- **Observation:** If a specific model ID is throttled or pending access approval in a specific region (e.g., `us-east-1` vs `us-west-2`), the error response returned by the SDK wraps internal XML/JSON payloads with ambiguous status codes (`AccessDeniedException` vs `ValidationException`).
-- **Recommendation for AWS Team:** Provide a unified diagnostic error payload in the SDK that clearly distinguishes between:
-  1. *AWS IAM permission missing*
-  2. *Bedrock Model Access agreement unaccepted in account console*
-  3. *Model ID unavailable in requested region*
-  4. *Account concurrency quota exceeded*
-
-#### Friction 2: Tool Specification Strictness on Empty Parameters
-- **Observation:** When defining tools that require zero parameters (e.g., `get_plan_status` or ping tools), Bedrock Converse API schema expects an explicit JSON schema object with `{ type: "object", properties: {} }`. Certain client libraries emit null or omit `inputSchema`, resulting in schema rejection.
-- **Recommendation for AWS Team:** Support optional or omitted `inputSchema` for parameter-free tools.
+### 2.2 Feature Wishes & Practical Observations
+- **Local Mock Runner / Offline Stub:** For local development and automated CI testing without live AWS credentials, developers must construct custom mock/stub implementations. An official local mock runner or client stub in `@aws-sdk/client-bedrock-runtime` would greatly ease developer onboarding and testing.
+- **TypeScript Optional Chaining:** Deeply nested command response types often require multiple optional chaining guards (`output?.message?.content?.[0]?.toolUse`).
 
 ---
 
 ## 3. Model Context Protocol (MCP) Streamable HTTP Feedback
 
 ### 3.1 Strengths & Wins
-- **Protocol Clarity:** Standardizing `initialize`, `tools/list`, and `tools/call` over JSON-RPC 2.0 provides an open ecosystem where agents can seamlessly discover capabilities.
+- **Protocol Clarity:** Standardizing `initialize`, `tools/list`, and `tools/call` over JSON-RPC 2.0 provides an open ecosystem where agents can discover capabilities.
 - **Streamable HTTP Specification:** Moving from stdio-only to Streamable HTTP enables remote gateways, centralized security proxies, and containerized microservices.
 
-### 3.2 Friction Points & Specific Recommendations
-
-#### Friction 1: Session Token Propagation in Tool Invocations
-- **Observation:** Standard MCP JSON-RPC 2.0 requests encapsulate arguments inside `params.arguments`. In a multi-tenant gateway, deriving caller identity from the HTTP transport layer (e.g. `Authorization: Bearer <token>`) requires custom transport context plumbing, as the base MCP SDK `Server` class does not natively pass HTTP request headers into individual tool handler closures.
-- **Recommendation for MCP Working Group:** Standardize a `RequestContext` object passed to all tool handlers containing transport metadata (headers, remote address, authenticated principal).
-
-#### Friction 2: Canonical Parameter Serialization
-- **Observation:** Because JSON dictionaries are unordered in JavaScript/Python runtimes, computing approval hashes or idempotency signatures over tool arguments requires an explicit canonicalization layer (RFC 8785).
-- **Recommendation for MCP Working Group:** Introduce an optional `paramsHash` field computed via RFC 8785 JCS in the standard MCP tool call payload, allowing gateways and agents to independently verify cryptographic argument binding.
+### 3.2 Practical Observations
+- **Transport Request Context:** The base MCP TypeScript SDK's server handler does not pass the incoming HTTP request context (headers, remote address) into individual tool handler closures, requiring custom transport context plumbing to read bearer tokens.
+- **Canonical Parameter Serialization:** Computing approval hashes over tool arguments requires an explicit canonicalization layer (RFC 8785) because standard JavaScript object key ordering is not deterministic across runtimes.
 
 ---
 
-## 4. Voice Agent Safety & Alexa+ Voice Interface Feedback
+## 4. Grounded Developer Friction Log (3 Empirical Entries)
 
-### 4.1 Alexa+ Tooling & Quickstart CLI Availability
-- **Observation:** The Alexa+ Developer Documentation ("Set Up Your Development Environment") specifies installing the developer CLI via `npm install -g @alexa-ai/cli` after logging in to an AWS CodeArtifact registry (`aws codeartifact login --domain alexa-ai --repository npm-packages --domain-owner 372468808636 --region us-west-2`). In our environment, `alexa-ai` was not in PATH, and invoking `npm install -g --dry-run @alexa-ai/cli` against the public npm registry returned HTTP 404 because developer access requires pre-approval from an Alexa Solutions Architect to assume role `arn:aws:iam::372468808636:role/AddOn3PDeveloperToolsRead`.
-- **Empirical Evidence:** Documented in [`examples/evidence/alexa-tooling/cli-check.txt`](../examples/evidence/alexa-tooling/cli-check.txt) via `npm run check:alexa-tooling`.
-- **Testing Strategy:** Warrant provides a simulated Alexa+ client (`packages/alexa-client`) and an automated live test against the Bedrock Converse API (`npm run test:demo-flow`), saving complete execution transcripts to [`examples/evidence/bedrock-live/demo-flow-transcript.json`](../examples/evidence/bedrock-live/demo-flow-transcript.json).
+| # | Task | Steps Taken | Expected Result | Actual Result | Severity | Workaround Applied | Suggestion for AWS / Alexa Teams |
+|---|---|---|---|---|---|---|---|
+| **FL-1** | Alexa+ Tooling Access | Read Alexa+ MCP quickstart, then checked for `alexa-ai` in PATH and ran install check. | A clear setup path for hackathon participants. | We couldn't tell from the public docs whether participants can use the CLI, so we ran the PATH check (`alexa-ai` not found, public registry 404) and built a simulated client (`examples/evidence/alexa-tooling/cli-check.txt`). | **Medium** | Built a simulated Alexa+ client and test harness (`packages/alexa-client`) to validate the MCP interaction model. | Add a "hackathon participants start here" note stating which tooling is available. |
+| **FL-2** | No Explicit Session ID in Alexa+ | Store per-user grants and spending caps in the MCP server. | Key state on an MCP session ID, as in many Streamable HTTP examples. | The Alexa+ docs note sessions follow conversation history rather than an explicit identifier, so state cannot safely key on session IDs alone. | **Medium** | Rebuilt grants and spend caps strictly around the authenticated bearer token subject, and added cross-user test scenario S11. | Document the recommended per-user state storage pattern for multi-tenant MCP servers. |
+| **FL-3** | GitHub Token and Workflow Files | Activate CI workflow via git push of `.github/workflows/warrant-siege.yml`. | Standard Personal Access Token pushes workflow files. | Git remote rejected push because the PAT lacked the `workflow` scope. | **Low** | Staged workflow template in `ci/workflows/warrant-siege.yml` and documented adding via GitHub web or updating token scope. | Document token scope requirements for CI templates in project starter guides. |
 
-### 4.2 Spoken Summary Constraints & Audio Delivery
-- **Observation:** LLMs typically generate verbose textual descriptions when summarizing tool outputs. In a voice environment (Alexa+), output exceeding 2-3 sentences degrades user experience and increases cognitive load.
-- **Design Pattern Introduced by Warrant:** Every state-changing tool response in Warrant guarantees a dual-format payload:
-  1. `data`: Structured typed JSON for UI canvases, mobile phones, or downstream orchestrators.
-  2. `spoken_summary`: Concise, natural speech string restricted to $\le 300$ characters optimized for Alexa text-to-speech (TTS). Tested and verified in unit tests.
-- **Recommendation for Alexa+ Platform:** Establish `spoken_summary` as a first-class convention for all Alexa+ skills and tools interacting with voice users.
+---
 
-### 4.3 Gateway Processing Overhead vs. Cloud LLM Inference Time
-- **Empirical Observation:** Across 50 calls on localhost with mock providers, Warrant's gateway processing overhead is:
+## 5. Gateway Processing Overhead vs. Cloud LLM Inference Time
+
+- **Gateway Overhead on Localhost:** Across 50 calls on localhost with mock providers, Warrant's gateway processing overhead is:
   - `search_hotels`: p95 **3.35 ms**
   - `propose_plan`: p95 **1.71 ms**
   - `execute_plan_undo_hold`: p95 **1.20 ms**  
   (Evidence: [`examples/evidence/latency.json`](../examples/evidence/latency.json) and [`examples/evidence/latency-raw.txt`](../examples/evidence/latency-raw.txt)).
-- In contrast, the Amazon Bedrock cloud inference turn took **1,853 ms** (Evidence: [`examples/evidence/bedrock-live/converse.txt`](../examples/evidence/bedrock-live/converse.txt)).
+- **Cloud LLM Turn Time:** In contrast, the Amazon Bedrock cloud inference turn took **1,853 ms** (Evidence: [`examples/evidence/bedrock-live/converse.txt`](../examples/evidence/bedrock-live/converse.txt)).
 - **Conclusion:** Gateway safety enforcement (policy check, idempotency caching, SHA-256 canonical hashing, Ed25519 signing) accounts for less than 0.2% of the voice agent turn latency, comfortably satisfying the Alexa+ sub-500ms platform SLA.
