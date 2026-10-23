@@ -2,8 +2,9 @@
 
 A safety layer for voice agents that act in the real world: limits you set, approval tied to the exact action, no double-charges, automatic rollback, and receipts anyone can verify.
 
-Built for the Amazon Developer Hackathon, Alexa+ track. [Demo Video](docs/DEMO_SCRIPT.md)
+Built for the Amazon Developer Hackathon, Alexa+ track. [Watch Demo Video (YouTube)](https://youtu.be/OY3wq0Rrdk4) · [Video Script](docs/DEMO_SCRIPT.md)
 
+[![Watch Demo Video](https://img.shields.io/badge/YouTube-Watch%20Demo%20Video%20(80s)-red?logo=youtube)](https://youtu.be/OY3wq0Rrdk4)
 [![Tests: 66 Passing](https://img.shields.io/badge/Tests-66%20Passing-brightgreen)](https://github.com/gnshx/Amazon-Developer-Hackathon)
 [![Siege Scorecard: 11/11 Invariants Satisfied](https://img.shields.io/badge/Siege%20Scorecard-11%2F11%20Satisfied-10b981)](#-the-10-safety-invariants--adversarial-attack-suite)
 [![Protocol: MCP Streamable HTTP](https://img.shields.io/badge/Protocol-MCP%20Streamable%20HTTP%202025--11--25-0066FF)](https://modelcontextprotocol.io)
@@ -218,9 +219,11 @@ Warrant's first commit was Oct 16, 2026. The system was designed, built, and tes
 
 ---
 
-## 5. Demo Video Script (2:42 Target)
+## 5. Demo Video
 
-Full production guidelines and cue notes: [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).
+🎥 **Watch the official demo video on YouTube:** [**https://youtu.be/OY3wq0Rrdk4**](https://youtu.be/OY3wq0Rrdk4) *(80s studio-grade walkthrough with live Bedrock & MCP agent loop, phone approval, saga rollback, and Warrant Siege mutation red test)*  
+Local high-bitrate source file: [`docs/assets/warrant-demo-video.mp4`](docs/assets/warrant-demo-video.mp4)  
+Production guidelines and scene cue notes: [`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md).
 
 | Time | Screen | Caption | Spoken Line |
 |---|---|---|---|

@@ -2,6 +2,7 @@
 
 > **Quick Summary for Hackathon Evaluators:**  
 > Warrant is a trust gateway that enforces cryptographically sealed economic and safety boundaries on autonomous voice agents (built for Amazon Alexa+ and AWS Bedrock over Model Context Protocol Streamable HTTP).  
+> **Official Demo Video:** [**https://youtu.be/OY3wq0Rrdk4**](https://youtu.be/OY3wq0Rrdk4) *(80s studio-grade walkthrough)*  
 > **Zero AWS keys, zero Alexa developer seats, and zero setup required to verify all safety claims.**
 
 ---

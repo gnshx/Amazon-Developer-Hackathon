@@ -1,9 +1,9 @@
-# Warrant: Official Demo Video Script (2:42 Target)
+# Warrant: Official Demo Video Script
 
-**Target Runtime:** 2 minutes 42 seconds (162 seconds)  
+🎥 **Watch on YouTube:** [**https://youtu.be/OY3wq0Rrdk4**](https://youtu.be/OY3wq0Rrdk4)  
+**Video Runtime:** 1 minute 20 seconds (80 seconds, 1080p progressive, 30fps)  
 **Track:** Amazon Developer Hackathon, Alexa+ Track  
-**Pacing:** Deliberate, measured speech with pauses for on-screen action (~87 words per minute overall)  
-**Total Word Count:** 234 words  
+**Voice Narration:** ElevenLabs George (`JBFqnCBsd6RMkjVDRZzb`)  
 **Persistent Watermark (All Screens):**  
 `Simulated Alexa+ client and providers · Amazon Bedrock (Nova Pro)`
 
